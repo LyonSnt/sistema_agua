@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.sqlite3
+
+# Virtual env
+venv/
+.env/
+
+# Variables sensibles
+.env
+
+# VSCode
+.vscode/
+
+# Archivos estáticos compilados
+staticfiles/
+
+# Logs
+*.log
+
+# Docker
+docker-data/
+
+# Media
+media/
+
+# Pytest
+.pytest_cache/
+
+# Mac/Linux
+.DS_Store
+
+# Windows
+Thumbs.db

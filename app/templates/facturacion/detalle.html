@@ -1,0 +1,170 @@
+{% extends "base/base.html" %}
+
+{% block titulo %}Factura {{ factura.numero }}{% endblock %}
+{% block encabezado %}Detalle de factura{% endblock %}
+
+{% block contenido %}
+
+<div class="mb-4 no-print">
+    <button onclick="window.print()"
+            class="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-700">
+        Imprimir
+    </button>
+
+    {% if factura.estado != "ANULADA" %}
+        <a href="{% url 'facturacion:anular' factura.id %}"
+        class="px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-600">
+            Anular factura
+        </a>
+    {% endif %}
+
+    <a href="{% url 'facturacion:pendientes' %}"
+       class="px-4 py-2 bg-gray-200 rounded-lg">
+        Volver
+    </a>
+</div>
+
+<div class="bg-white rounded-xl shadow p-8 max-w-4xl">
+
+    <div class="flex justify-between border-b pb-4 mb-6">
+        <div>
+            <h2 class="text-2xl font-bold">Sistema de Agua Potable</h2>
+            <p class="text-gray-500">Comprobante de facturación</p>
+        </div>
+
+        <div class="text-right">
+            <p class="text-sm text-gray-500">Factura</p>
+            <p class="text-xl font-bold">{{ factura.numero }}</p>
+            <p class="text-sm">{{ factura.fecha_emision }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-sm">
+        <div>
+            <p class="text-gray-500">Abonado</p>
+            <p class="font-semibold">{{ factura.abonado }}</p>
+        </div>
+
+        <div>
+            <p class="text-gray-500">Cédula/RUC</p>
+            <p class="font-semibold">{{ factura.abonado.cedula_ruc }}</p>
+        </div>
+
+        <div>
+            <p class="text-gray-500">Dirección</p>
+            <p class="font-semibold">{{ factura.abonado.direccion }}</p>
+        </div>
+
+        <div>
+            <p class="text-gray-500">Período</p>
+            <p class="font-semibold">{{ factura.periodo }}</p>
+        </div>
+    </div>
+
+    <div class="border rounded-lg p-4 mb-6 text-sm">
+        <h3 class="font-semibold mb-3">Lectura</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <p class="text-gray-500">Medidor</p>
+                <p class="font-semibold">{{ factura.lectura.medidor.numero }}</p>
+            </div>
+
+            <div>
+                <p class="text-gray-500">Lectura anterior</p>
+                <p class="font-semibold">{{ factura.lectura.lectura_anterior }}</p>
+            </div>
+
+            <div>
+                <p class="text-gray-500">Lectura actual</p>
+                <p class="font-semibold">{{ factura.lectura.lectura_actual }}</p>
+            </div>
+
+            <div>
+                <p class="text-gray-500">Consumo</p>
+                <p class="font-semibold">{{ factura.lectura.consumo }}</p>
+            </div>
+        </div>
+    </div>
+
+    <table class="w-full text-sm mb-6">
+        <thead class="bg-slate-100">
+            <tr>
+                <th class="p-3 text-left">Descripción</th>
+         
+                <th class="p-3 text-right">Valor</th>
+         
+            </tr>
+        </thead>
+        <tbody>
+            {% for detalle in factura.detalles.all %}
+            <tr class="border-b">
+                <td class="p-3">{{ detalle.descripcion }}</td>
+                <td class="p-3 text-right">${{ detalle.valor_total|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="flex justify-end">
+        <div class="w-full md:w-1/3 text-sm">
+            <div class="flex justify-between py-1">
+                <span>Subtotal:</span>
+                <strong>${{ factura.subtotal }}</strong>
+            </div>
+
+            <div class="flex justify-between py-1">
+                <span>Descuento:</span>
+                <strong>${{ factura.descuento }}</strong>
+            </div>
+
+            <div class="flex justify-between py-2 border-t text-lg">
+                <span>Total:</span>
+                <strong>${{ factura.total }}</strong>
+            </div>
+
+            <div class="flex justify-between py-1">
+                <span>Pagado:</span>
+                <strong>${{ factura.total_pagado }}</strong>
+            </div>
+
+            <div class="flex justify-between py-1">
+                <span>Saldo:</span>
+                <strong>${{ factura.saldo_pendiente }}</strong>
+            </div>
+
+            <div class="flex justify-between py-1">
+                <span>Estado:</span>
+                <strong>{{ factura.estado }}</strong>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<style>
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    aside,
+    header {
+        display: none !important;
+    }
+
+    body {
+        background: white !important;
+    }
+
+    main {
+        padding: 0 !important;
+    }
+
+    .shadow {
+        box-shadow: none !important;
+    }
+}
+</style>
+
+{% endblock %}

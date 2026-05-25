@@ -1,0 +1,49 @@
+{% extends "base/base.html" %}
+
+{% block titulo %}Anular factura{% endblock %}
+{% block encabezado %}Anular factura{% endblock %}
+
+{% block contenido %}
+
+<div class="bg-white rounded-xl shadow p-6 max-w-2xl">
+
+    <h3 class="text-lg font-semibold mb-5">Confirmar anulación de factura</h3>
+
+    <div class="mb-6 text-sm space-y-2">
+        <p><strong>Factura:</strong> {{ factura.numero }}</p>
+        <p><strong>Abonado:</strong> {{ factura.abonado }}</p>
+        <p><strong>Total:</strong> ${{ factura.total }}</p>
+        <p><strong>Estado:</strong> {{ factura.estado }}</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-5">
+            <label class="block text-sm font-medium mb-1">Motivo de anulación</label>
+            <textarea
+                name="motivo"
+                rows="4"
+                required
+                class="w-full px-4 py-2 border rounded-lg"
+            ></textarea>
+        </div>
+
+        <div class="flex gap-3">
+            <button
+                type="submit"
+                class="px-5 py-2 bg-red-700 text-white rounded-lg hover:bg-red-600"
+                onclick="return confirm('¿Está seguro de anular esta factura?');">
+                Anular factura
+            </button>
+
+            <a href="{% url 'facturacion:detalle' factura.id %}"
+               class="px-5 py-2 bg-gray-200 rounded-lg">
+                Cancelar
+            </a>
+        </div>
+    </form>
+
+</div>
+
+{% endblock %}

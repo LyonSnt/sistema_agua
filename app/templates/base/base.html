@@ -1,0 +1,114 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block titulo %}Sistema de Agua{% endblock %}</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+
+<div class="min-h-screen flex">
+
+    <aside class="w-64 bg-slate-900 text-white">
+        <div class="p-5 border-b border-slate-700">
+            <h1 class="text-lg font-bold">Sistema de Agua</h1>
+            <p class="text-sm text-slate-300">Facturación</p>
+        </div>
+
+        <nav class="p-4 space-y-2">
+            <a href="/panel/" class="block px-4 py-2 rounded bg-slate-800">
+                Panel principal
+            </a>
+
+            {% if es_admin or es_supervisor %}
+                <a href="/abonados/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                    Abonados
+                </a>
+
+                <a href="/admin/medidores/medidor/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                    Medidores
+                </a>
+            {% endif %}
+
+            {% if es_admin or es_supervisor %}
+                <a href="/lecturas/generar/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                    Generar lecturas
+                </a>
+            {% endif %}
+
+            {% if es_admin or es_supervisor or es_lecturista %}
+                <a href="/lecturas/registro-masivo/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                    Registro de lecturas
+                </a>
+            {% endif %}
+
+            {% if es_admin or es_supervisor %}
+                <a href="/facturacion/generar/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                    Generar facturación
+                </a>
+            {% endif %}
+
+            {% if es_admin or es_supervisor or es_cajero %}
+                <a href="/facturacion/pendientes/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                    Facturas pendientes
+                </a>
+            {% endif %}
+
+            {% if es_admin or es_supervisor or es_cajero or es_consulta %}
+                <a href="/reportes/cierre-diario/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                    Cierre diario
+                </a>
+
+                <a href="/reportes/cartera/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                    Cartera pendiente
+                </a>
+
+                <a href="/reportes/facturas-pagadas/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                    Facturas pagadas
+                </a>
+
+                <a href="/reportes/facturas-anuladas/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                    Facturas anuladas
+                </a>
+            {% endif %}
+
+            {% if es_admin %}
+                <a href="/admin/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                    Administración
+                </a>
+            {% endif %}
+        </nav>
+    </aside>
+
+    <div class="flex-1">
+        <header class="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
+            <div>
+                <h2 class="text-xl font-semibold">{% block encabezado %}Panel principal{% endblock %}</h2>
+                <p class="text-sm text-gray-500">Sistema de facturación de agua potable</p>
+            </div>
+
+            <div class="text-sm text-gray-600 flex items-center gap-3">
+                <span>{{ request.user }}</span>
+
+                <form method="post" action="/logout/">
+                    {% csrf_token %}
+                    <button class="text-red-600 hover:underline">
+                        Salir
+                    </button>
+                </form>
+            </div>
+        </header>
+
+        <main class="p-6">
+            {% block contenido %}
+            {% endblock %}
+        </main>
+    </div>
+
+</div>
+
+</body>
+</html>
