@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            color: #222;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 2px solid #222;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .titulo {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .subtitulo {
+            color: #555;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .box {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            background: #f1f1f1;
+            text-align: left;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 7px;
+        }
+
+        .right {
+            text-align: right;
+        }
+
+        .totales {
+            width: 40%;
+            margin-left: auto;
+            margin-top: 15px;
+        }
+
+        .total-final {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 35px;
+            font-size: 11px;
+            color: #555;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="header">
+    <div>
+        <div class="titulo">{{ configuracion.nombre|default:"Sistema de Agua Potable ver" }}</div>
+        <div class="subtitulo">Comprobante de facturación</div>
+    </div>
+
+    <div class="right">
+        <strong>Factura:</strong> {{ factura.numero }}<br>
+        <strong>Fecha:</strong> {{ factura.fecha_emision }}<br>
+        <strong>Estado:</strong> {{ factura.estado }}
+    </div>
+</div>
+
+<div class="info-grid">
+    <div>
+        <strong>Abonado:</strong><br>
+        {{ factura.abonado }}
+    </div>
+
+    <div>
+        <strong>Cédula/RUC:</strong><br>
+        {{ factura.abonado.cedula_ruc }}
+    </div>
+
+    <div>
+        <strong>Dirección:</strong><br>
+        {{ factura.abonado.direccion }}
+    </div>
+
+    <div>
+        <strong>Período:</strong><br>
+        {{ factura.periodo }}
+    </div>
+</div>
+
+<div class="box">
+    <strong>Lectura</strong>
+
+    <table>
+        <tr>
+            <th>Medidor</th>
+            <th class="right">Lectura anterior</th>
+            <th class="right">Lectura actual</th>
+            <th class="right">Consumo</th>
+        </tr>
+        <tr>
+            <td>{{ factura.lectura.medidor.numero }}</td>
+            <td class="right">{{ factura.lectura.lectura_anterior }}</td>
+            <td class="right">{{ factura.lectura.lectura_actual }}</td>
+            <td class="right">{{ factura.lectura.consumo }} m³</td>
+        </tr>
+    </table>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Descripción</th>
+            <th class="right">Valor</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for detalle in factura.detalles.all %}
+        <tr>
+            <td>{{ detalle.descripcion }}</td>
+            <td class="right">${{ detalle.valor_total|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<table class="totales">
+    <tr>
+        <td>Subtotal</td>
+        <td class="right">${{ factura.subtotal|floatformat:2 }}</td>
+    </tr>
+    <tr>
+        <td>Descuento</td>
+        <td class="right">${{ factura.descuento|floatformat:2 }}</td>
+    </tr>
+    <tr class="total-final">
+        <td>Total</td>
+        <td class="right">${{ factura.total|floatformat:2 }}</td>
+    </tr>
+    <tr>
+        <td>Pagado</td>
+        <td class="right">${{ factura.total_pagado|floatformat:2 }}</td>
+    </tr>
+    <tr>
+        <td>Saldo</td>
+        <td class="right">${{ factura.saldo_pendiente|floatformat:2 }}</td>
+    </tr>
+</table>
+
+<div class="footer">
+    Documento generado por el Sistema de Facturación de Agua Potable.
+</div>
+
+</body>
+</html>

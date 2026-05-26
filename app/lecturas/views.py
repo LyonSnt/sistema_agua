@@ -11,6 +11,9 @@ from .models import Lectura
 from decimal import Decimal, InvalidOperation
 from usuarios.decoradores import rol_requerido
 
+from django.http import HttpResponse
+from openpyxl import Workbook, load_workbook
+
 
 @rol_requerido("Administrador", "Supervisor")
 def generar_lecturas(request):
@@ -112,8 +115,8 @@ def registro_masivo_lecturas(request):
 
                 if hasattr(lectura, "factura"):
                     continue
-                valor = request.POST.get(f"lectura_actual_{lectura.id}")
 
+                valor = request.POST.get(f"lectura_actual_{lectura.id}")
 
                 if valor is None or valor == "":
                     continue
@@ -121,7 +124,21 @@ def registro_masivo_lecturas(request):
                 try:
                     valor_decimal = Decimal(valor)
 
-                    lectura.lectura_actual = valor_decimal
+                    confirmar_sin_consumo = request.POST.get(
+                        f"confirmar_sin_consumo_{lectura.id}"
+                    )
+
+                    if valor_decimal > lectura.lectura_anterior:
+                        lectura.lectura_actual = valor_decimal
+                        lectura.lectura_registrada = True
+
+                    elif valor_decimal == lectura.lectura_anterior and confirmar_sin_consumo == "1":
+                        lectura.lectura_actual = valor_decimal
+                        lectura.lectura_registrada = True
+
+                    else:
+                        continue
+
                     lectura.actualizado_por = request.user
                     lectura.save()
                     actualizadas += 1
@@ -147,7 +164,7 @@ def registro_masivo_lecturas(request):
     for lectura in lecturas:
         if hasattr(lectura, "factura"):
             facturadas += 1
-        elif lectura.lectura_actual == lectura.lectura_anterior:
+        elif not lectura.lectura_registrada:
             pendientes_lectura += 1
         else:
             listas_facturar += 1
@@ -169,3 +186,139 @@ def registro_masivo_lecturas(request):
     }
 
     return render(request, "lecturas/registro_masivo.html", contexto)
+
+
+@rol_requerido("Administrador", "Supervisor", "Lecturista")
+def descargar_plantilla_lecturas(request):
+    periodo_id = request.GET.get("periodo")
+    periodo = get_object_or_404(PeriodoFacturacion, id=periodo_id, activo=True)
+
+    lecturas = Lectura.objects.select_related(
+        "medidor", "medidor__abonado"
+    ).filter(periodo=periodo, activo=True, lectura_registrada=False)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Lecturas"
+
+    ws.append(["ID Lectura", "Medidor", "Abonado", "Lectura anterior", "Lectura actual"])
+
+    for lectura in lecturas:
+        ws.append([
+            lectura.id,
+            lectura.medidor.numero,
+            str(lectura.medidor.abonado),
+            float(lectura.lectura_anterior),
+            "",
+        ])
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = f'attachment; filename="lecturas_{periodo.nombre}.xlsx"'
+    wb.save(response)
+    return response
+
+@rol_requerido("Administrador", "Supervisor", "Lecturista")
+def importar_lecturas_excel(request):
+    periodos = PeriodoFacturacion.objects.filter(activo=True, estado="ABIERTO")
+
+    if request.method == "POST":
+        confirmar = request.POST.get("confirmar")
+
+        if confirmar == "1":
+            filas_validas = request.session.get("importacion_lecturas_validas", [])
+
+            actualizadas = 0
+
+            for item in filas_validas:
+                lectura = Lectura.objects.get(id=item["lectura_id"], activo=True)
+
+                if hasattr(lectura, "factura"):
+                    continue
+
+                lectura.lectura_actual = Decimal(str(item["actual"]))
+                lectura.lectura_registrada = True
+                lectura.actualizado_por = request.user
+                lectura.save()
+                actualizadas += 1
+
+            request.session.pop("importacion_lecturas_validas", None)
+
+            messages.success(
+                request,
+                f"Importación confirmada. Lecturas actualizadas: {actualizadas}."
+            )
+
+            return redirect("lecturas:importar_excel")
+
+        archivo = request.FILES.get("archivo")
+
+        if not archivo:
+            messages.error(request, "Debe seleccionar un archivo Excel.")
+            return redirect("lecturas:importar_excel")
+
+        wb = load_workbook(archivo)
+        ws = wb.active
+
+        filas_validas = []
+        filas_error = []
+
+        for fila_num, fila in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
+            lectura_id, medidor, abonado, lectura_anterior, lectura_actual = fila
+
+            if not lectura_id or lectura_actual in [None, ""]:
+                continue
+
+            try:
+                lectura = Lectura.objects.get(id=lectura_id, activo=True)
+
+                if hasattr(lectura, "factura"):
+                    filas_error.append({
+                        "fila": fila_num,
+                        "medidor": medidor,
+                        "abonado": abonado,
+                        "error": "La lectura ya tiene factura generada.",
+                    })
+                    continue
+
+                valor = Decimal(str(lectura_actual))
+
+                if valor < lectura.lectura_anterior:
+                    filas_error.append({
+                        "fila": fila_num,
+                        "medidor": medidor,
+                        "abonado": abonado,
+                        "error": "La lectura actual no puede ser menor que la anterior.",
+                    })
+                    continue
+
+                filas_validas.append({
+                    "lectura_id": lectura.id,
+                    "medidor": medidor,
+                    "abonado": abonado,
+                    "anterior": str(lectura.lectura_anterior),
+                    "actual": str(valor),
+                    "consumo": str(valor - lectura.lectura_anterior),
+                })
+
+            except Exception as e:
+                filas_error.append({
+                    "fila": fila_num,
+                    "medidor": medidor,
+                    "abonado": abonado,
+                    "error": str(e),
+                })
+
+        request.session["importacion_lecturas_validas"] = filas_validas
+
+        return render(request, "lecturas/importar_excel.html", {
+            "periodos": periodos,
+            "filas_validas": filas_validas,
+            "filas_error": filas_error,
+            "modo_preview": True,
+        })
+
+    return render(request, "lecturas/importar_excel.html", {
+        "periodos": periodos,
+    })

@@ -5,13 +5,10 @@
 
 {% block contenido %}
 
-<div class="mb-6">
-    <h2 class="text-xl font-bold">Resumen del día</h2>
-    <p class="text-sm text-gray-500">Recaudación diaria desglosada por rubros.</p>
-</div>
+<h2 class="text-xl font-bold mb-2">Resumen del día</h2>
+<p class="text-sm text-gray-500 mb-6">Recaudación diaria separada por rubros.</p>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-
     <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Recaudado hoy</p>
         <h3 class="text-3xl font-bold mt-2 text-blue-700">${{ recaudado_hoy|floatformat:2 }}</h3>
@@ -34,24 +31,25 @@
 
     <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Pagos hoy</p>
-        <h3 class="text-3xl font-bold mt-2">{{ pagos_registrados_hoy }}</h3>
+        <h3 class="text-3xl font-bold mt-2">{{ pagos_hoy }}</h3>
     </div>
-
 </div>
 
-<div class="mb-6">
-    <h2 class="text-xl font-bold">Estado operativo</h2>
-</div>
+<h2 class="text-xl font-bold mb-6">Estado general</h2>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-
     <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Abonados activos</p>
         <h3 class="text-3xl font-bold mt-2">{{ total_abonados }}</h3>
     </div>
 
     <div class="bg-white rounded-xl shadow p-5">
-        <p class="text-sm text-gray-500">Facturas pendientes/parciales</p>
+        <p class="text-sm text-gray-500">Medidores activos</p>
+        <h3 class="text-3xl font-bold mt-2">{{ total_medidores }}</h3>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Facturas pendientes</p>
         <h3 class="text-3xl font-bold mt-2 text-red-700">{{ facturas_pendientes }}</h3>
     </div>
 
@@ -61,27 +59,60 @@
     </div>
 
     <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Recaudado este mes</p>
+        <h3 class="text-3xl font-bold mt-2 text-green-700">${{ recaudado_mes|floatformat:2 }}</h3>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Lecturas pendientes</p>
         <h3 class="text-3xl font-bold mt-2 text-yellow-700">{{ lecturas_pendientes }}</h3>
     </div>
 
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Abonados morosos</p>
+        <h3 class="text-3xl font-bold mt-2 text-red-700">{{ abonados_morosos }}</h3>
+    </div>
 </div>
 
-<div class="bg-white rounded-xl shadow p-5">
-    <h3 class="text-lg font-semibold mb-4">Últimas actividades</h3>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-xl shadow p-5">
+        <h3 class="text-lg font-semibold mb-4">Últimos pagos</h3>
 
-    <div class="space-y-3">
-        {% for item in ultimas_acciones %}
-            <div class="border-b pb-3 text-sm">
-                <p class="font-semibold">
-                    {{ item.usuario|default:"Sistema" }} - {{ item.get_accion_display }}
-                </p>
-                <p class="text-gray-600">{{ item.descripcion }}</p>
-                <p class="text-xs text-gray-400">{{ item.creado_en }}</p>
-            </div>
-        {% empty %}
-            <p class="text-gray-500 text-sm">No existen actividades registradas.</p>
-        {% endfor %}
+        <div class="space-y-3">
+            {% for pago in ultimos_pagos %}
+                <div class="border-b pb-3 text-sm">
+                    <p class="font-semibold">
+                        {{ pago.factura.numero }} - {{ pago.factura.abonado }}
+                    </p>
+                    <p class="text-gray-600">
+                        ${{ pago.valor_pagado|floatformat:2 }} | {{ pago.metodo_pago }} | {{ pago.fecha_pago|date:"Y-m-d H:i" }}
+                    </p>
+                    <p class="text-xs text-gray-400">
+                        Cajero: {{ pago.creado_por|default:"-" }}
+                    </p>
+                </div>
+            {% empty %}
+                <p class="text-gray-500 text-sm">No existen pagos registrados.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <h3 class="text-lg font-semibold mb-4">Últimas actividades</h3>
+
+        <div class="space-y-3">
+            {% for item in ultimas_acciones %}
+                <div class="border-b pb-3 text-sm">
+                    <p class="font-semibold">
+                        {{ item.usuario|default:"Sistema" }} - {{ item.get_accion_display }}
+                    </p>
+                    <p class="text-gray-600">{{ item.descripcion }}</p>
+                    <p class="text-xs text-gray-400">{{ item.creado_en }}</p>
+                </div>
+            {% empty %}
+                <p class="text-gray-500 text-sm">No existen actividades registradas.</p>
+            {% endfor %}
+        </div>
     </div>
 </div>
 

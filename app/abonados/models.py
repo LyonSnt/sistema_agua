@@ -37,38 +37,30 @@ class Ruta(ModeloBase):
 
 class Abonado(ModeloBase):
     codigo = models.CharField(max_length=20, unique=True)
-
     cedula_ruc = models.CharField(
         max_length=20,
         unique=True
     )
-
     nombres = models.CharField(max_length=150)
-
     apellidos = models.CharField(max_length=150)
-
     telefono = models.CharField(
         max_length=20,
         blank=True
     )
-
     correo = models.EmailField(blank=True)
-
     direccion = models.TextField()
-
     referencia = models.TextField(blank=True)
-
     sector = models.ForeignKey(
         Sector,
         on_delete=models.PROTECT,
         related_name="abonados"
     )
-
     ruta = models.ForeignKey(
         Ruta,
         on_delete=models.PROTECT,
         related_name="abonados"
     )
+
 
     class Meta:
         verbose_name = "Abonado"
@@ -77,3 +69,17 @@ class Abonado(ModeloBase):
 
     def __str__(self):
         return f"{self.apellidos} {self.nombres}"
+    
+    def estado_cuenta(self):
+        facturas_pendientes = self.facturas.filter(
+            activo=True,
+            estado__in=["PENDIENTE", "PARCIAL"]
+        ).count()
+
+        if facturas_pendientes == 0:
+            return "AL_DIA"
+
+        if facturas_pendientes == 1:
+            return "CON_DEUDA"
+
+        return "MOROSO"

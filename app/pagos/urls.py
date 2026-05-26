@@ -11,4 +11,9 @@ urlpatterns = [
         views.anular_pago,
         name="anular"
     ),
+    path(
+        "comprobante/<int:pago_id>/pdf/",
+        views.comprobante_pago_pdf,
+        name="comprobante_pdf"
+    ),
 ]

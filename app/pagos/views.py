@@ -11,6 +11,10 @@ from django.utils import timezone
 from usuarios.decoradores import rol_requerido
 from auditoria.utils import registrar_auditoria
 
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+from weasyprint import HTML
+
 
 @rol_requerido("Administrador", "Cajero", "Supervisor")
 def cobrar_factura(request, factura_id):
@@ -128,3 +132,35 @@ def anular_pago(request, pago_id):
             "pago": pago
         }
     )
+
+
+
+@login_required
+def comprobante_pago_pdf(request, pago_id):
+    pago = get_object_or_404(
+        Pago.objects.select_related(
+            "factura",
+            "factura__abonado",
+            "creado_por",
+        ),
+        id=pago_id,
+        activo=True,
+    )
+
+    html_string = render_to_string(
+        "pagos/pdf_comprobante_pago.html",
+        {
+            "pago": pago,
+            "factura": pago.factura,
+        }
+    )
+
+    pdf = HTML(string=html_string).write_pdf()
+
+    response = HttpResponse(pdf, content_type="application/pdf")
+
+    response["Content-Disposition"] = (
+        f'inline; filename="comprobante_pago_{pago.factura.numero}.pdf"'
+    )
+
+    return response

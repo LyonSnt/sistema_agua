@@ -1,0 +1,97 @@
+{% extends "base/base.html" %}
+
+{% block titulo %}Cartera vencida{% endblock %}
+{% block encabezado %}Cartera vencida{% endblock %}
+
+{% block contenido %}
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Abonados con deuda</p>
+        <h3 class="text-3xl font-bold mt-2 text-red-700">
+            {{ total_abonados_mora }}
+        </h3>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Total cartera vencida</p>
+        <h3 class="text-3xl font-bold mt-2 text-red-700">
+            ${{ total_deuda_general|floatformat:2 }}
+        </h3>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl shadow p-5">
+    <h3 class="text-lg font-semibold mb-5">
+        Detalle por abonado
+    </h3>
+
+    <div class="mb-5">
+    <a href="{% url 'reportes:cartera_vencida_excel' %}"
+       class="px-4 py-2 bg-green-700 text-white rounded-lg">
+        Exportar Excel
+    </a>
+</div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-100 text-slate-700">
+                <tr>
+                    <th class="p-3 text-left">Abonado</th>
+                    <th class="p-3 text-left">Cédula/RUC</th>
+                    <th class="p-3 text-right">Facturas pendientes</th>
+                    <th class="p-3 text-right">Total deuda</th>
+                    <th class="p-3 text-left">Períodos pendientes</th>
+                    <th class="p-3 text-center">Acción</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in cartera %}
+                <tr class="border-b hover:bg-slate-50">
+                    <td class="p-3">
+                        {{ item.abonado }}
+                    </td>
+
+                    <td class="p-3">
+                        {{ item.abonado.cedula_ruc }}
+                    </td>
+
+                    <td class="p-3 text-right">
+                        {{ item.cantidad_facturas }}
+                    </td>
+
+                    <td class="p-3 text-right font-semibold text-red-700">
+                        ${{ item.total_deuda|floatformat:2 }}
+                    </td>
+
+                    <td class="p-3">
+                        {% for factura in item.facturas %}
+                            <span class="inline-block bg-red-100 text-red-700 px-2 py-1 rounded text-xs mb-1">
+                                {{ factura.periodo.nombre }}: ${{ factura.saldo_pendiente|floatformat:2 }}
+                            </span>
+                        {% endfor %}
+                    </td>
+
+                    <td class="p-3 text-center">
+                        {% if item.facturas %}
+                            <a href="{% url 'pagos:cobrar' item.facturas.0.id %}"
+                               class="px-3 py-1 bg-green-700 text-white rounded hover:bg-green-600">
+                                Cobrar
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="p-5 text-center text-gray-500">
+                        No existen abonados con deuda pendiente.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

@@ -63,6 +63,8 @@ class Lectura(ModeloBase):
 
     observacion = models.TextField(blank=True)
 
+    lectura_registrada = models.BooleanField(default=False)
+
     class Meta:
         verbose_name = "Lectura"
         verbose_name_plural = "Lecturas"

@@ -129,6 +129,7 @@
                         <th class="p-3 text-right">Lect. actual</th>
                         <th class="p-3 text-right">Consumo</th>
                         <th class="p-3 text-center">Estado</th>
+                        <th class="p-3 text-center">Confirmar</th>
                     </tr>
                 </thead>
 
@@ -170,10 +171,12 @@
                                     data-anterior="{{ lectura.lectura_anterior }}"
                                     data-consumo-id="consumo_{{ lectura.id }}"
                                     data-estado-id="estado_{{ lectura.id }}"
+                                    data-accion-id="accion_{{ lectura.id }}"
                                     class="lectura-input w-32 px-3 py-2 border rounded-lg text-right"
                                 >
                             {% endif %}
                         </td>
+
 
                         <td class="p-3 text-right font-semibold">
                            <span id="consumo_{{ lectura.id }}">{{ lectura.consumo }}</span>
@@ -182,13 +185,34 @@
                             <span id="estado_{{ lectura.id }}">
                                 {% if lectura.factura %}
                                     <span class="px-2 py-1 text-xs bg-green-100 rounded">Facturada</span>
-                                {% elif lectura.lectura_actual == lectura.lectura_anterior %}
+                                {% elif not lectura.lectura_registrada %}
                                     <span class="px-2 py-1 text-xs bg-red-100 rounded">Pendiente lectura</span>
                                 {% else %}
-                                    <span class="px-2 py-1 text-xs bg-yellow-100 rounded">Lista</span>
+                                    <span class="px-2 py-1 text-xs bg-yellow-100 rounded">Lista para facturar</span>
                                 {% endif %}
                             </span>
                         </td>
+                        <td class="p-3 text-center">
+                            <span id="accion_{{ lectura.id }}">
+                                {% if lectura.factura %}
+                                    -
+                                {% elif not lectura.lectura_registrada %}
+                                    <label class="flex items-center justify-center gap-2 text-xs">
+                                        <input
+                                            type="checkbox"
+                                            name="confirmar_sin_consumo_{{ lectura.id }}"
+                                            value="1"
+                                            class="sin-consumo-check"
+                                            data-estado-id="estado_{{ lectura.id }}"
+                                        >
+                                        Sin consumo
+                                    </label>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </span>
+                        </td>
+
                     </tr>
                     {% empty %}
                     <tr>
@@ -209,6 +233,53 @@
 document.addEventListener("DOMContentLoaded", function () {
     const inputs = Array.from(document.querySelectorAll(".lectura-input"));
 
+    function pintarPendiente(estadoEl) {
+        estadoEl.innerHTML = '<span class="px-2 py-1 text-xs bg-red-100 rounded">Pendiente lectura</span>';
+    }
+
+    function pintarLista(estadoEl) {
+        estadoEl.innerHTML = '<span class="px-2 py-1 text-xs bg-yellow-100 rounded">Lista para facturar</span>';
+    }
+
+    function pintarInvalida(estadoEl) {
+        estadoEl.innerHTML = '<span class="px-2 py-1 text-xs bg-red-100 rounded">Inválida: lectura actual menor que la anterior</span>';
+    }
+
+    function crearCheckSinConsumo(input, accionEl) {
+        const idLectura = input.name.replace("lectura_actual_", "");
+
+        accionEl.innerHTML = `
+            <label class="flex items-center justify-center gap-2 text-xs">
+                <input
+                    type="checkbox"
+                    name="confirmar_sin_consumo_${idLectura}"
+                    value="1"
+                    class="sin-consumo-check"
+                    data-estado-id="${input.dataset.estadoId}"
+                >
+                Sin consumo
+            </label>
+        `;
+
+        activarChecks();
+    }
+
+    function activarChecks() {
+        document.querySelectorAll(".sin-consumo-check").forEach(function (check) {
+            check.onchange = function () {
+                const estadoEl = document.getElementById(check.dataset.estadoId);
+
+                if (!estadoEl) return;
+
+                if (check.checked) {
+                    pintarLista(estadoEl);
+                } else {
+                    pintarPendiente(estadoEl);
+                }
+            };
+        });
+    }
+
     function actualizarFila(input) {
         const anterior = parseFloat(input.dataset.anterior || "0");
         const actual = parseFloat(input.value || "0");
@@ -216,12 +287,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const consumoEl = document.getElementById(input.dataset.consumoId);
         const estadoEl = document.getElementById(input.dataset.estadoId);
+        const accionEl = document.getElementById(input.dataset.accionId);
 
-        if (!consumoEl || !estadoEl) return;
+        if (!consumoEl || !estadoEl || !accionEl) return;
 
         if (isNaN(actual) || actual < anterior) {
             consumoEl.textContent = "0.00";
-            estadoEl.innerHTML = '<span class="px-2 py-1 text-xs bg-red-100 rounded">Inválida</span>';
+            pintarInvalida(estadoEl);
+            accionEl.innerHTML = "-";
             input.classList.add("border-red-500");
             return;
         }
@@ -230,9 +303,11 @@ document.addEventListener("DOMContentLoaded", function () {
         consumoEl.textContent = consumo.toFixed(2);
 
         if (consumo === 0) {
-            estadoEl.innerHTML = '<span class="px-2 py-1 text-xs bg-red-100 rounded">Pendiente lectura</span>';
+            pintarPendiente(estadoEl);
+            crearCheckSinConsumo(input, accionEl);
         } else {
-            estadoEl.innerHTML = '<span class="px-2 py-1 text-xs bg-yellow-100 rounded">Lista</span>';
+            pintarLista(estadoEl);
+            accionEl.innerHTML = "-";
         }
     }
 
@@ -253,7 +328,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     });
+
+    activarChecks();
 });
 </script>
-
 {% endblock %}

@@ -40,6 +40,7 @@
                     <th class="p-3 text-left">Sector</th>
                     <th class="p-3 text-left">Ruta</th>
                     <th class="p-3 text-left">Estado</th>
+                    <th class="p-3 text-left">Estado cuenta</th>
                 </tr>
             </thead>
             <tbody>
@@ -56,6 +57,21 @@
                             <span class="px-2 py-1 text-xs bg-green-100 rounded">Activo</span>
                         {% else %}
                             <span class="px-2 py-1 text-xs bg-red-100 rounded">Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-3">
+                        {% if abonado.estado_cuenta == "AL_DIA" %}
+                            <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                                Al día
+                            </span>
+                        {% elif abonado.estado_cuenta == "CON_DEUDA" %}
+                            <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded">
+                                Con deuda
+                            </span>
+                        {% else %}
+                            <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
+                                Moroso
+                            </span>
                         {% endif %}
                     </td>
                 </tr>

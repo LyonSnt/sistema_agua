@@ -5,7 +5,7 @@
 
 {% block contenido %}
 
-<div class="mb-4 no-print">
+<div class="mb-4 no-print space-x-1">
     <button onclick="window.print()"
             class="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-700">
         Imprimir
@@ -19,9 +19,28 @@
     {% endif %}
 
     <a href="{% url 'facturacion:pendientes' %}"
-       class="px-4 py-2 bg-gray-200 rounded-lg">
+       {% comment %} class="px-4 py-2 bg-gray-200 rounded-lg"> {% endcomment %}
+       class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600">
         Volver
     </a>
+
+    <a href="{% url 'facturacion:pdf' factura.id %}"
+    target="_blank"
+    class="px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600">
+        Ver PDF
+    </a>
+
+    {% if factura.pagos.all %}
+        {% for pago in factura.pagos.all %}
+            {% if not pago.anulado %}
+                <a href="{% url 'pagos:comprobante_pdf' pago.id %}"
+                target="_blank"
+                class="px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600">
+                    Comprobante ${{ pago.valor_pagado }}
+                </a>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
 </div>
 
 <div class="bg-white rounded-xl shadow p-8 max-w-4xl">

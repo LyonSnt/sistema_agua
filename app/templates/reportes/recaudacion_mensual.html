@@ -1,0 +1,134 @@
+{% extends "base/base.html" %}
+
+{% block titulo %}Recaudación mensual{% endblock %}
+{% block encabezado %}Recaudación mensual{% endblock %}
+
+{% block contenido %}
+
+<div class="bg-white rounded-xl shadow p-5 mb-6">
+    <form method="get" class="flex flex-col md:flex-row gap-3 items-end">
+        <div>
+            <label class="block text-sm font-medium mb-1">Año</label>
+            <input type="number" name="anio" value="{{ anio }}"
+                   class="px-4 py-2 border rounded-lg">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium mb-1">Mes</label>
+            <input type="number" name="mes" min="1" max="12" value="{{ mes }}"
+                   class="px-4 py-2 border rounded-lg">
+        </div>
+
+        <button class="px-4 py-2 bg-slate-800 text-white rounded-lg">
+            Consultar
+        </button>
+        <a href="{% url 'reportes:recaudacion_mensual_excel' %}?anio={{ anio }}&mes={{ mes }}"
+        class="px-4 py-2 bg-green-700 text-white rounded-lg">
+            Exportar Excel
+        </a>
+    </form>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-6">
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Pagos</p>
+        <h3 class="text-3xl font-bold mt-2">{{ total_pagos }}</h3>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Total recaudado</p>
+        <h3 class="text-2xl font-bold mt-2">${{ total_recaudado|floatformat:2 }}</h3>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Agua</p>
+        <h3 class="text-2xl font-bold mt-2">${{ total_agua|floatformat:2 }}</h3>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Alcantarillado</p>
+        <h3 class="text-2xl font-bold mt-2">${{ total_alcantarillado|floatformat:2 }}</h3>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Multas</p>
+        <h3 class="text-2xl font-bold mt-2">${{ total_multas|floatformat:2 }}</h3>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Otros</p>
+        <h3 class="text-2xl font-bold mt-2">${{ total_otros|floatformat:2 }}</h3>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl shadow p-5 mb-6">
+    <h3 class="text-lg font-semibold mb-5">Resumen por día</h3>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-100 text-slate-700">
+                <tr>
+                    <th class="p-3 text-left">Fecha</th>
+                    <th class="p-3 text-right">Pagos</th>
+                    <th class="p-3 text-right">Total</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in resumen_diario %}
+                <tr class="border-b hover:bg-slate-50">
+                    <td class="p-3">{{ item.dia }}</td>
+                    <td class="p-3 text-right">{{ item.cantidad }}</td>
+                    <td class="p-3 text-right font-semibold">${{ item.total|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="p-5 text-center text-gray-500">
+                        No existen pagos en este mes.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl shadow p-5">
+    <h3 class="text-lg font-semibold mb-5">Detalle de pagos del mes</h3>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-100 text-slate-700">
+                <tr>
+                    <th class="p-3 text-left">Fecha</th>
+                    <th class="p-3 text-left">Factura</th>
+                    <th class="p-3 text-left">Abonado</th>
+                    <th class="p-3 text-left">Método</th>
+                    <th class="p-3 text-left">Cajero</th>
+                    <th class="p-3 text-right">Valor</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for pago in pagos %}
+                <tr class="border-b hover:bg-slate-50">
+                    <td class="p-3">{{ pago.fecha_pago|date:"Y-m-d H:i" }}</td>
+                    <td class="p-3">{{ pago.factura.numero }}</td>
+                    <td class="p-3">{{ pago.factura.abonado }}</td>
+                    <td class="p-3">{{ pago.metodo_pago }}</td>
+                    <td class="p-3">{{ pago.creado_por|default:"-" }}</td>
+                    <td class="p-3 text-right font-semibold">${{ pago.valor_pagado|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="p-5 text-center text-gray-500">
+                        No existen pagos registrados.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

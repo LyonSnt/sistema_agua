@@ -36,6 +36,7 @@ def generar_lecturas_periodo(periodo):
                 defaults={
                     "lectura_anterior": lectura_anterior,
                     "lectura_actual": lectura_anterior,
+                    "lectura_registrada": False,
                     "observacion": "",
                 }
             )

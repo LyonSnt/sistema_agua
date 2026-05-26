@@ -80,6 +80,24 @@
                     Administración
                 </a>
             {% endif %}
+            {% if es_admin or es_supervisor or es_cajero or es_lecturista %}                
+                <a href="/lecturas/importar-excel/"
+                class="block px-4 py-2 rounded hover:bg-slate-800">
+                    Importar lecturas
+                </a>
+
+            {% endif %}
+
+            <a href="/reportes/recaudacion-diaria/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                Recaudación diaria
+            </a>
+            <a href="/reportes/recaudacion-mensual/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                Recaudación mensual
+            </a>
+
+            <a href="/reportes/cartera-vencida/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                Cartera vencida
+            </a>
         </nav>
     </aside>
 

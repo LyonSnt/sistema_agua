@@ -29,8 +29,9 @@ SECRET_KEY = 'django-insecure-2)y42fv=g!cdqp1yi@nri&au2@9a*l5238q1=&8(lw8t)h8dk)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+#ALLOWED_HOSTS = []
+#ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -52,6 +53,9 @@ INSTALLED_APPS = [
     'pagos',
     'reportes',
     'auditoria',
+
+    'django_extensions',
+    'configuracion_institucional',
 ]
 
 MIDDLEWARE = [

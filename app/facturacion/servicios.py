@@ -84,9 +84,9 @@ def generar_factura_desde_lectura(lectura, usuario=None):
     if hasattr(lectura, "factura"):
         return lectura.factura
     
-    if lectura.lectura_actual == lectura.lectura_anterior:
+    if not lectura.lectura_registrada:
         raise ValueError(
-            "No se puede generar factura porque la lectura actual es igual a la lectura anterior."
+            "No se puede generar factura porque la lectura aún no ha sido registrada."
         )
 
     tarifa = TarifaAgua.objects.filter(

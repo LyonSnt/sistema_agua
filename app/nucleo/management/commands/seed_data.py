@@ -140,6 +140,7 @@ class Command(BaseCommand):
                 defaults={
                     "lectura_anterior": Decimal("0"),
                     "lectura_actual": lectura_actual,
+                    "lectura_registrada": True,
                     "observacion": "",
                 }
             )

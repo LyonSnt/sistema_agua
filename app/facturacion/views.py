@@ -11,6 +11,11 @@ from django.utils import timezone
 from usuarios.decoradores import rol_requerido
 from auditoria.utils import registrar_auditoria
 
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+from weasyprint import HTML
+from configuracion_institucional.utils import obtener_configuracion
+
 
 @login_required
 def facturas_pendientes(request):
@@ -81,7 +86,7 @@ def generar_facturacion_periodo(request):
                     continue
 
                 # Lectura pendiente
-                if lectura.lectura_actual == lectura.lectura_anterior:
+                if not lectura.lectura_registrada:
                     pendientes += 1
                     continue
 
@@ -210,3 +215,35 @@ def anular_factura(request, factura_id):
     return render(request, "facturacion/anular.html", {
         "factura": factura,
     })
+
+
+
+@login_required
+def factura_pdf(request, factura_id):
+    factura = get_object_or_404(
+        Factura.objects.select_related(
+            "abonado",
+            "periodo",
+            "lectura",
+            "lectura__medidor",
+        ).prefetch_related("detalles", "pagos"),
+        id=factura_id,
+        activo=True,
+    )
+
+    html_string = render_to_string(
+        "facturacion/pdf_factura.html",
+       {
+            "factura": factura,
+            "configuracion": obtener_configuracion(),
+        }
+    )
+
+    pdf = HTML(string=html_string).write_pdf()
+
+    response = HttpResponse(pdf, content_type="application/pdf")
+    response["Content-Disposition"] = (
+        f'inline; filename="factura_{factura.numero}.pdf"'
+    )
+
+    return response
