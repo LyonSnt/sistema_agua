@@ -19,6 +19,7 @@ from django.db.models import Count
 from django.db.models import Sum
 from django.db.models import Count
 from facturacion.models import Factura
+from multas.models import Multa
 
 
 @rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
@@ -178,6 +179,16 @@ def recaudacion_diaria(request):
         anulado=False,
     )
 
+    multas_cobradas = Multa.objects.select_related("abonado").filter(
+        fecha_pago__date=fecha,
+        activo=True,
+        estado="PAGADA",
+    )
+
+    total_multas_administrativas = sum(
+        multa.valor for multa in multas_cobradas
+    )
+
     total_recaudado = Decimal("0.00")
     total_agua = Decimal("0.00")
     total_alcantarillado = Decimal("0.00")
@@ -206,6 +217,8 @@ def recaudacion_diaria(request):
             else:
                 total_otros += valor
 
+    total_general = total_recaudado + total_multas_administrativas
+
     return render(request, "reportes/recaudacion_diaria.html", {
         "fecha": fecha,
         "pagos": pagos,
@@ -215,6 +228,9 @@ def recaudacion_diaria(request):
         "total_alcantarillado": total_alcantarillado,
         "total_multas": total_multas,
         "total_otros": total_otros,
+        "multas_cobradas": multas_cobradas,
+        "total_multas_administrativas": total_multas_administrativas,
+        "total_general": total_general,
     })
 
 

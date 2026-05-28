@@ -1,0 +1,133 @@
+{% extends "base/base.html" %}
+
+{% block titulo %}Reporte de multas{% endblock %}
+{% block encabezado %}Reporte de multas{% endblock %}
+
+{% block contenido %}
+
+<div class="bg-white rounded-xl shadow p-5 mb-6">
+    <form method="get" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+        <div>
+            <label class="block text-sm font-medium mb-1">Estado</label>
+            <select name="estado" class="w-full px-4 py-2 border rounded-lg">
+                <option value="">Todos</option>
+                {% for valor, texto in estados %}
+                    <option value="{{ valor }}" {% if estado == valor %}selected{% endif %}>
+                        {{ texto }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium mb-1">Tipo</label>
+            <select name="tipo" class="w-full px-4 py-2 border rounded-lg">
+                <option value="">Todos</option>
+                {% for valor, texto in tipos %}
+                    <option value="{{ valor }}" {% if tipo == valor %}selected{% endif %}>
+                        {{ texto }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium mb-1">Desde</label>
+            <input type="date" name="fecha_inicio" value="{{ fecha_inicio }}"
+                   class="w-full px-4 py-2 border rounded-lg">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium mb-1">Hasta</label>
+            <input type="date" name="fecha_fin" value="{{ fecha_fin }}"
+                   class="w-full px-4 py-2 border rounded-lg">
+        </div>
+
+        <button class="px-4 py-2 bg-slate-800 text-white rounded-lg">
+            Consultar
+        </button>
+        <a href="{% url 'multas:reporte_excel' %}?estado={{ estado }}&tipo={{ tipo }}&fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}"
+        class="px-4 py-2 bg-green-700 text-white rounded-lg">
+            Exportar Excel
+        </a>
+    </form>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Total multas</p>
+        <h3 class="text-3xl font-bold mt-2">{{ total_multas }}</h3>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Pendientes</p>
+        <h3 class="text-3xl font-bold mt-2 text-red-700">{{ pendientes }}</h3>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Pagadas</p>
+        <h3 class="text-3xl font-bold mt-2 text-green-700">{{ pagadas }}</h3>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Anuladas</p>
+        <h3 class="text-3xl font-bold mt-2 text-gray-700">{{ anuladas }}</h3>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Total recaudado</p>
+        <h3 class="text-3xl font-bold mt-2 text-blue-700">
+            ${{ total_recaudado|floatformat:2 }}
+        </h3>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl shadow p-5">
+    <h3 class="text-lg font-semibold mb-5">Detalle de multas</h3>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-100 text-slate-700">
+                <tr>
+                    <th class="p-3 text-left">Abonado</th>
+                    <th class="p-3 text-left">Tipo</th>
+                    <th class="p-3 text-left">Fecha</th>
+                    <th class="p-3 text-left">Motivo</th>
+                    <th class="p-3 text-right">Valor</th>
+                    <th class="p-3 text-center">Estado</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for multa in multas %}
+                <tr class="border-b hover:bg-slate-50">
+                    <td class="p-3">{{ multa.abonado }}</td>
+                    <td class="p-3">{{ multa.get_tipo_display }}</td>
+                    <td class="p-3">{{ multa.fecha }}</td>
+                    <td class="p-3">{{ multa.motivo }}</td>
+                    <td class="p-3 text-right font-semibold">
+                        ${{ multa.valor|floatformat:2 }}
+                    </td>
+                    <td class="p-3 text-center">
+                        {% if multa.estado == "PAGADA" %}
+                            <span class="px-2 py-1 text-xs bg-green-100 rounded">Pagada</span>
+                        {% elif multa.estado == "ANULADA" %}
+                            <span class="px-2 py-1 text-xs bg-gray-100 rounded">Anulada</span>
+                        {% else %}
+                            <span class="px-2 py-1 text-xs bg-red-100 rounded">Pendiente</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="p-5 text-center text-gray-500">
+                        No existen multas con los filtros seleccionados.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

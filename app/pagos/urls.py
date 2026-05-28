@@ -16,4 +16,15 @@ urlpatterns = [
         views.comprobante_pago_pdf,
         name="comprobante_pdf"
     ),
+    path("exitoso/<int:pago_id>/", views.pago_exitoso, name="pago_exitoso"),
+    path(
+        "comprobante/<int:pago_id>/imprimir/",
+        views.comprobante_pago_imprimir,
+        name="comprobante_imprimir"
+    ),
+    path(
+        "ticket/<int:pago_id>/",
+        views.ticket_pago,
+        name="ticket_pago"
+    ),
 ]

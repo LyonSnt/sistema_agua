@@ -9,4 +9,9 @@ urlpatterns = [
     path("generar/", views.generar_facturacion_periodo, name="generar"),
     path("factura/<int:factura_id>/anular/", views.anular_factura, name="anular"),
     path("factura/<int:factura_id>/pdf/", views.factura_pdf, name="pdf"),
+    path(
+        "factura/<int:factura_id>/agregar-rubro/",
+        views.agregar_rubro_factura,
+        name="agregar_rubro",
+    ),
 ]

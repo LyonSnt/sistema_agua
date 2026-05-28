@@ -1,0 +1,72 @@
+{% extends "base/base.html" %}
+
+{% block titulo %}Cobrar multa{% endblock %}
+{% block encabezado %}Cobrar multa{% endblock %}
+
+{% block contenido %}
+
+<div class="bg-white rounded-xl shadow p-6 max-w-2xl">
+
+    <div class="mb-6">
+        <p class="text-sm text-gray-500">Abonado</p>
+        <h3 class="text-xl font-bold">{{ multa.abonado }}</h3>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div>
+            <p class="text-sm text-gray-500">Tipo</p>
+            <p class="font-semibold">{{ multa.get_tipo_display }}</p>
+        </div>
+
+        <div>
+            <p class="text-sm text-gray-500">Fecha</p>
+            <p class="font-semibold">{{ multa.fecha }}</p>
+        </div>
+
+        <div>
+            <p class="text-sm text-gray-500">Valor</p>
+            <p class="text-2xl font-bold text-red-700">${{ multa.valor|floatformat:2 }}</p>
+        </div>
+
+        <div>
+            <p class="text-sm text-gray-500">Estado</p>
+            <p class="font-semibold">{{ multa.estado }}</p>
+        </div>
+    </div>
+
+    <div class="mb-6">
+        <p class="text-sm text-gray-500">Motivo</p>
+        <p>{{ multa.motivo }}</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Método de pago</label>
+            <select name="metodo_pago" class="w-full px-4 py-2 border rounded-lg" required>
+                <option value="EFECTIVO">Efectivo</option>
+                <option value="TRANSFERENCIA">Transferencia</option>
+                <option value="OTRO">Otro</option>
+            </select>
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-sm font-medium mb-1">Referencia</label>
+            <input type="text" name="referencia" class="w-full px-4 py-2 border rounded-lg">
+        </div>
+
+        <div class="flex gap-3">
+            <button class="px-5 py-2 bg-green-700 text-white rounded-lg">
+                Confirmar cobro
+            </button>
+
+            <a href="{% url 'multas:lista' %}" class="px-5 py-2 bg-gray-200 rounded-lg">
+                Cancelar
+            </a>
+        </div>
+    </form>
+
+</div>
+
+{% endblock %}

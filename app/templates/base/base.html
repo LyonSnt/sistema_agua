@@ -6,6 +6,22 @@
     <title>{% block titulo %}Sistema de Agua{% endblock %}</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+@media print {
+    aside,
+    nav,
+    .no-print,
+    button,
+    .btn,
+    a {
+        display: none !important;
+    }
+
+    body {
+        background: white !important;
+    }
+}
+</style>
 </head>
 
 <body class="bg-gray-100 text-gray-800">
@@ -98,6 +114,18 @@
             <a href="/reportes/cartera-vencida/" class="block px-4 py-2 rounded hover:bg-slate-800">
                 Cartera vencida
             </a>
+
+            {% if es_admin or es_supervisor or es_cajero %}
+            <a href="/multas/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                Multas
+            </a>
+            {% endif %}
+
+            {% if es_admin or es_supervisor or es_cajero or es_consulta %}
+            <a href="/multas/reporte/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                Reporte de multas
+            </a>
+            {% endif %}
         </nav>
     </aside>
 

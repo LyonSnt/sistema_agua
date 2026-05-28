@@ -1,0 +1,56 @@
+{% extends "base/base.html" %}
+
+{% block titulo %}Anular multa{% endblock %}
+{% block encabezado %}Anular multa{% endblock %}
+
+{% block contenido %}
+
+<div class="bg-white rounded-xl shadow p-6 max-w-2xl">
+
+    <h3 class="text-lg font-semibold mb-5">
+        Confirmar anulación de multa
+    </h3>
+
+    <div class="mb-6 space-y-2 text-sm">
+        <p><strong>Abonado:</strong> {{ multa.abonado }}</p>
+        <p><strong>Tipo:</strong> {{ multa.get_tipo_display }}</p>
+        <p><strong>Fecha:</strong> {{ multa.fecha }}</p>
+        <p><strong>Valor:</strong> ${{ multa.valor|floatformat:2 }}</p>
+        <p><strong>Estado:</strong> {{ multa.estado }}</p>
+        <p><strong>Motivo:</strong> {{ multa.motivo }}</p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-5">
+            <label class="block text-sm font-medium mb-1">
+                Motivo de anulación
+            </label>
+
+            <textarea
+                name="motivo"
+                rows="4"
+                required
+                class="w-full px-4 py-2 border rounded-lg"
+            ></textarea>
+        </div>
+
+        <div class="flex gap-3">
+            <button
+                type="submit"
+                class="px-5 py-2 bg-red-700 text-white rounded-lg"
+                onclick="return confirm('¿Está seguro de anular esta multa?');">
+                Anular multa
+            </button>
+
+            <a href="{% url 'multas:lista' %}"
+               class="px-5 py-2 bg-gray-200 rounded-lg">
+                Cancelar
+            </a>
+        </div>
+    </form>
+
+</div>
+
+{% endblock %}

@@ -14,6 +14,7 @@ from auditoria.utils import registrar_auditoria
 from django.template.loader import render_to_string
 from django.http import HttpResponse
 from weasyprint import HTML
+from django.urls import reverse
 
 
 @rol_requerido("Administrador", "Cajero", "Supervisor")
@@ -49,8 +50,15 @@ def cobrar_factura(request, factura_id):
             objeto=pago,
         )
 
+        # messages.success(request, "Pago registrado correctamente.")
+        # return redirect("facturacion:pendientes")
         messages.success(request, "Pago registrado correctamente.")
-        return redirect("facturacion:pendientes")
+        return redirect("pagos:pago_exitoso", pago_id=pago.id)
+
+        # messages.success(request, "Pago registrado correctamente.")
+
+        # url = reverse("facturacion:detalle", kwargs={"factura_id": factura.id})
+        # return redirect(f"{url}?imprimir=1")
 
     return render(request, "pagos/cobrar.html", {
         "factura": factura,
@@ -164,3 +172,55 @@ def comprobante_pago_pdf(request, pago_id):
     )
 
     return response
+
+
+@rol_requerido("Administrador", "Supervisor", "Cajero")
+def pago_exitoso(request, pago_id):
+    pago = get_object_or_404(
+        Pago.objects.select_related("factura", "factura__abonado"),
+        id=pago_id,
+        activo=True,
+    )
+
+    return render(request, "pagos/exitoso.html", {
+        "pago": pago,
+        "factura": pago.factura,
+    })
+
+
+@rol_requerido("Administrador", "Supervisor", "Cajero")
+def comprobante_pago_imprimir(request, pago_id):
+    pago = get_object_or_404(
+        Pago.objects.select_related(
+            "factura",
+            "factura__abonado",
+            "creado_por",
+        ),
+        id=pago_id,
+        activo=True,
+    )
+
+    return render(request, "pagos/imprimir_comprobante.html", {
+        "pago": pago,
+        "factura": pago.factura,
+    })
+
+
+@rol_requerido("Administrador", "Supervisor", "Cajero")
+def ticket_pago(request, pago_id):
+    pago = get_object_or_404(
+        Pago.objects.select_related(
+            "factura",
+            "factura__abonado",
+            "creado_por",
+        ).prefetch_related(
+            "factura__detalles"
+        ),
+        id=pago_id,
+        activo=True,
+    )
+
+    return render(request, "pagos/ticket_pago.html", {
+        "pago": pago,
+        "factura": pago.factura,
+    })

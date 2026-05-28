@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ticket de pago</title>
+
+    <style>
+        @page {
+            size: 80mm auto;
+            margin: 4mm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            width: 72mm;
+            margin: 0 auto;
+            color: #000;
+        }
+
+        .center { text-align: center; }
+        .right { text-align: right; }
+        .bold { font-weight: bold; }
+        .line {
+            border-top: 1px dashed #000;
+            margin: 6px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        td {
+            padding: 2px 0;
+            vertical-align: top;
+        }
+
+        .total {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .no-print {
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        @media print {
+            .no-print {
+                display: none;
+            }
+
+            body {
+                width: 72mm;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="no-print">
+    <button onclick="window.print()">Imprimir ticket</button>
+</div>
+
+<div class="center bold">
+    SISTEMA DE AGUA POTABLE
+</div>
+<div class="center">
+    COMPROBANTE DE PAGO
+</div>
+
+<div class="line"></div>
+
+<table>
+    <tr>
+        <td>Factura:</td>
+        <td class="right bold">{{ factura.numero }}</td>
+    </tr>
+    <tr>
+        <td>Fecha:</td>
+        <td class="right">{{ pago.fecha_pago|date:"d/m/Y H:i" }}</td>
+    </tr>
+    <tr>
+        <td>Cajero:</td>
+        <td class="right">{{ pago.creado_por|default:"-" }}</td>
+    </tr>
+</table>
+
+<div class="line"></div>
+
+<div>
+    <span class="bold">Abonado:</span><br>
+    {{ factura.abonado }}
+</div>
+
+<div>
+    <span class="bold">Cédula/RUC:</span><br>
+    {{ factura.abonado.cedula_ruc }}
+</div>
+
+<div>
+    <span class="bold">Período:</span><br>
+    {{ factura.periodo }}
+</div>
+
+<div class="line"></div>
+
+<table>
+    {% for detalle in factura.detalles.all %}
+    <tr>
+        <td>{{ detalle.descripcion }}</td>
+        <td class="right">${{ detalle.valor_total|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<div class="line"></div>
+
+<table>
+    <tr>
+        <td>Total factura:</td>
+        <td class="right">${{ factura.total|floatformat:2 }}</td>
+    </tr>
+    <tr>
+        <td>Valor pagado:</td>
+        <td class="right">${{ pago.valor_pagado|floatformat:2 }}</td>
+    </tr>
+    <tr>
+        <td>Saldo:</td>
+        <td class="right">${{ factura.saldo_pendiente|floatformat:2 }}</td>
+    </tr>
+    <tr class="total">
+        <td>PAGADO:</td>
+        <td class="right">${{ pago.valor_pagado|floatformat:2 }}</td>
+    </tr>
+</table>
+
+<div class="line"></div>
+
+<div class="center">
+    Gracias por su pago
+</div>
+
+<script>
+    window.onload = function () {
+        window.print();
+    };
+</script>
+
+</body>
+</html>

@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
-from .models import Factura
+from facturacion.models import Factura, FacturaDetalle
 from django.shortcuts import get_object_or_404
 
 from django.contrib import messages
@@ -15,6 +15,9 @@ from django.template.loader import render_to_string
 from django.http import HttpResponse
 from weasyprint import HTML
 from configuracion_institucional.utils import obtener_configuracion
+from tarifas.models import Rubro
+from decimal import Decimal
+from django.db.models import Sum
 
 
 @login_required
@@ -247,3 +250,109 @@ def factura_pdf(request, factura_id):
     )
 
     return response
+
+
+@rol_requerido("Administrador", "Supervisor", "Cajero")
+def agregar_rubro_factura(request, factura_id):
+
+    factura = get_object_or_404(
+        Factura.objects.prefetch_related("detalles"),
+        id=factura_id,
+        activo=True
+    )
+
+    if factura.estado != "PENDIENTE":
+        messages.error(
+            request,
+            "Solo se pueden agregar rubros a facturas pendientes."
+        )
+
+        return redirect(
+            "facturacion:detalle",
+            factura_id=factura.id
+        )
+
+    rubros = Rubro.objects.filter(
+        activo=True,
+        vigente=True,
+        aplica_automaticamente=False
+    ).order_by("nombre")
+
+    if request.method == "POST":
+
+        rubro_id = request.POST.get("rubro")
+
+        rubro = get_object_or_404(
+            Rubro,
+            id=rubro_id,
+            activo=True
+        )
+
+        valor = Decimal(rubro.valor)
+
+        ya_existe = factura.detalles.filter(
+            descripcion=rubro.nombre,
+            tipo=rubro.tipo,
+        ).exists()
+
+        if ya_existe:
+            messages.error(
+                request,
+                (
+                    f"El rubro '{rubro.nombre}' ya se encuentra "
+                    f"registrado en la factura {factura.numero}. "
+                    f"No es posible agregarlo nuevamente."
+                )
+            )
+            return redirect("facturacion:agregar_rubro", factura_id=factura.id)
+
+        FacturaDetalle.objects.create(
+            factura=factura,
+            descripcion=rubro.nombre,
+            cantidad=1,
+            valor_unitario=valor,
+            tipo=rubro.tipo,
+            creado_por=request.user,
+            actualizado_por=request.user,
+        )
+
+        total = factura.detalles.aggregate(
+            total=Sum("valor_total")
+        )["total"] or 0
+
+        factura.subtotal = total
+        factura.total = total
+        factura.saldo_pendiente = total
+
+        factura.save()
+
+        registrar_auditoria(
+            request,
+            accion="AGREGAR_RUBRO",
+            modulo="Facturación",
+            descripcion=(
+                f"Agregó rubro manual "
+                f"{rubro.nombre} "
+                f"a factura {factura.numero}"
+            ),
+            objeto=factura,
+        )
+
+        messages.success(
+            request,
+            "Rubro agregado correctamente."
+        )
+
+        return redirect(
+            "facturacion:detalle",
+            factura_id=factura.id
+        )
+
+    return render(
+        request,
+        "facturacion/agregar_rubro.html",
+        {
+            "factura": factura,
+            "rubros": rubros,
+        }
+    )

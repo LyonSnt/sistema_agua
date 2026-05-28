@@ -42,4 +42,5 @@ urlpatterns = [
         auth_views.LogoutView.as_view(),
         name="logout"
     ),
+    path("multas/", include("multas.urls")),
 ]

@@ -1,0 +1,52 @@
+{% extends "base/base.html" %}
+
+{% block titulo %}Pago registrado{% endblock %}
+{% block encabezado %}Pago registrado{% endblock %}
+
+{% block contenido %}
+
+<div class="bg-white rounded-xl shadow p-6 max-w-2xl">
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="bg-green-100 text-green-700 px-4 py-3 rounded-lg mb-4">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <h3 class="text-xl font-bold mb-4">
+        Pago registrado correctamente
+    </h3>
+
+    <p><strong>Factura:</strong> {{ factura.numero }}</p>
+    <p><strong>Abonado:</strong> {{ factura.abonado }}</p>
+    <p><strong>Valor pagado:</strong> ${{ pago.valor_pagado|floatformat:2 }}</p>
+    <p><strong>Saldo pendiente:</strong> ${{ factura.saldo_pendiente|floatformat:2 }}</p>
+
+    <div class="flex flex-wrap gap-3 mt-6">
+        <a href="{% url 'pagos:comprobante_imprimir' pago.id %}"
+        target="_blank"
+        class="px-5 py-2 bg-blue-700 text-white rounded-lg">
+            Imprimir comprobante
+        </a>
+
+        <a href="{% url 'facturacion:detalle' factura.id %}"
+           class="px-5 py-2 bg-slate-800 text-white rounded-lg">
+            Ver factura
+        </a>
+
+        <a href="{% url 'facturacion:pendientes' %}"
+           class="px-5 py-2 bg-gray-200 rounded-lg">
+            Volver a pendientes
+        </a>
+        <a href="{% url 'pagos:ticket_pago' pago.id %}"
+        target="_blank"
+        class="px-5 py-2 bg-green-700 text-white rounded-lg">
+            Imprimir ticket
+        </a>
+    </div>
+
+</div>
+
+{% endblock %}

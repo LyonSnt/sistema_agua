@@ -1,0 +1,110 @@
+{% extends "base/base.html" %}
+
+{% block titulo %}Multas{% endblock %}
+{% block encabezado %}Multas{% endblock %}
+
+{% block contenido %}
+
+<div class="bg-white rounded-xl shadow p-5 mb-6">
+    <div class="flex justify-between items-center mb-5">
+        <h3 class="text-lg font-semibold">Listado de multas</h3>
+
+        <a href="{% url 'multas:crear' %}"
+           class="px-4 py-2 bg-slate-900 text-white rounded-lg">
+            Nueva multa
+        </a>
+    </div>
+
+    <form method="get" class="flex gap-2">
+        <input
+            type="text"
+            name="q"
+            value="{{ busqueda }}"
+            placeholder="Buscar por abonado, cédula o motivo..."
+            class="w-full md:w-1/2 px-4 py-2 border rounded-lg"
+        >
+
+        <button class="px-4 py-2 bg-slate-800 text-white rounded-lg">
+            Buscar
+        </button>
+    </form>
+</div>
+
+<div class="bg-white rounded-xl shadow p-5">
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-100 text-slate-700">
+                <tr>
+                    <th class="p-3 text-left">Abonado</th>
+                    <th class="p-3 text-left">Tipo</th>
+                    <th class="p-3 text-left">Fecha</th>
+                    <th class="p-3 text-right">Valor</th>
+                    <th class="p-3 text-center">Estado</th>
+                    <th class="p-3 text-center">Acción</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for multa in multas %}
+                <tr class="border-b hover:bg-slate-50">
+                    <td class="p-3">{{ multa.abonado }}</td>
+                    <td class="p-3">{{ multa.get_tipo_display }}</td>
+                    <td class="p-3">{{ multa.fecha }}</td>
+                    <td class="p-3 text-right font-semibold">${{ multa.valor|floatformat:2 }}</td>
+                    <td class="p-3 text-center">
+                        {% if multa.estado == "PAGADA" %}
+                            <span class="px-2 py-1 text-xs bg-green-100 rounded">Pagada</span>
+                        {% elif multa.estado == "ANULADA" %}
+                            <span class="px-2 py-1 text-xs bg-gray-100 rounded">Anulada</span>
+                        {% else %}
+                            <span class="px-2 py-1 text-xs bg-red-100 rounded">Pendiente</span>
+                        {% endif %}
+                    </td>
+                    <td class="p-3 text-center">
+                        <div class="flex flex-wrap gap-2 justify-center">
+
+                            {% if multa.estado == "PENDIENTE" %}
+
+                                <a href="{% url 'multas:cobrar' multa.id %}"
+                                class="px-3 py-1 bg-green-700 text-white rounded">
+                                    Cobrar
+                                </a>
+
+                                <a href="{% url 'multas:anular' multa.id %}"
+                                class="px-3 py-1 bg-red-700 text-white rounded">
+                                    Anular
+                                </a>
+
+                            {% elif multa.estado == "PAGADA" %}
+
+                                <a href="{% url 'multas:comprobante_pdf' multa.id %}"
+                                target="_blank"
+                                class="px-3 py-1 bg-blue-700 text-white rounded">
+                                    Comprobante
+                                </a>
+
+                                <a href="{% url 'multas:anular' multa.id %}"
+                                class="px-3 py-1 bg-red-700 text-white rounded">
+                                    Anular
+                                </a>
+
+                            {% else %}
+                                -
+                            {% endif %}
+
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="p-5 text-center text-gray-500">
+                        No existen multas registradas.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

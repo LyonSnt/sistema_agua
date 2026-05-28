@@ -1,0 +1,117 @@
+{% extends "base/base.html" %}
+
+{% block titulo %}Nueva multa{% endblock %}
+{% block encabezado %}Nueva multa{% endblock %}
+
+{% block contenido %}
+
+<div class="bg-white rounded-xl shadow p-6 max-w-3xl">
+
+    <form method="post">
+        {% csrf_token %}
+
+  <label class="block text-sm font-medium mb-1">Abonado</label>
+
+<input
+    type="text"
+    id="buscar-abonado"
+    placeholder="Buscar por nombre o cédula..."
+    class="w-full px-4 py-2 border rounded-lg mb-2"
+    autocomplete="off"
+    required
+>
+<input type="hidden" name="abonado" id="abonado-id">
+
+<div
+    id="resultados-abonados"
+    class="hidden border rounded-lg bg-white max-h-60 overflow-y-auto mb-4"
+>
+    {% for abonado in abonados %}
+        <div
+            class="abonado-opcion px-4 py-2 hover:bg-slate-100 cursor-pointer"
+            data-id="{{ abonado.id }}"
+            data-texto="{{ abonado }} {{ abonado.cedula_ruc }}"
+        >
+            {{ abonado }} - {{ abonado.cedula_ruc }}
+        </div>
+    {% endfor %}
+</div>
+
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Tipo de multa</label>
+            <select name="tipo" class="w-full px-4 py-2 border rounded-lg" required>
+                {% for valor, texto in tipos %}
+                    <option value="{{ valor }}">{{ texto }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Fecha</label>
+            <input type="date" name="fecha" value="{{ hoy }}" class="w-full px-4 py-2 border rounded-lg" required>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Valor</label>
+            <input type="number" step="0.01" min="0.01" name="valor" class="w-full px-4 py-2 border rounded-lg" required>
+        </div>
+
+        <div class="mb-6">
+            <label class="block text-sm font-medium mb-1">Motivo</label>
+            <textarea name="motivo" rows="4" class="w-full px-4 py-2 border rounded-lg" required></textarea>
+        </div>
+
+        <div class="flex gap-3">
+            <button class="px-5 py-2 bg-green-700 text-white rounded-lg">
+                Guardar multa
+            </button>
+
+            <a href="{% url 'multas:lista' %}" class="px-5 py-2 bg-gray-200 rounded-lg">
+                Cancelar
+            </a>
+        </div>
+    </form>
+
+    <script>
+const input = document.getElementById("buscar-abonado");
+const hidden = document.getElementById("abonado-id");
+const resultados = document.getElementById("resultados-abonados");
+const opciones = document.querySelectorAll(".abonado-opcion");
+
+input.addEventListener("input", function () {
+    const texto = this.value.toLowerCase().trim();
+    hidden.value = "";
+
+    if (!texto) {
+        resultados.classList.add("hidden");
+        return;
+    }
+
+    let encontrados = 0;
+
+    opciones.forEach(function (opcion) {
+        const contenido = opcion.dataset.texto.toLowerCase();
+
+        if (contenido.includes(texto)) {
+            opcion.classList.remove("hidden");
+            encontrados++;
+        } else {
+            opcion.classList.add("hidden");
+        }
+    });
+
+    resultados.classList.toggle("hidden", encontrados === 0);
+});
+
+opciones.forEach(function (opcion) {
+    opcion.addEventListener("click", function () {
+        input.value = this.textContent.trim();
+        hidden.value = this.dataset.id;
+        resultados.classList.add("hidden");
+    });
+});
+</script>
+
+</div>
+
+{% endblock %}

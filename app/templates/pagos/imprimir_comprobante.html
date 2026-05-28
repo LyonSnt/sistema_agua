@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Comprobante de pago</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            color: #111827;
+        }
+
+        .contenedor {
+            width: 760px;
+            margin: 30px auto;
+            border: 1px solid #e5e7eb;
+            padding: 25px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 2px solid #111827;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+
+        .titulo {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .subtitulo {
+            color: #6b7280;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .box {
+            border: 1px solid #e5e7eb;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .valor {
+            font-size: 30px;
+            font-weight: bold;
+            text-align: right;
+            margin-top: 15px;
+        }
+
+        .firma {
+            margin-top: 70px;
+            width: 260px;
+            border-top: 1px solid #111827;
+            text-align: center;
+            padding-top: 6px;
+        }
+
+        .acciones {
+            text-align: center;
+            margin: 20px;
+        }
+
+        @media print {
+            .acciones {
+                display: none;
+            }
+
+            body {
+                margin: 0;
+            }
+
+            .contenedor {
+                margin: 0;
+                width: auto;
+                border: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="acciones">
+    <button onclick="window.print()">
+        Imprimir
+    </button>
+</div>
+
+<div class="contenedor">
+
+    <div class="header">
+        <div>
+            <div class="titulo">Sistema de Agua Potable</div>
+            <div class="subtitulo">Comprobante de pago</div>
+        </div>
+
+        <div style="text-align:right">
+            <strong>Factura:</strong> {{ factura.numero }}<br>
+            <strong>Fecha pago:</strong> {{ pago.fecha_pago }}<br>
+            <strong>Método:</strong> {{ pago.metodo_pago }}
+        </div>
+    </div>
+
+    <div class="grid">
+        <div>
+            <strong>Abonado:</strong><br>
+            {{ factura.abonado }}
+        </div>
+
+        <div>
+            <strong>Cédula/RUC:</strong><br>
+            {{ factura.abonado.cedula_ruc }}
+        </div>
+
+        <div>
+            <strong>Dirección:</strong><br>
+            {{ factura.abonado.direccion }}
+        </div>
+
+        <div>
+            <strong>Período:</strong><br>
+            {{ factura.periodo }}
+        </div>
+    </div>
+
+    <div class="box">
+        <strong>Detalle del pago</strong>
+
+        <table style="width:100%; margin-top:15px;">
+            <tr>
+                <td>Total factura:</td>
+                <td style="text-align:right;">${{ factura.total|floatformat:2 }}</td>
+            </tr>
+
+            <tr>
+                <td>Valor pagado:</td>
+                <td style="text-align:right;">${{ pago.valor_pagado|floatformat:2 }}</td>
+            </tr>
+
+            <tr>
+                <td>Saldo pendiente:</td>
+                <td style="text-align:right;">${{ factura.saldo_pendiente|floatformat:2 }}</td>
+            </tr>
+
+            <tr>
+                <td>Estado factura:</td>
+                <td style="text-align:right;">{{ factura.estado }}</td>
+            </tr>
+
+            <tr>
+                <td>Cajero:</td>
+                <td style="text-align:right;">{{ pago.creado_por|default:"-" }}</td>
+            </tr>
+
+            {% if pago.referencia %}
+            <tr>
+                <td>Referencia:</td>
+                <td style="text-align:right;">{{ pago.referencia }}</td>
+            </tr>
+            {% endif %}
+        </table>
+
+        <div class="valor">
+            PAGADO ${{ pago.valor_pagado|floatformat:2 }}
+        </div>
+    </div>
+
+    <div class="firma">
+        Recibí conforme
+    </div>
+
+</div>
+
+<script>
+    window.onload = function () {
+        window.print();
+    };
+</script>
+
+</body>
+</html>
