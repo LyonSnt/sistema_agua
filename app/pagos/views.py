@@ -31,6 +31,11 @@ def cobrar_factura(request, factura_id):
         referencia = request.POST.get("referencia", "")
         observacion = request.POST.get("observacion", "")
         valor_pagado = Decimal(request.POST.get("valor_pagado", "0"))
+        print("VALOR RECIBIDO:", valor_pagado)
+        messages.warning(
+            request,
+            f"Valor recibido: {valor_pagado}"
+        )
 
         pago = Pago.objects.create(
             factura=factura,
@@ -50,16 +55,9 @@ def cobrar_factura(request, factura_id):
             objeto=pago,
         )
 
-        # messages.success(request, "Pago registrado correctamente.")
-        # return redirect("facturacion:pendientes")
         messages.success(request, "Pago registrado correctamente.")
         return redirect("pagos:pago_exitoso", pago_id=pago.id)
-
-        # messages.success(request, "Pago registrado correctamente.")
-
-        # url = reverse("facturacion:detalle", kwargs={"factura_id": factura.id})
-        # return redirect(f"{url}?imprimir=1")
-
+    
     return render(request, "pagos/cobrar.html", {
         "factura": factura,
     })

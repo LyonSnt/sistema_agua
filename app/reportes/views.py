@@ -9,7 +9,6 @@ from facturacion.models import Factura
 from usuarios.decoradores import rol_requerido
 from decimal import Decimal
 from django.utils import timezone
-from pagos.models import Pago
 from django.http import HttpResponse
 from openpyxl import Workbook
 from datetime import date
@@ -20,6 +19,8 @@ from django.db.models import Sum
 from django.db.models import Count
 from facturacion.models import Factura
 from multas.models import Multa
+from django.db.models import Prefetch
+
 
 
 @rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
@@ -111,11 +112,17 @@ def cartera_pendiente(request):
 def facturas_pagadas(request):
     busqueda = request.GET.get("q", "")
 
+    pagos_validos = Pago.objects.filter(
+        anulado=False
+    ).select_related(
+        "creado_por"
+    ).order_by("-fecha_pago")
+
     facturas = Factura.objects.select_related(
         "abonado",
         "periodo",
     ).prefetch_related(
-        "pagos"
+        Prefetch("pagos", queryset=pagos_validos, to_attr="pagos_validos")
     ).filter(
         estado="PAGADA",
         activo=True,
@@ -560,4 +567,8 @@ def exportar_cartera_vencida_excel(request):
     wb.save(response)
 
     return response
+
+
+
+
 

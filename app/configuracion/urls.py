@@ -43,4 +43,5 @@ urlpatterns = [
         name="logout"
     ),
     path("multas/", include("multas.urls")),
+    path("servicios/", include("servicios.urls")),
 ]

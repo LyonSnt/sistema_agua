@@ -60,6 +60,16 @@ class Abonado(ModeloBase):
         on_delete=models.PROTECT,
         related_name="abonados"
     )
+    ESTADOS_SERVICIO = (
+        ("ACTIVO", "Activo"),
+        ("SUSPENDIDO", "Suspendido"),
+    )
+
+    estado_servicio = models.CharField(
+        max_length=20,
+        choices=ESTADOS_SERVICIO,
+        default="ACTIVO"
+    )
 
 
     class Meta:

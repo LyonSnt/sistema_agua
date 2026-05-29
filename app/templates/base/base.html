@@ -34,99 +34,170 @@
             <p class="text-sm text-slate-300">Facturación</p>
         </div>
 
-        <nav class="p-4 space-y-2">
-            <a href="/panel/" class="block px-4 py-2 rounded bg-slate-800">
-                Panel principal
-            </a>
+        {% with ruta=request.path %}
 
+        <nav class="p-4 space-y-4">
+
+            <!-- INICIO -->
+            <div>
+                <p class="px-4 mb-1 text-xs uppercase text-slate-400">Inicio</p>
+
+                <a href="/panel/"
+                class="block px-4 py-2 rounded {% if '/panel/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
+                    Panel principal
+                </a>
+            </div>
+
+            <!-- GESTIÓN COMERCIAL -->
             {% if es_admin or es_supervisor %}
-                <a href="/abonados/" class="block px-4 py-2 rounded hover:bg-slate-800">
+            <div>
+                <p class="px-4 mb-1 text-xs uppercase text-slate-400">
+                    Gestión comercial
+                </p>
+
+                <a href="/abonados/"
+                class="block px-4 py-2 rounded {% if '/abonados/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
                     Abonados
                 </a>
 
-                <a href="/admin/medidores/medidor/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                <a href="/admin/medidores/medidor/"
+                class="block px-4 py-2 rounded {% if '/admin/medidores/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
                     Medidores
                 </a>
+            </div>
             {% endif %}
 
-            {% if es_admin or es_supervisor %}
-                <a href="/lecturas/generar/" class="block px-4 py-2 rounded hover:bg-slate-800">
+            <!-- LECTURAS Y FACTURACIÓN -->
+            <div>
+                <p class="px-4 mb-1 text-xs uppercase text-slate-400">
+                    Lecturas y facturación
+                </p>
+
+                {% if es_admin or es_supervisor %}
+                <a href="/lecturas/generar/"
+                class="block px-4 py-2 rounded {% if '/lecturas/generar/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
                     Generar lecturas
                 </a>
-            {% endif %}
+                {% endif %}
 
-            {% if es_admin or es_supervisor or es_lecturista %}
-                <a href="/lecturas/registro-masivo/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                {% if es_admin or es_supervisor or es_cajero or es_lecturista %}
+                <a href="/lecturas/importar-excel/"
+                class="block px-4 py-2 rounded {% if '/lecturas/importar-excel/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
+                    Importar lecturas
+                </a>
+                {% endif %}
+
+                {% if es_admin or es_supervisor or es_lecturista %}
+                <a href="/lecturas/registro-masivo/"
+                class="block px-4 py-2 rounded {% if '/lecturas/registro-masivo/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
                     Registro de lecturas
                 </a>
-            {% endif %}
+                {% endif %}
 
-            {% if es_admin or es_supervisor %}
-                <a href="/facturacion/generar/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                {% if es_admin or es_supervisor %}
+                <a href="/facturacion/generar/"
+                class="block px-4 py-2 rounded {% if '/facturacion/generar/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
                     Generar facturación
                 </a>
-            {% endif %}
+                {% endif %}
 
-            {% if es_admin or es_supervisor or es_cajero %}
-                <a href="/facturacion/pendientes/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                {% if es_admin or es_supervisor or es_cajero %}
+                <a href="/facturacion/pendientes/"
+                class="block px-4 py-2 rounded {% if '/facturacion/pendientes/' in ruta or '/pagos/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
                     Facturas pendientes
                 </a>
-            {% endif %}
+                {% endif %}
 
-            {% if es_admin or es_supervisor or es_cajero or es_consulta %}
-                <a href="/reportes/cierre-diario/" class="block px-4 py-2 rounded hover:bg-slate-800">
-                    Cierre diario
-                </a>
-
-                <a href="/reportes/cartera/" class="block px-4 py-2 rounded hover:bg-slate-800">
-                    Cartera pendiente
-                </a>
-
-                <a href="/reportes/facturas-pagadas/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                {% if es_admin or es_supervisor or es_cajero or es_consulta %}
+                <a href="/reportes/facturas-pagadas/"
+                class="block px-4 py-2 rounded {% if '/reportes/facturas-pagadas/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
                     Facturas pagadas
                 </a>
 
-                <a href="/reportes/facturas-anuladas/" class="block px-4 py-2 rounded hover:bg-slate-800">
+                <a href="/reportes/facturas-anuladas/"
+                class="block px-4 py-2 rounded {% if '/reportes/facturas-anuladas/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
                     Facturas anuladas
                 </a>
+                {% endif %}
+            </div>
+
+            <!-- RECAUDACIÓN -->
+            {% if es_admin or es_supervisor or es_cajero or es_consulta %}
+            <div>
+                <p class="px-4 mb-1 text-xs uppercase text-slate-400">
+                    Recaudación
+                </p>
+
+                <a href="/reportes/cierre-diario/"
+                class="block px-4 py-2 rounded {% if '/reportes/cierre-diario/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
+                    Cierre diario
+                </a>
+
+                <a href="/reportes/recaudacion-diaria/"
+                class="block px-4 py-2 rounded {% if '/reportes/recaudacion-diaria/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
+                    Recaudación diaria
+                </a>
+
+                <a href="/reportes/recaudacion-mensual/"
+                class="block px-4 py-2 rounded {% if '/reportes/recaudacion-mensual/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
+                    Recaudación mensual
+                </a>
+            </div>
             {% endif %}
 
+            <!-- CARTERA Y CONTROL -->
+            {% if es_admin or es_supervisor or es_cajero or es_consulta %}
+            <div>
+                <p class="px-4 mb-1 text-xs uppercase text-slate-400">
+                    Cartera y control
+                </p>
+
+                <a href="/reportes/cartera/"
+                class="block px-4 py-2 rounded {% if '/reportes/cartera/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
+                    Cartera pendiente
+                </a>
+
+                <a href="/reportes/cartera-vencida/"
+                class="block px-4 py-2 rounded {% if '/reportes/cartera-vencida/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
+                    Cartera vencida
+                </a>
+
+                <a href="/servicios/"
+                class="block px-4 py-2 rounded {% if '/servicios/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
+                    Suspensiones
+                </a>
+
+                {% if es_admin or es_supervisor or es_cajero %}
+                <a href="/multas/"
+                class="block px-4 py-2 rounded {% if '/multas/' in ruta and '/multas/reporte/' not in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
+                    Multas
+                </a>
+                {% endif %}
+
+                <a href="/multas/reporte/"
+                class="block px-4 py-2 rounded {% if '/multas/reporte/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
+                    Reporte de multas
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- SISTEMA -->
             {% if es_admin %}
-                <a href="/admin/" class="block px-4 py-2 rounded hover:bg-slate-800">
+            <div>
+                <p class="px-4 mb-1 text-xs uppercase text-slate-400">
+                    Sistema
+                </p>
+
+                <a href="/admin/"
+                class="block px-4 py-2 rounded {% if '/admin/' in ruta and '/admin/medidores/' not in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
                     Administración
                 </a>
-            {% endif %}
-            {% if es_admin or es_supervisor or es_cajero or es_lecturista %}                
-                <a href="/lecturas/importar-excel/"
-                class="block px-4 py-2 rounded hover:bg-slate-800">
-                    Importar lecturas
-                </a>
-
+            </div>
             {% endif %}
 
-            <a href="/reportes/recaudacion-diaria/" class="block px-4 py-2 rounded hover:bg-slate-800">
-                Recaudación diaria
-            </a>
-            <a href="/reportes/recaudacion-mensual/" class="block px-4 py-2 rounded hover:bg-slate-800">
-                Recaudación mensual
-            </a>
-
-            <a href="/reportes/cartera-vencida/" class="block px-4 py-2 rounded hover:bg-slate-800">
-                Cartera vencida
-            </a>
-
-            {% if es_admin or es_supervisor or es_cajero %}
-            <a href="/multas/" class="block px-4 py-2 rounded hover:bg-slate-800">
-                Multas
-            </a>
-            {% endif %}
-
-            {% if es_admin or es_supervisor or es_cajero or es_consulta %}
-            <a href="/multas/reporte/" class="block px-4 py-2 rounded hover:bg-slate-800">
-                Reporte de multas
-            </a>
-            {% endif %}
         </nav>
+
+        {% endwith %}
     </aside>
 
     <div class="flex-1">

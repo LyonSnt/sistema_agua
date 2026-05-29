@@ -41,10 +41,14 @@
                     <th class="p-3 text-left">Factura</th>
                     <th class="p-3 text-left">Abonado</th>
                     <th class="p-3 text-left">Período</th>
-                    <th class="p-3 text-right">Total</th>
+                     <th class="p-3 text-right">Total</th>
                     <th class="p-3 text-right">Pagado</th>
+                    <th class="p-3 text-right">Saldo</th>
+                    <th class="p-3 text-left">Fecha pago</th>
+                    <th class="p-3 text-left">Cobrado por</th>
                     <th class="p-3 text-center">Estado</th>
                     <th class="p-3 text-center">Acciones</th>
+
                 </tr>
 
             </thead>
@@ -74,6 +78,27 @@
                     <td class="p-3 text-right font-semibold">
                         ${{ factura.total_pagado }}
                     </td>
+                    
+
+                    <td class="p-3 text-right">
+                        ${{ factura.saldo_pendiente|floatformat:2 }}
+                    </td>
+                    <td class="p-3">
+                        {% if factura.pagos_validos %}
+                            {{ factura.pagos_validos.0.fecha_pago|date:"d/m/Y H:i" }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+
+
+                    <td class="p-3">
+                        {% if factura.pagos_validos %}
+                            {{ factura.pagos_validos.0.creado_por|default:"-" }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
 
                     <td class="p-3 text-center">
                         <span class="px-2 py-1 text-xs bg-green-100 rounded">
@@ -88,8 +113,8 @@
                             Ver factura
                         </a>
 
-                        {% for pago in factura.pagos.all %}
-                            {% if not pago.anulado %}
+                        {% if factura.pagos_validos %}
+                            {% with pago=factura.pagos_validos.0 %}
                                 <a href="{% url 'pagos:comprobante' pago.id %}"
                                 class="px-3 py-1 bg-green-700 text-white rounded hover:bg-green-600">
                                     Comprobante
@@ -99,10 +124,10 @@
                                 class="px-3 py-1 bg-red-700 text-white rounded hover:bg-red-600">
                                     Anular
                                 </a>
-                            {% endif %}
-                        {% empty %}
+                            {% endwith %}
+                        {% else %}
                             <span class="text-gray-400">Sin pagos</span>
-                        {% endfor %}
+                        {% endif %}
 
                     </td>
 

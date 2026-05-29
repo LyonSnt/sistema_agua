@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'configuracion_institucional',
     'multas',
+    'servicios',
 ]
 
 MIDDLEWARE = [
