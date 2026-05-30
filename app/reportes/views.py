@@ -20,21 +20,39 @@ from django.db.models import Count
 from facturacion.models import Factura
 from multas.models import Multa
 from django.db.models import Prefetch
-
+from django.template.loader import render_to_string
+from weasyprint import HTML
+from datetime import datetime
 
 
 @rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
 def cierre_diario(request):
-    fecha = request.GET.get("fecha") or timezone.localdate()
+    fecha_param = request.GET.get("fecha")
 
+    if fecha_param:
+        fecha = datetime.strptime(fecha_param, "%Y-%m-%d").date()
+    else:
+        fecha = timezone.localdate()
     pagos = Pago.objects.select_related(
         "factura",
         "factura__abonado",
+        "creado_por",
     ).prefetch_related(
         "factura__detalles"
     ).filter(
         fecha_pago__date=fecha,
         activo=True,
+        anulado=False,
+    )
+
+    pagos_anulados = Pago.objects.select_related(
+        "factura",
+        "factura__abonado",
+        "creado_por",
+    ).filter(
+        fecha_anulacion__date=fecha,
+        activo=True,
+        anulado=True,
     )
 
     total_recaudado = Decimal("0.00")
@@ -74,9 +92,92 @@ def cierre_diario(request):
         "total_alcantarillado": total_alcantarillado,
         "total_multas": total_multas,
         "total_otros": total_otros,
+        "pagos_anulados": pagos_anulados,
+        "total_pagos_anulados": pagos_anulados.count(),
     }
 
     return render(request, "reportes/cierre_diario.html", contexto)
+
+@login_required
+def cierre_diario_pdf(request):
+    fecha_param = request.GET.get("fecha")
+
+    if fecha_param:
+        fecha = datetime.strptime(fecha_param, "%Y-%m-%d").date()
+    else:
+        fecha = timezone.localdate()
+    pagos = Pago.objects.select_related(
+        "factura",
+        "factura__abonado",
+        "creado_por",
+    ).prefetch_related(
+        "factura__detalles"
+    ).filter(
+        fecha_pago__date=fecha,
+        activo=True,
+        anulado=False,
+    )
+
+    pagos_anulados = Pago.objects.select_related(
+        "factura",
+        "factura__abonado",
+        "actualizado_por",
+    ).filter(
+        fecha_anulacion__date=fecha,
+        activo=True,
+        anulado=True,
+    )
+
+    total_recaudado = Decimal("0.00")
+    total_agua = Decimal("0.00")
+    total_alcantarillado = Decimal("0.00")
+    total_multas = Decimal("0.00")
+    total_otros = Decimal("0.00")
+
+    for pago in pagos:
+        total_recaudado += pago.valor_pagado
+        factura = pago.factura
+
+        if factura.total <= 0:
+            continue
+
+        proporcion = pago.valor_pagado / factura.total
+
+        for detalle in factura.detalles.all():
+            valor_proporcional = detalle.valor_total * proporcion
+
+            if detalle.tipo == "AGUA":
+                total_agua += valor_proporcional
+            elif detalle.tipo == "ALCANTARILLADO":
+                total_alcantarillado += valor_proporcional
+            elif detalle.tipo == "MULTA":
+                total_multas += valor_proporcional
+            else:
+                total_otros += valor_proporcional
+
+    html_string = render_to_string(
+        "reportes/cierre_diario_pdf.html",
+        {
+            "fecha": fecha,
+            "pagos": pagos,
+            "pagos_anulados": pagos_anulados,
+            "total_pagos": pagos.count(),
+            "total_recaudado": total_recaudado,
+            "total_agua": total_agua,
+            "total_alcantarillado": total_alcantarillado,
+            "total_multas": total_multas,
+            "total_otros": total_otros,
+            "usuario": request.user,
+        }
+    )
+
+    pdf = HTML(string=html_string).write_pdf()
+
+    response = HttpResponse(pdf, content_type="application/pdf")
+    response["Content-Disposition"] = (
+        f'inline; filename="cierre_diario_{fecha}.pdf"'
+    )
+    return response
 
 @rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
 def cartera_pendiente(request):

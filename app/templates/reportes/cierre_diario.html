@@ -16,6 +16,11 @@
         <button class="px-4 py-2 bg-slate-800 text-white rounded-lg">
             Consultar
         </button>
+        <a href="{% url 'reportes:cierre_diario_pdf' %}?fecha={{ fecha|date:'Y-m-d' }}"
+        target="_blank"
+        class="px-4 py-2 bg-blue-700 text-white rounded-lg">
+            Ver PDF
+        </a>
     </form>
 </div>
 
@@ -61,6 +66,7 @@
                 <tr>
                     <th class="p-3 text-left">Factura</th>
                     <th class="p-3 text-left">Abonado</th>
+                    <th class="p-3 text-left">Cajero</th>
                     <th class="p-3 text-left">Método</th>
                     <th class="p-3 text-left">Fecha</th>
                     <th class="p-3 text-right">Valor</th>
@@ -71,15 +77,56 @@
                 <tr class="border-b hover:bg-slate-50">
                     <td class="p-3">{{ pago.factura.numero }}</td>
                     <td class="p-3">{{ pago.factura.abonado }}</td>
-                    <td class="p-3">{{ pago.metodo_pago }}</td>
-                    <td class="p-3">{{ pago.fecha_pago }}</td>
-                    <td class="p-3 text-right font-semibold">${{ pago.valor_pagado }}</td>
+                    <td class="p-3">{{ pago.creado_por|default:"-" }}</td>
+                    <td class="p-3">{{ pago.get_metodo_pago_display }}</td>
+                    <td class="p-3">{{ pago.fecha_pago|date:"d/m/Y H:i" }}</td>
+                    <td class="p-3 text-right font-semibold">${{ pago.valor_pagado|floatformat:2 }}</td>
                 
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" class="p-5 text-center text-gray-500">
+                    <td colspan="6" class="p-5 text-center text-gray-500">
                         No existen pagos registrados en esta fecha.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl shadow p-5 mt-6">
+    <h3 class="text-lg font-semibold mb-5">Pagos anulados del día</h3>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-100 text-slate-700">
+                <tr>
+                    <th class="p-3 text-left">Factura</th>
+                    <th class="p-3 text-left">Abonado</th>
+                    <th class="p-3 text-left">Usuario</th>
+                    <th class="p-3 text-left">Fecha anulación</th>
+                    <th class="p-3 text-right">Valor anulado</th>
+                    <th class="p-3 text-left">Motivo</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for pago in pagos_anulados %}
+                <tr class="border-b hover:bg-slate-50">
+                    <td class="p-3">{{ pago.factura.numero }}</td>
+                    <td class="p-3">{{ pago.factura.abonado }}</td>
+                    <td class="p-3">{{ pago.actualizado_por|default:"-" }}</td>
+                    <td class="p-3">{{ pago.fecha_anulacion|date:"d/m/Y H:i" }}</td>
+                    <td class="p-3 text-right font-semibold text-red-700">
+                        ${{ pago.valor_pagado|floatformat:2 }}
+                    </td>
+                    <td class="p-3">{{ pago.motivo_anulacion|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="p-5 text-center text-gray-500">
+                        No existen pagos anulados en esta fecha.
                     </td>
                 </tr>
                 {% endfor %}

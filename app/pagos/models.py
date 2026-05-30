@@ -52,6 +52,9 @@ class Pago(ModeloBase):
         ordering = ["-fecha_pago"]
 
     def clean(self):
+        if self.anulado:
+            return
+
         if self.factura.estado == "ANULADA":
             raise ValidationError("No se puede registrar pago de una factura anulada.")
 

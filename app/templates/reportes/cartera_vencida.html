@@ -42,6 +42,7 @@
                     <th class="p-3 text-right">Facturas pendientes</th>
                     <th class="p-3 text-right">Total deuda</th>
                     <th class="p-3 text-left">Períodos pendientes</th>
+                    <th class="p-3 text-center">Servicio</th>
                     <th class="p-3 text-center">Acción</th>
                 </tr>
             </thead>
@@ -74,17 +75,40 @@
                     </td>
 
                     <td class="p-3 text-center">
+                        {% if item.abonado.estado_servicio == "SUSPENDIDO" %}
+                            <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
+                                Suspendido
+                            </span>
+                        {% else %}
+                            <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                                Activo
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td class="p-3 text-center space-x-1">
+
                         {% if item.facturas %}
                             <a href="{% url 'pagos:cobrar' item.facturas.0.id %}"
-                               class="px-3 py-1 bg-green-700 text-white rounded hover:bg-green-600">
+                            class="px-3 py-1 bg-green-700 text-white rounded hover:bg-green-600">
                                 Cobrar
                             </a>
                         {% endif %}
+
+                        {% if item.abonado.estado_servicio != "SUSPENDIDO" %}
+                            <a href="{% url 'servicios:suspender' %}?abonado={{ item.abonado.id }}"
+                            class="px-3 py-1 bg-red-700 text-white rounded hover:bg-red-600">
+                                Suspender
+                            </a>
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="p-5 text-center text-gray-500">
+                    <td colspan="7" class="p-5 text-center text-gray-500">
                         No existen abonados con deuda pendiente.
                     </td>
                 </tr>

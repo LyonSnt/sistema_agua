@@ -76,36 +76,39 @@
                             </span>
                         {% endif %}
                     </td>
-<td class="p-3 text-center">
-    <div class="flex items-center justify-center gap-1">
+                    <td class="p-3 text-center">
+                        <div class="flex items-center justify-center gap-1">
 
-        <a href="{% url 'facturacion:detalle' factura.id %}"
-           class="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-600">
-            Ver
-        </a>
+                            <a href="{% url 'facturacion:detalle' factura.id %}"
+                            class="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-600">
+                                Ver
+                            </a>
 
-        <a href="{% url 'pagos:cobrar' factura.id %}"
-           class="px-3 py-1 bg-green-700 text-white rounded hover:bg-green-600">
-            Cobrar
-        </a>
+                            <a href="{% url 'pagos:cobrar' factura.id %}"
+                            class="px-3 py-1 bg-green-700 text-white rounded hover:bg-green-600">
+                                Cobrar
+                            </a>
 
-        {% if factura.abonado.estado_servicio == "SUSPENDIDO" %}
-            <span class="inline-flex items-center justify-center w-24 px-3 py-1 text-gray-400">
-                -
-            </span>
-        {% else %}
-            <a href="{% url 'servicios:suspender' %}?abonado={{ factura.abonado.id }}"
-               class="inline-flex items-center justify-center w-24 px-3 py-1 bg-red-700 text-white rounded hover:bg-red-600">
-                Suspender
-            </a>
-        {% endif %}
+                            {% if factura.abonado.estado_servicio == "SUSPENDIDO" %}
+                                <span class="inline-flex items-center justify-center w-24 px-3 py-1 text-gray-400">
+                                    -
+                                </span>
+                            {% else %}
+                                <a href="{% url 'servicios:suspender' %}?abonado={{ factura.abonado.id }}"
+                                class="inline-flex items-center justify-center w-24 px-3 py-1 bg-red-700 text-white rounded hover:bg-red-600">
+                                    Suspender
+                                </a>
+                            {% endif %}
 
-    </div>
-</td>
+
+                            
+
+                        </div>
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8" class="p-5 text-center text-gray-500">
+                    <td colspan="9" class="p-5 text-center text-gray-500">
                         No existen facturas pendientes.
                     </td>
                 </tr>

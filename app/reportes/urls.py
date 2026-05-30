@@ -5,6 +5,7 @@ app_name = "reportes"
 
 urlpatterns = [
     path("cierre-diario/", views.cierre_diario, name="cierre_diario"),
+    path("cierre-diario/pdf/", views.cierre_diario_pdf, name="cierre_diario_pdf"),
     path("cartera/", views.cartera_pendiente, name="cartera"),
     path(
     "facturas-pagadas/",

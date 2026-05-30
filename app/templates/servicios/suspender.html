@@ -20,13 +20,6 @@
 
         <div class="mb-4">
             <label class="block text-sm font-medium mb-1">Abonado</label>
-
-            {% comment %} <select name="abonado" class="w-full px-4 py-2 border rounded-lg" required>
-                <option value="">Seleccione...</option>
-                {% for abonado in abonados %}
-                    <option value="{{ abonado.id }}">{{ abonado }}</option>
-                {% endfor %}
-            </select> {% endcomment %}
             <select name="abonado" class="w-full px-4 py-2 border rounded-lg" required>
                 <option value="">Seleccione...</option>
                 {% for abonado in abonados %}

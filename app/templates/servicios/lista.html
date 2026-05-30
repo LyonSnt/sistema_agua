@@ -81,7 +81,10 @@
                             <span class="px-2 py-1 text-xs bg-gray-100 rounded">Anulado</span>
                         {% endif %}
                     </td>
+                    <td class="p-3 text-center">{{ item.creado_por }}</td>
+                    
                     <td class="p-3">{{ item.fecha_reconexion|default:"-" }}</td>
+                   
                     <td class="p-3 text-center">
                         {% if item.estado == "SUSPENDIDO" %}
                             <a href="{% url 'servicios:reconectar' item.id %}"
