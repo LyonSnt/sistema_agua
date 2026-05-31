@@ -17,7 +17,7 @@ from weasyprint import HTML
 from django.urls import reverse
 
 
-@rol_requerido("Administrador", "Cajero", "Supervisor")
+@rol_requerido("Administrador", "Supervisor", "Cajero")
 def cobrar_factura(request, factura_id):
     factura = get_object_or_404(
         Factura,
@@ -62,6 +62,7 @@ def cobrar_factura(request, factura_id):
         "factura": factura,
     })
 
+@rol_requerido("Administrador", "Supervisor", "Cajero")
 def comprobante_pago(request, pago_id):
     pago = get_object_or_404(
         Pago.objects.select_related(
@@ -78,7 +79,7 @@ def comprobante_pago(request, pago_id):
     })
 
 
-@rol_requerido("Administrador", "Supervisor")
+@rol_requerido("Administrador")
 def anular_pago(request, pago_id):
     pago = get_object_or_404(
         Pago,
@@ -139,9 +140,7 @@ def anular_pago(request, pago_id):
         }
     )
 
-
-
-@login_required
+@rol_requerido("Administrador", "Supervisor", "Cajero")
 def comprobante_pago_pdf(request, pago_id):
     pago = get_object_or_404(
         Pago.objects.select_related(

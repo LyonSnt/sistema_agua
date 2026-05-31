@@ -23,6 +23,7 @@ from django.db.models import Prefetch
 from django.template.loader import render_to_string
 from weasyprint import HTML
 from datetime import datetime
+from django.core.paginator import Paginator
 
 
 @rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
@@ -83,22 +84,36 @@ def cierre_diario(request):
             else:
                 total_otros += valor_proporcional
 
+    paginator = Paginator(pagos, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    paginator_anulados = Paginator(pagos_anulados, 10)
+    page_anulados_number = request.GET.get("page_anulados")
+    page_obj_anulados = paginator_anulados.get_page(page_anulados_number)
+
+
     contexto = {
         "fecha": fecha,
-        "pagos": pagos,
+        "pagos": page_obj,
+        "page_obj": page_obj,
+        "querystring": f"fecha={fecha}",
+
         "total_pagos": pagos.count(),
         "total_recaudado": total_recaudado,
         "total_agua": total_agua,
         "total_alcantarillado": total_alcantarillado,
         "total_multas": total_multas,
         "total_otros": total_otros,
-        "pagos_anulados": pagos_anulados,
+
+        "pagos_anulados": page_obj_anulados,
+        "page_obj_anulados": page_obj_anulados,
         "total_pagos_anulados": pagos_anulados.count(),
     }
 
     return render(request, "reportes/cierre_diario.html", contexto)
 
-@login_required
+@rol_requerido("Administrador", "Supervisor")
 def cierre_diario_pdf(request):
     fecha_param = request.GET.get("fecha")
 
@@ -201,9 +216,15 @@ def cartera_pendiente(request):
 
     total_cartera = sum(f.saldo_pendiente for f in facturas)
 
+    paginator = Paginator(facturas, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     contexto = {
-        "facturas": facturas,
+        "facturas": page_obj,
+        "page_obj": page_obj,
         "busqueda": busqueda,
+        "querystring": f"q={busqueda}",
         "total_cartera": total_cartera,
     }
 
@@ -237,9 +258,15 @@ def facturas_pagadas(request):
             | facturas.filter(abonado__cedula_ruc__icontains=busqueda)
         )
 
+    paginator = Paginator(facturas, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     contexto = {
-        "facturas": facturas,
+        "facturas": page_obj,
+        "page_obj": page_obj,
         "busqueda": busqueda,
+        "querystring": f"q={busqueda}",
     }
 
     return render(request, "reportes/facturas_pagadas.html", contexto)
@@ -265,9 +292,15 @@ def facturas_anuladas(request):
             | facturas.filter(abonado__cedula_ruc__icontains=busqueda)
         )
 
+    paginator = Paginator(facturas, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     return render(request, "reportes/facturas_anuladas.html", {
-        "facturas": facturas,
+        "facturas": page_obj,
+        "page_obj": page_obj,
         "busqueda": busqueda,
+        "querystring": f"q={busqueda}",
     })
 
 
@@ -425,11 +458,26 @@ def recaudacion_mensual(request):
         anulado=False,
     )
 
+    pagos_anulados = Pago.objects.select_related(
+        "factura",
+        "factura__abonado",
+        "actualizado_por",
+    ).filter(
+        fecha_anulacion__date__gte=fecha_inicio,
+        fecha_anulacion__date__lte=fecha_fin,
+        activo=True,
+        anulado=True,
+    ).order_by("-fecha_anulacion")
+
     total_recaudado = Decimal("0.00")
     total_agua = Decimal("0.00")
     total_alcantarillado = Decimal("0.00")
     total_multas = Decimal("0.00")
     total_otros = Decimal("0.00")
+
+    total_anulado = pagos_anulados.aggregate(
+        total=Sum("valor_pagado")
+    )["total"] or Decimal("0.00")
 
     for pago in pagos:
         total_recaudado += pago.valor_pagado
@@ -470,8 +518,96 @@ def recaudacion_mensual(request):
         "total_alcantarillado": total_alcantarillado,
         "total_multas": total_multas,
         "total_otros": total_otros,
+        "pagos_anulados": pagos_anulados,
+        "total_anulado": total_anulado,
     })
 
+@login_required
+def recaudacion_mensual_pdf(request):
+    hoy = timezone.localdate()
+
+    anio = int(request.GET.get("anio", hoy.year))
+    mes = int(request.GET.get("mes", hoy.month))
+
+    fecha_inicio = date(anio, mes, 1)
+    fecha_fin = date(anio, mes, monthrange(anio, mes)[1])
+
+    pagos = Pago.objects.select_related(
+        "factura",
+        "factura__abonado",
+        "creado_por",
+    ).prefetch_related(
+        "factura__detalles"
+    ).filter(
+        fecha_pago__date__gte=fecha_inicio,
+        fecha_pago__date__lte=fecha_fin,
+        activo=True,
+        anulado=False,
+    )
+
+    total_recaudado = Decimal("0.00")
+    total_agua = Decimal("0.00")
+    total_alcantarillado = Decimal("0.00")
+    total_multas = Decimal("0.00")
+    total_otros = Decimal("0.00")
+
+    for pago in pagos:
+        total_recaudado += pago.valor_pagado
+
+        factura = pago.factura
+
+        if factura.total <= 0:
+            continue
+
+        proporcion = pago.valor_pagado / factura.total
+
+        for detalle in factura.detalles.all():
+            valor = detalle.valor_total * proporcion
+
+            if detalle.tipo == "AGUA":
+                total_agua += valor
+            elif detalle.tipo == "ALCANTARILLADO":
+                total_alcantarillado += valor
+            elif detalle.tipo == "MULTA":
+                total_multas += valor
+            else:
+                total_otros += valor
+
+    resumen_diario = pagos.annotate(
+        dia=TruncDate("fecha_pago")
+    ).values("dia").annotate(
+        total=Sum("valor_pagado"),
+        cantidad=Count("id")
+    ).order_by("dia")
+
+    html_string = render_to_string(
+        "reportes/recaudacion_mensual_pdf.html",
+        {
+            "anio": anio,
+            "mes": mes,
+            "pagos": pagos,
+            "resumen_diario": resumen_diario,
+            "total_pagos": pagos.count(),
+            "total_recaudado": total_recaudado,
+            "total_agua": total_agua,
+            "total_alcantarillado": total_alcantarillado,
+            "total_multas": total_multas,
+            "total_otros": total_otros,
+        }
+    )
+
+    pdf = HTML(string=html_string).write_pdf()
+
+    response = HttpResponse(
+        pdf,
+        content_type="application/pdf"
+    )
+
+    response["Content-Disposition"] = (
+        f'inline; filename="recaudacion_mensual_{anio}_{mes}.pdf"'
+    )
+
+    return response
 
 @login_required
 def exportar_recaudacion_mensual_excel(request):
@@ -584,8 +720,13 @@ def cartera_vencida(request):
         item["total_deuda"] for item in cartera
     )
 
+    paginator = Paginator(cartera, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     return render(request, "reportes/cartera_vencida.html", {
-        "cartera": cartera,
+        "cartera": page_obj,
+        "page_obj": page_obj,
         "total_deuda_general": total_deuda_general,
         "total_abonados_mora": len(cartera),
     })

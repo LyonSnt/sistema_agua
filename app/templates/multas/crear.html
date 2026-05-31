@@ -5,37 +5,37 @@
 
 {% block contenido %}
 
-<div class="bg-white rounded-xl shadow p-6 max-w-3xl">
+        <div class="bg-white rounded-xl shadow p-6 max-w-3xl">
 
-    <form method="post">
-        {% csrf_token %}
+            <form method="post">
+                {% csrf_token %}
 
-  <label class="block text-sm font-medium mb-1">Abonado</label>
+        <label class="block text-sm font-medium mb-1">Abonado</label>
 
-<input
-    type="text"
-    id="buscar-abonado"
-    placeholder="Buscar por nombre o cédula..."
-    class="w-full px-4 py-2 border rounded-lg mb-2"
-    autocomplete="off"
-    required
->
-<input type="hidden" name="abonado" id="abonado-id">
-
-<div
-    id="resultados-abonados"
-    class="hidden border rounded-lg bg-white max-h-60 overflow-y-auto mb-4"
->
-    {% for abonado in abonados %}
-        <div
-            class="abonado-opcion px-4 py-2 hover:bg-slate-100 cursor-pointer"
-            data-id="{{ abonado.id }}"
-            data-texto="{{ abonado }} {{ abonado.cedula_ruc }}"
+        <input
+            type="text"
+            id="buscar-abonado"
+            placeholder="Buscar por nombre o cédula..."
+            class="w-full px-4 py-2 border rounded-lg mb-2"
+            autocomplete="off"
+            required
         >
-            {{ abonado }} - {{ abonado.cedula_ruc }}
+        <input type="hidden" name="abonado" id="abonado-id">
+
+        <div
+            id="resultados-abonados"
+            class="hidden border rounded-lg bg-white max-h-60 overflow-y-auto mb-4"
+        >
+            {% for abonado in abonados %}
+                <div
+                    class="abonado-opcion px-4 py-2 hover:bg-slate-100 cursor-pointer"
+                    data-id="{{ abonado.id }}"
+                    data-texto="{{ abonado }} {{ abonado.cedula_ruc }}"
+                >
+                    {{ abonado }} - {{ abonado.cedula_ruc }}
+                </div>
+            {% endfor %}
         </div>
-    {% endfor %}
-</div>
 
         <div class="mb-4">
             <label class="block text-sm font-medium mb-1">Tipo de multa</label>

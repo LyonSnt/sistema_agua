@@ -15,7 +15,8 @@ from lecturas.models import Lectura
 from auditoria.models import Auditoria
 
 
-@login_required
+#@login_required
+@login_required(login_url="/login/")
 def inicio(request):
     hoy = timezone.localdate()
     inicio_mes = hoy.replace(day=1)

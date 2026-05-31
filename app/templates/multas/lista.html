@@ -9,10 +9,12 @@
     <div class="flex justify-between items-center mb-5">
         <h3 class="text-lg font-semibold">Listado de multas</h3>
 
+        {% if puede_gestionar_multas %}
         <a href="{% url 'multas:crear' %}"
            class="px-4 py-2 bg-slate-900 text-white rounded-lg">
             Nueva multa
         </a>
+        {% endif %}
     </div>
 
     <form method="get" class="flex gap-2">
@@ -65,28 +67,36 @@
 
                             {% if multa.estado == "PENDIENTE" %}
 
+                                {% if puede_cobrar_multa %}
                                 <a href="{% url 'multas:cobrar' multa.id %}"
                                 class="px-3 py-1 bg-green-700 text-white rounded">
                                     Cobrar
                                 </a>
+                                {% endif %}
 
+                                {% if puede_anular_multa %}
                                 <a href="{% url 'multas:anular' multa.id %}"
                                 class="px-3 py-1 bg-red-700 text-white rounded">
                                     Anular
                                 </a>
+                                {% endif %}
 
                             {% elif multa.estado == "PAGADA" %}
 
+                                {% if puede_ver_reporte_multas %}
                                 <a href="{% url 'multas:comprobante_pdf' multa.id %}"
                                 target="_blank"
                                 class="px-3 py-1 bg-blue-700 text-white rounded">
                                     Comprobante
                                 </a>
+                                {% endif %}
 
+                                {% if puede_anular_multa %}
                                 <a href="{% url 'multas:anular' multa.id %}"
                                 class="px-3 py-1 bg-red-700 text-white rounded">
                                     Anular
                                 </a>
+                                {% endif %}
 
                             {% else %}
                                 -
@@ -104,6 +114,8 @@
                 {% endfor %}
             </tbody>
         </table>
+
+        {% include "includes/paginacion.html" %}
     </div>
 </div>
 

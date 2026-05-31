@@ -11,6 +11,7 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from weasyprint import HTML
 from openpyxl import Workbook
+from django.core.paginator import Paginator
 
 
 @rol_requerido("Administrador", "Supervisor", "Cajero")
@@ -28,14 +29,19 @@ def lista_multas(request):
             | multas.filter(abonado__cedula_ruc__icontains=busqueda)
             | multas.filter(motivo__icontains=busqueda)
         )
+    paginator = Paginator(multas, 3)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
 
     return render(request, "multas/lista.html", {
-        "multas": multas,
+        "multas": page_obj,
+        "page_obj": page_obj,
         "busqueda": busqueda,
+        "querystring": f"q={busqueda}",
     })
 
 
-@rol_requerido("Administrador", "Supervisor")
+@rol_requerido("Administrador", "Supervisor", "Cajero")
 def crear_multa(request):
     abonados = Abonado.objects.filter(activo=True).order_by("apellidos", "nombres")
 

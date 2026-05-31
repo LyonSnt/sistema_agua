@@ -51,12 +51,14 @@
                     <td class="p-3 text-right">${{ factura.total }}</td>
                     <td class="p-3">{{ factura.fecha_anulacion }}</td>
                     <td class="p-3">{{ factura.actualizado_por }}</td>
-                    <td class="p-3">{{ factura.motivo_anulacion }}</td>
+                    <td class="p-3">{{ factura.motivo_anulacion }}</td> 
                     <td class="p-3 text-center">
+                        {% if puede_ver_facturas %}
                         <a href="{% url 'facturacion:detalle' factura.id %}"
-                           class="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-600">
+                        class="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-600">
                             Ver
                         </a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% empty %}
@@ -68,6 +70,7 @@
                 {% endfor %}
             </tbody>
         </table>
+         {% include "includes/paginacion.html" %}
     </div>
 </div>
 

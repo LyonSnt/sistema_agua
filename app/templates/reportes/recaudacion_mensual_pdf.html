@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+
+<style>
+    @page {
+        size: A4;
+        margin: 20px;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 11px;
+        color: #222;
+    }
+
+    .encabezado {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .titulo {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .subtitulo {
+        font-size: 12px;
+        color: #666;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 16px;
+    }
+
+    th {
+        background: #f1f5f9;
+        padding: 7px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+
+    td {
+        padding: 7px;
+        border: 1px solid #ddd;
+    }
+
+    h3 {
+        margin-top: 18px;
+        margin-bottom: 8px;
+        font-size: 13px;
+    }
+
+    .label {
+        font-weight: bold;
+        width: 25%;
+    }
+
+    .text-right {
+        text-align: right;
+    }
+
+    .footer {
+        margin-top: 50px;
+    }
+
+    .firma {
+        width: 40%;
+        text-align: center;
+        display: inline-block;
+    }
+
+    .linea {
+        border-top: 1px solid #000;
+        margin-top: 50px;
+        padding-top: 5px;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="encabezado">
+    <div class="titulo">Sistema de Agua Potable</div>
+    <div class="subtitulo">Recaudación mensual</div>
+</div>
+
+<table>
+    <tr>
+        <td class="label">Año</td>
+        <td>{{ anio }}</td>
+        <td class="label">Mes</td>
+        <td>{{ mes }}</td>
+    </tr>
+
+    <tr>
+        <td class="label">Pagos registrados</td>
+        <td>{{ total_pagos }}</td>
+        <td class="label">Total recaudado</td>
+        <td>${{ total_recaudado|floatformat:2 }}</td>
+    </tr>
+
+    <tr>
+        <td class="label">Agua</td>
+        <td>${{ total_agua|floatformat:2 }}</td>
+        <td class="label">Alcantarillado</td>
+        <td>${{ total_alcantarillado|floatformat:2 }}</td>
+    </tr>
+
+    <tr>
+        <td class="label">Multas</td>
+        <td>${{ total_multas|floatformat:2 }}</td>
+        <td class="label">Otros</td>
+        <td>${{ total_otros|floatformat:2 }}</td>
+    </tr>
+</table>
+
+<h3>Resumen por día</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th class="text-right">Pagos</th>
+            <th class="text-right">Total</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for item in resumen_diario %}
+        <tr>
+            <td>{{ item.dia|date:"d/m/Y" }}</td>
+            <td class="text-right">{{ item.cantidad }}</td>
+            <td class="text-right">${{ item.total|floatformat:2 }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3">No existen pagos registrados en este mes.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>Detalle de pagos del mes</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Factura</th>
+            <th>Abonado</th>
+            <th>Método</th>
+            <th>Cajero</th>
+            <th class="text-right">Valor</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for pago in pagos %}
+        <tr>
+            <td>{{ pago.fecha_pago|date:"d/m/Y H:i" }}</td>
+            <td>{{ pago.factura.numero }}</td>
+            <td>{{ pago.factura.abonado }}</td>
+            <td>{{ pago.get_metodo_pago_display }}</td>
+            <td>{{ pago.creado_por|default:"-" }}</td>
+            <td class="text-right">${{ pago.valor_pagado|floatformat:2 }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">No existen pagos registrados en este mes.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="footer">
+    <div class="firma">
+        <div class="linea">
+            Cajero / Responsable
+        </div>
+    </div>
+
+    <div class="firma" style="float:right;">
+        <div class="linea">
+            Supervisor
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

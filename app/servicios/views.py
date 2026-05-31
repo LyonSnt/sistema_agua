@@ -149,9 +149,7 @@ def reconectar_servicio(request, suspension_id):
         "hoy": date.today().strftime("%Y-%m-%d")
     })
 
-
-
-@rol_requerido("Administrador", "Supervisor", "Cajero")
+@rol_requerido("Administrador", "Supervisor")
 def reconectar_por_abonado(request, abonado_id):
     suspension = SuspensionServicio.objects.filter(
         abonado_id=abonado_id,

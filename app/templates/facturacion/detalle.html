@@ -6,31 +6,13 @@
 {% block contenido %}
 
 
-{% if messages %}
-    <div class="mb-4">
-        {% for message in messages %}
-            <div class="px-4 py-3 rounded-lg mb-2
-                {% if message.tags == 'error' %}
-                    bg-red-100 text-red-700
-                {% elif message.tags == 'success' %}
-                    bg-green-100 text-green-700
-                {% else %}
-                    bg-blue-100 text-blue-700
-                {% endif %}
-            ">
-                {{ message }}
-            </div>
-        {% endfor %}
-    </div>
-{% endif %}
-
 <div class="mb-4 no-print space-x-1">
     <button onclick="window.print()"
             class="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-700">
         Imprimir
     </button>
 
-    {% if factura.estado != "ANULADA" %}
+    {% if factura.estado != "ANULADA" and puede_anular_factura %}
         <a href="{% url 'facturacion:anular' factura.id %}"
         class="px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-600">
             Anular factura
@@ -49,19 +31,7 @@
         Ver PDF
     </a>
 
-    {% comment %} {% if factura.pagos.all %}
-        {% for pago in factura.pagos.all %}
-            {% if not pago.anulado %}
-                <a href="{% url 'pagos:comprobante_pdf' pago.id %}"
-                target="_blank"
-                class="px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600">
-                    Comprobante ${{ pago.valor_pagado }}
-                </a>
-            {% endif %}
-        {% endfor %}
-    {% endif %} {% endcomment %}
-
-    {% if factura.estado == "PENDIENTE" %}
+    {% if factura.estado == "PENDIENTE" and puede_agregar_rubro_factura %}
     <a href="{% url 'facturacion:agregar_rubro' factura.id %}"
     class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-500">
         Agregar rubro

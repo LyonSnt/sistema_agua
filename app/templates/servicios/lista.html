@@ -87,10 +87,12 @@
                    
                     <td class="p-3 text-center">
                         {% if item.estado == "SUSPENDIDO" %}
-                            <a href="{% url 'servicios:reconectar' item.id %}"
-                               class="px-3 py-1 bg-green-700 text-white rounded">
-                                Reconectar
-                            </a>
+                            {% if puede_reconectar %}
+                                <a href="{% url 'servicios:reconectar' item.id %}"
+                                class="px-3 py-1 bg-green-700 text-white rounded">
+                                    Reconectar
+                                </a>
+                            {% endif %}
                         {% else %}
                             -
                         {% endif %}

@@ -24,14 +24,26 @@ environ.Env.read_env(os.path.join(BASE_DIR.parent, '.env'))
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-2)y42fv=g!cdqp1yi@nri&au2@9a*l5238q1=&8(lw8t)h8dk)'
+#SECRET_KEY = 'django-insecure-2)y42fv=g!cdqp1yi@nri&au2@9a*l5238q1=&8(lw8t)h8dk)'
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+#DEBUG = False
 
 #ALLOWED_HOSTS = []
 #ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
-ALLOWED_HOSTS = ["*"]
+#ALLOWED_HOSTS = ["*"]
+
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    ".ngrok-free.app",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.ngrok-free.app",
+]
 
 # Application definition
 

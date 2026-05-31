@@ -85,25 +85,30 @@
                             </span>
                         {% endif %}
                     </td>
+                    <td class="p-3 text-center">
+                        <div class="flex items-center justify-center gap-1">
 
-                    <td class="p-3 text-center space-x-1">
+                            {% if item.facturas and puede_cobrar %}
+                                <a href="{% url 'pagos:cobrar' item.facturas.0.id %}"
+                                class="px-3 py-1 bg-green-700 text-white rounded hover:bg-green-600">
+                                    Cobrar
+                                </a>
+                            {% endif %}
 
-                        {% if item.facturas %}
-                            <a href="{% url 'pagos:cobrar' item.facturas.0.id %}"
-                            class="px-3 py-1 bg-green-700 text-white rounded hover:bg-green-600">
-                                Cobrar
-                            </a>
-                        {% endif %}
+                            {% if puede_suspender %}
+                                {% if item.abonado.estado_servicio != "SUSPENDIDO" %}
+                                    <a href="{% url 'servicios:suspender' %}?abonado={{ item.abonado.id }}"
+                                    class="inline-flex items-center justify-center w-24 px-3 py-1 bg-red-700 text-white rounded hover:bg-red-600">
+                                        Suspender
+                                    </a>
+                                {% else %}
+                                    <span class="inline-flex items-center justify-center w-24 px-3 py-1 text-gray-400">
+                                        -
+                                    </span>
+                                {% endif %}
+                            {% endif %}
 
-                        {% if item.abonado.estado_servicio != "SUSPENDIDO" %}
-                            <a href="{% url 'servicios:suspender' %}?abonado={{ item.abonado.id }}"
-                            class="px-3 py-1 bg-red-700 text-white rounded hover:bg-red-600">
-                                Suspender
-                            </a>
-                        {% else %}
-                            <span class="text-gray-400">-</span>
-                        {% endif %}
-
+                        </div>
                     </td>
                 </tr>
                 {% empty %}
@@ -115,6 +120,8 @@
                 {% endfor %}
             </tbody>
         </table>
+
+        {% include "includes/paginacion.html" %}
     </div>
 </div>
 

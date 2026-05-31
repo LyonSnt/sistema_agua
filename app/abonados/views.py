@@ -2,9 +2,18 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
 from .models import Abonado
+from django.core.paginator import Paginator
+from usuarios.decoradores import rol_requerido
 
 
-@login_required
+@rol_requerido(
+    "Administrador",
+    "Supervisor",
+    "Cajero",
+    "Lecturista",
+    "Consulta"
+)
+
 def lista_abonados(request):
     busqueda = request.GET.get("q", "")
 
@@ -21,9 +30,15 @@ def lista_abonados(request):
             codigo__icontains=busqueda
         )
 
+    paginator = Paginator(abonados, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     contexto = {
-        "abonados": abonados,
+        "abonados": page_obj,
+        "page_obj": page_obj,
         "busqueda": busqueda,
+        "querystring": f"q={busqueda}",
     }
 
     return render(request, "abonados/lista.html", contexto)

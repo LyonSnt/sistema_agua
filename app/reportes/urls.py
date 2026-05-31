@@ -35,4 +35,9 @@ urlpatterns = [
         views.exportar_cartera_vencida_excel,
         name="cartera_vencida_excel"
     ),
+    path(
+        "recaudacion-mensual/pdf/",
+        views.recaudacion_mensual_pdf,
+        name="recaudacion_mensual_pdf"
+    ),
 ]

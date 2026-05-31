@@ -18,9 +18,10 @@ from configuracion_institucional.utils import obtener_configuracion
 from tarifas.models import Rubro
 from decimal import Decimal
 from django.db.models import Sum
+from django.core.paginator import Paginator
 
 
-@login_required
+@rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
 def facturas_pendientes(request):
     busqueda = request.GET.get("q", "")
 
@@ -40,12 +41,18 @@ def facturas_pendientes(request):
             | facturas.filter(abonado__cedula_ruc__icontains=busqueda)
         )
 
+    paginator = Paginator(facturas, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     return render(request, "facturacion/pendientes.html", {
-        "facturas": facturas,
+        "facturas": page_obj,
+        "page_obj": page_obj,
         "busqueda": busqueda,
+        "querystring": f"q={busqueda}",
     })
 
-
+@rol_requerido("Administrador", "Supervisor", "Cajero")
 def detalle_factura(request, factura_id):
     factura = get_object_or_404(
         Factura.objects.select_related(
@@ -61,7 +68,6 @@ def detalle_factura(request, factura_id):
     return render(request, "facturacion/detalle.html", {
         "factura": factura,
     })
-
 
 @rol_requerido("Administrador", "Supervisor")
 def generar_facturacion_periodo(request):
@@ -175,7 +181,7 @@ def generar_facturacion_periodo(request):
     })
 
 
-@rol_requerido("Administrador", "Supervisor")
+@rol_requerido("Administrador")
 def anular_factura(request, factura_id):
     factura = get_object_or_404(
         Factura,
@@ -219,9 +225,7 @@ def anular_factura(request, factura_id):
         "factura": factura,
     })
 
-
-
-@login_required
+@rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
 def factura_pdf(request, factura_id):
     factura = get_object_or_404(
         Factura.objects.select_related(
@@ -252,7 +256,7 @@ def factura_pdf(request, factura_id):
     return response
 
 
-@rol_requerido("Administrador", "Supervisor", "Cajero")
+@rol_requerido("Administrador", "Supervisor")
 def agregar_rubro_factura(request, factura_id):
 
     factura = get_object_or_404(

@@ -91,7 +91,6 @@
                         {% endif %}
                     </td>
 
-
                     <td class="p-3">
                         {% if factura.pagos_validos %}
                             {{ factura.pagos_validos.0.creado_por|default:"-" }}
@@ -108,22 +107,30 @@
 
                     <td class="p-3 text-center space-x-1">
 
+                        {% if puede_ver_facturas %}
                         <a href="{% url 'facturacion:detalle' factura.id %}"
-                           class="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-600">
+                        class="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-600">
                             Ver factura
                         </a>
+                        {% endif %}
 
                         {% if factura.pagos_validos %}
                             {% with pago=factura.pagos_validos.0 %}
+
+                                {% if puede_ver_comprobante %}
                                 <a href="{% url 'pagos:comprobante' pago.id %}"
                                 class="px-3 py-1 bg-green-700 text-white rounded hover:bg-green-600">
                                     Comprobante
                                 </a>
+                                {% endif %}
 
+                                {% if puede_anular_pago %}
                                 <a href="{% url 'pagos:anular' pago.id %}"
                                 class="px-3 py-1 bg-red-700 text-white rounded hover:bg-red-600">
-                                    Anular
+                                    Anular Pago
                                 </a>
+                                {% endif %}
+
                             {% endwith %}
                         {% else %}
                             <span class="text-gray-400">Sin pagos</span>
@@ -149,7 +156,7 @@
             </tbody>
 
         </table>
-
+        {% include "includes/paginacion.html" %}
     </div>
 
 </div>
