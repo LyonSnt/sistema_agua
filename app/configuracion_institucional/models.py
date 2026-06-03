@@ -1,6 +1,5 @@
 from django.db import models
 
-
 class ConfiguracionInstitucional(models.Model):
     nombre = models.CharField(max_length=200)
     ruc = models.CharField(max_length=20, blank=True)
@@ -8,6 +7,14 @@ class ConfiguracionInstitucional(models.Model):
     telefono = models.CharField(max_length=50, blank=True)
     correo = models.EmailField(blank=True)
     logo = models.ImageField(upload_to="logos/", null=True, blank=True)
+
+    representante = models.CharField(max_length=150, blank=True)
+    cargo_representante = models.CharField(max_length=100, blank=True)
+
+    responsable_caja = models.CharField(max_length=150, blank=True)
+    cargo_responsable_caja = models.CharField(max_length=100, blank=True)
+
+    pie_pagina = models.TextField(blank=True)
 
     class Meta:
         verbose_name = "Configuración institucional"

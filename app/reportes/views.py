@@ -303,8 +303,7 @@ def facturas_anuladas(request):
         "querystring": f"q={busqueda}",
     })
 
-
-@login_required
+@rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
 def recaudacion_diaria(request):
     fecha = request.GET.get("fecha") or timezone.localdate()
 
@@ -374,8 +373,7 @@ def recaudacion_diaria(request):
         "total_general": total_general,
     })
 
-
-@login_required
+@rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
 def exportar_recaudacion_diaria_excel(request):
     fecha = request.GET.get("fecha") or timezone.localdate()
 
@@ -434,8 +432,7 @@ def exportar_recaudacion_diaria_excel(request):
     wb.save(response)
     return response
 
-
-@login_required
+@rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
 def recaudacion_mensual(request):
     hoy = timezone.localdate()
 
@@ -522,7 +519,7 @@ def recaudacion_mensual(request):
         "total_anulado": total_anulado,
     })
 
-@login_required
+@rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
 def recaudacion_mensual_pdf(request):
     hoy = timezone.localdate()
 
@@ -609,7 +606,7 @@ def recaudacion_mensual_pdf(request):
 
     return response
 
-@login_required
+@rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
 def exportar_recaudacion_mensual_excel(request):
     hoy = timezone.localdate()
 
@@ -676,7 +673,7 @@ def exportar_recaudacion_mensual_excel(request):
     wb.save(response)
     return response
 
-@login_required
+@rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
 def cartera_vencida(request):
 
     facturas = Factura.objects.select_related(
@@ -731,7 +728,7 @@ def cartera_vencida(request):
         "total_abonados_mora": len(cartera),
     })
 
-@login_required
+@rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
 def exportar_cartera_vencida_excel(request):
 
     facturas = Factura.objects.select_related(

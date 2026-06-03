@@ -52,7 +52,13 @@ def facturas_pendientes(request):
         "querystring": f"q={busqueda}",
     })
 
-@rol_requerido("Administrador", "Supervisor", "Cajero")
+#@rol_requerido("Administrador", "Supervisor", "Cajero")
+@rol_requerido(
+    "Administrador",
+    "Supervisor",
+    "Cajero",
+    "Consulta"
+)
 def detalle_factura(request, factura_id):
     factura = get_object_or_404(
         Factura.objects.select_related(
@@ -179,7 +185,6 @@ def generar_facturacion_periodo(request):
         "resumen": resumen,
         "periodo_consulta_id": periodo_consulta_id,
     })
-
 
 @rol_requerido("Administrador")
 def anular_factura(request, factura_id):

@@ -43,6 +43,7 @@
                     <th class="p-3 text-center">Servicio</th>
                     <th class="p-3 text-left">Estado cuenta</th>
                     <th class="p-3 text-left">Reconectar</th>
+                    <th class="p-3 text-left">Aciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -97,6 +98,14 @@
                             <a href="{% url 'servicios:reconectar_por_abonado' abonado.id %}"
                             class="px-3 py-1 bg-green-700 text-white rounded hover:bg-green-600">
                                 Reconectar
+                            </a>
+                        {% endif %}
+                    </td>
+                    <td class="p-3 text-center">
+                        {% if puede_ver_abonados %}
+                            <a href="{% url 'abonados:detalle' abonado.id %}"
+                            class="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-600">
+                                Ver
                             </a>
                         {% endif %}
                     </td>

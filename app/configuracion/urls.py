@@ -20,6 +20,7 @@ from django.urls import path
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
+from usuarios.views import LoginAuditoriaView, LogoutAuditoriaView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,19 +30,8 @@ urlpatterns = [
     path("pagos/", include("pagos.urls")),
     path("reportes/", include("reportes.urls")),
     path("lecturas/", include("lecturas.urls")),
-    path(
-        "login/",
-        auth_views.LoginView.as_view(
-            template_name="usuarios/login.html"
-        ),
-        name="login"
-    ),
-
-    path(
-        "logout/",
-        auth_views.LogoutView.as_view(),
-        name="logout"
-    ),
+    path("login/", LoginAuditoriaView.as_view(), name="login"),
+    path("logout/", LogoutAuditoriaView.as_view(), name="logout"),
     path("multas/", include("multas.urls")),
     path("servicios/", include("servicios.urls")),
 ]

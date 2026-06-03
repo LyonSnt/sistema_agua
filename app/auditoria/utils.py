@@ -3,9 +3,13 @@ from .models import Auditoria
 
 def obtener_ip(request):
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+    x_real_ip = request.META.get("HTTP_X_REAL_IP")
 
     if x_forwarded_for:
-        return x_forwarded_for.split(",")[0]
+        return x_forwarded_for.split(",")[0].strip()
+
+    if x_real_ip:
+        return x_real_ip.strip()
 
     return request.META.get("REMOTE_ADDR")
 
@@ -18,6 +22,10 @@ def registrar_auditoria(
     objeto=None,
 ):
     usuario = request.user if request.user.is_authenticated else None
+    
+    # print("REMOTE_ADDR:", request.META.get("REMOTE_ADDR"))
+    # print("HTTP_X_FORWARDED_FOR:", request.META.get("HTTP_X_FORWARDED_FOR"))
+    # print("HTTP_X_REAL_IP:", request.META.get("HTTP_X_REAL_IP"))
 
     Auditoria.objects.create(
         usuario=usuario,

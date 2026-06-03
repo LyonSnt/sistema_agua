@@ -106,7 +106,7 @@ def cobrar_multa(request, multa_id):
         "multa": multa,
     })
 
-@rol_requerido("Administrador", "Supervisor")
+@rol_requerido("Administrador")
 def anular_multa(request, multa_id):
     multa = get_object_or_404(
         Multa,
@@ -223,7 +223,7 @@ def reporte_multas(request):
         "tipos": Multa.TIPOS,
     })
 
-@rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
+@rol_requerido("Administrador", "Supervisor", "Cajero")
 def exportar_reporte_multas_excel(request):
     estado = request.GET.get("estado", "")
     tipo = request.GET.get("tipo", "")

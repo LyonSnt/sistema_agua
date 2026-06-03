@@ -78,7 +78,6 @@ def comprobante_pago(request, pago_id):
         "pago": pago,
     })
 
-
 @rol_requerido("Administrador")
 def anular_pago(request, pago_id):
     pago = get_object_or_404(

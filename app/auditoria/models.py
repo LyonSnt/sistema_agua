@@ -14,6 +14,13 @@ class Auditoria(models.Model):
         ("LECTURA", "Lectura"),
         ("LOGIN", "Inicio de sesión"),
         ("LOGOUT", "Cierre de sesión"),
+        ("IMPORTAR_LECTURAS", "Importar lecturas"),
+        ("SUSPENDER_SERVICIO", "Suspender servicio"),
+        ("RECONECTAR_SERVICIO", "Reconectar servicio"),
+        ("CREAR_MULTA", "Crear multa"),
+        ("COBRAR_MULTA", "Cobrar multa"),
+        ("ANULAR_MULTA", "Anular multa"),
+        ("AGREGAR_RUBRO", "Agregar rubro"),
     )
 
     usuario = models.ForeignKey(

@@ -1,7 +1,6 @@
 from decimal import Decimal
 from datetime import timedelta
 
-from django.contrib.auth.decorators import login_required
 from django.db import models
 from django.db.models import Sum
 from django.shortcuts import render
@@ -13,10 +12,16 @@ from facturacion.models import Factura
 from pagos.models import Pago
 from lecturas.models import Lectura
 from auditoria.models import Auditoria
+from usuarios.decoradores import rol_requerido
 
 
-#@login_required
-@login_required(login_url="/login/")
+@rol_requerido(
+    "Administrador",
+    "Supervisor",
+    "Cajero",
+    "Lecturista",
+    "Consulta"
+)
 def inicio(request):
     hoy = timezone.localdate()
     inicio_mes = hoy.replace(day=1)

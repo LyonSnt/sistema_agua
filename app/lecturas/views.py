@@ -1,5 +1,4 @@
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import PeriodoFacturacion
@@ -13,6 +12,7 @@ from usuarios.decoradores import rol_requerido
 
 from django.http import HttpResponse
 from openpyxl import Workbook, load_workbook
+from auditoria.utils import registrar_auditoria
 
 
 @rol_requerido("Administrador", "Supervisor")
@@ -32,6 +32,18 @@ def generar_lecturas(request):
         )
 
         resultado = generar_lecturas_periodo(periodo)
+
+        registrar_auditoria(
+            request,
+            accion="LECTURA",
+            modulo="Lecturas",
+            descripcion=(
+                f"Generó lecturas del período {periodo}. "
+                f"Creadas: {resultado['creadas']}, "
+                f"Existentes: {resultado['existentes']}, "
+                f"Errores: {resultado['errores']}"
+            ),
+        )
 
         messages.success(
             request,
@@ -55,10 +67,6 @@ def registro_masivo_lecturas(request):
 
     sectores = Sector.objects.filter(activo=True).order_by("nombre")
     rutas = Ruta.objects.filter(activo=True).select_related("sector").order_by("sector__nombre", "nombre")
-
-    periodo_id = request.GET.get("periodo") or request.POST.get("periodo")
-    sector_id = request.GET.get("sector") or request.POST.get("sector")
-    ruta_id = request.GET.get("ruta") or request.POST.get("ruta")
 
     periodo_id = request.GET.get("periodo") or request.POST.get("periodo")
     sector_id = request.GET.get("sector") or request.POST.get("sector")
@@ -147,6 +155,20 @@ def registro_masivo_lecturas(request):
                     errores += 1
                     print(f"Error lectura {lectura.id}: {e}")
 
+        registrar_auditoria(
+            request,
+            accion="LECTURA",
+            modulo="Lecturas",
+            descripcion=(
+                f"Registro masivo de lecturas. "
+                f"Período ID: {periodo_id}, "
+                f"Sector ID: {sector_id or 'Todos'}, "
+                f"Ruta ID: {ruta_id or 'Todas'}, "
+                f"Actualizadas: {actualizadas}, "
+                f"Errores: {errores}."
+            ),
+        )
+
         messages.success(
             request,
             f"Lecturas actualizadas: {actualizadas}. Errores: {errores}."
@@ -186,7 +208,6 @@ def registro_masivo_lecturas(request):
     }
 
     return render(request, "lecturas/registro_masivo.html", contexto)
-
 
 @rol_requerido("Administrador", "Supervisor", "Lecturista")
 def descargar_plantilla_lecturas(request):
@@ -244,6 +265,16 @@ def importar_lecturas_excel(request):
                 actualizadas += 1
 
             request.session.pop("importacion_lecturas_validas", None)
+
+            registrar_auditoria(
+                request,
+                accion="IMPORTAR_LECTURAS",
+                modulo="Lecturas",
+                descripcion=(
+                    f"Importó lecturas desde Excel. "
+                    f"Lecturas actualizadas: {actualizadas}."
+                ),
+            )
 
             messages.success(
                 request,

@@ -1,0 +1,412 @@
+{% extends "base/base.html" %}
+
+{% block titulo %}Ficha del abonado{% endblock %}
+{% block encabezado %}Ficha del abonado{% endblock %}
+
+{% block contenido %}
+
+<div class="mb-4">
+    <a href="{% url 'abonados:lista' %}"
+       class="px-4 py-2 bg-gray-200 rounded-lg">
+        Volver
+    </a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+
+    <!-- COLUMNA IZQUIERDA - DATOS GENERALES -->
+    <div class="lg:col-span-1 space-y-6">
+
+        <div class="bg-white rounded-xl shadow p-5">
+            <h3 class="text-lg font-semibold mb-4">Datos generales</h3>
+
+            <div class="space-y-3 text-sm">
+                <div>
+                    <p class="text-gray-500">Código</p>
+                    <p class="font-semibold">{{ abonado.codigo }}</p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500">Abonado</p>
+                    <p class="font-semibold">{{ abonado }}</p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500">Cédula/RUC</p>
+                    <p class="font-semibold">{{ abonado.cedula_ruc }}</p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500">Teléfono</p>
+                    <p class="font-semibold">{{ abonado.telefono|default:"-" }}</p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500">Correo</p>
+                    <p class="font-semibold">{{ abonado.correo|default:"-" }}</p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500">Dirección</p>
+                    <p class="font-semibold">{{ abonado.direccion }}</p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500">Sector</p>
+                    <p class="font-semibold">{{ abonado.sector }}</p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500">Ruta</p>
+                    <p class="font-semibold">{{ abonado.ruta }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+   <!-- COLUMNA DERECHA - INFORMACION DEL MEDIDOR -->
+    <div class="bg-white rounded-xl shadow p-5">
+
+        <h2 class="text-lg font-semibold mb-4">
+            Información del medidor
+        </h2>
+
+        {% if medidor %}
+
+        <div class="grid md:grid-cols-2 gap-4">
+
+            <div>
+                <p class="text-gray-500 text-sm">Número</p>
+                <p class="font-semibold">{{ medidor.numero }}</p>
+            </div>
+
+            <div>
+                <p class="text-gray-500 text-sm">Estado</p>
+                <p class="font-semibold">{{ medidor.get_estado_display }}</p>
+            </div>
+
+            <div>
+                <p class="text-gray-500 text-sm">Marca</p>
+                <p>{{ medidor.marca|default:"-" }}</p>
+            </div>
+
+            <div>
+                <p class="text-gray-500 text-sm">Modelo</p>
+                <p>{{ medidor.modelo|default:"-" }}</p>
+            </div>
+
+        </div>
+
+        {% if ultima_lectura %}
+
+        <div class="mt-4 border-t pt-4">
+
+            <h3 class="font-semibold mb-3">
+                Última lectura registrada
+            </h3>
+
+            <div class="grid md:grid-cols-4 gap-4">
+
+                <div>
+                    <p class="text-gray-500 text-sm">Período</p>
+                    <p>{{ ultima_lectura.periodo.nombre }}</p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500 text-sm">Lectura anterior</p>
+                    <p>{{ ultima_lectura.lectura_anterior }}</p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500 text-sm">Lectura actual</p>
+                    <p>{{ ultima_lectura.lectura_actual }}</p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500 text-sm">Consumo</p>
+                    <p>{{ ultima_lectura.consumo }}</p>
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+        {% else %}
+
+        <p class="text-gray-500">
+            No existe un medidor asignado.
+        </p>
+
+        {% endif %}
+
+    </div>
+    
+
+    <div class="lg:col-span-2 space-y-6">
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white rounded-xl shadow p-5">
+                <p class="text-sm text-gray-500">Estado servicio</p>
+                {% if abonado.estado_servicio == "SUSPENDIDO" %}
+                    <p class="text-2xl font-bold text-red-700">Suspendido</p>
+                {% else %}
+                    <p class="text-2xl font-bold text-green-700">Activo</p>
+                {% endif %}
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-5">
+                <p class="text-sm text-gray-500">Estado cuenta</p>
+                <p class="text-2xl font-bold">
+                    {{ abonado.estado_cuenta }}
+                </p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-5">
+                <p class="text-sm text-gray-500">Facturas</p>
+                <p class="text-2xl font-bold">{{ facturas.count }}</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow p-5">
+
+            <h3 class="text-lg font-semibold mb-4">
+                Resumen financiero
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 text-sm">
+
+                <div>
+                    <p class="text-gray-500">Total facturado</p>
+                    <p class="text-xl font-bold">
+                        ${{ total_facturado|floatformat:2 }}
+                    </p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500">Total pagado</p>
+                    <p class="text-xl font-bold text-green-700">
+                        ${{ total_pagado|floatformat:2 }}
+                    </p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500">Saldo pendiente</p>
+                    <p class="text-xl font-bold text-red-700">
+                        ${{ saldo_pendiente|floatformat:2 }}
+                    </p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500">Facturas pendientes</p>
+                    <p class="text-xl font-bold">
+                        {{ facturas_pendientes }}
+                    </p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500">Facturas pagadas</p>
+                    <p class="text-xl font-bold">
+                        {{ facturas_pagadas }}
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="bg-white rounded-xl shadow p-5">
+            <h3 class="text-lg font-semibold mb-4">Facturas del abonado</h3>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-100">
+                        <tr>
+                            <th class="p-3 text-left">Factura</th>
+                            <th class="p-3 text-left">Período</th>
+                            <th class="p-3 text-right">Total</th>
+                            <th class="p-3 text-right">Pagado</th>
+                            <th class="p-3 text-right">Saldo</th>
+                            <th class="p-3 text-center">Estado</th>
+                            <th class="p-3 text-center">Acción</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for factura in facturas %}
+                        <tr class="border-b hover:bg-slate-50">
+                            <td class="p-3">{{ factura.numero }}</td>
+                            <td class="p-3">{{ factura.periodo }}</td>
+                            <td class="p-3 text-right">${{ factura.total|floatformat:2 }}</td>
+                            <td class="p-3 text-right">${{ factura.total_pagado|floatformat:2 }}</td>
+                            <td class="p-3 text-right font-semibold">${{ factura.saldo_pendiente|floatformat:2 }}</td>
+                            <td class="p-3 text-center">
+                                <span class="px-2 py-1 text-xs rounded bg-gray-100">
+                                    {{ factura.estado }}
+                                </span>
+                            </td>
+                            <td class="p-3 text-center">
+                                <a href="{% url 'facturacion:detalle' factura.id %}"
+                                   class="px-3 py-1 bg-slate-700 text-white rounded">
+                                    Ver
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="p-5 text-center text-gray-500">
+                                No existen facturas registradas.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+            </div>
+            
+        </div>
+        <div class="bg-white rounded-xl shadow p-5 mt-6">
+            <h2 class="text-lg font-semibold mb-4">
+                Historial de pagos
+            </h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+
+                    <thead>
+                        <tr class="bg-slate-100">
+                            <th class="p-3 text-left">Fecha</th>
+                            <th class="p-3 text-left">Factura</th>
+                            <th class="p-3 text-left">Valor</th>
+                            <th class="p-3 text-left">Estado</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for pago in pagos %}
+                        <tr class="border-b">
+
+                            <td class="p-3">
+                                {{ pago.fecha_pago|date:"d/m/Y H:i" }}
+                            </td>
+
+                            <td class="p-3">
+                                {{ pago.factura.numero }}
+                            </td>
+
+                            <td class="p-3 font-semibold">
+                                ${{ pago.valor_pagado }}
+                            </td>
+
+                            <td class="p-3">
+
+                                {% if pago.anulado %}
+                                    <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
+                                        Anulado
+                                    </span>
+                                {% else %}
+                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                                        Válido
+                                    </span>
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="p-3 text-center text-gray-500">
+                                No existen pagos registrados.
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow p-5 mt-6">
+
+    <h3 class="text-lg font-semibold mb-4">
+        Historial de suspensiones
+    </h3>
+
+    <div class="overflow-x-auto">
+
+        <table class="w-full text-sm">
+
+            <thead>
+                <tr class="bg-slate-100">
+                    <th class="p-3 text-left">Fecha</th>
+                    <th class="p-3 text-left">Estado</th>
+                    <th class="p-3 text-left">Motivo</th>
+                    <th class="p-3 text-left">Reconexión</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for item in historial_suspensiones %}
+
+                <tr class="border-b">
+
+                    <td class="p-3">
+                        {{ item.fecha_suspension|date:"d/m/Y" }}
+                    </td>
+
+                    <td class="p-3">
+
+                        {% if item.estado == "SUSPENDIDO" %}
+                            <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
+                                Suspendido
+                            </span>
+
+                        {% elif item.estado == "RECONECTADO" %}
+                            <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                                Reconectado
+                            </span>
+
+                        {% else %}
+                            <span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
+                                Anulado
+                            </span>
+                        {% endif %}
+
+                    </td>
+
+                    <td class="p-3">
+                        {{ item.motivo_suspension }}
+                    </td>
+
+                    <td class="p-3">
+                        {{ item.fecha_reconexion|date:"d/m/Y"|default:"-" }}
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="4" class="p-3 text-center text-gray-500">
+                        No registra suspensiones.
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+    </div>
+</div>
+
+{% endblock %}
