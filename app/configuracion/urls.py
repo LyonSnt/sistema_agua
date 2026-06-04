@@ -21,8 +21,10 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from usuarios.views import LoginAuditoriaView, LogoutAuditoriaView
+from django.shortcuts import redirect
 
 urlpatterns = [
+    path("", lambda request: redirect("login")),
     path('admin/', admin.site.urls),
     path("panel/", include("panel.urls")),
     path("abonados/", include("abonados.urls")),
