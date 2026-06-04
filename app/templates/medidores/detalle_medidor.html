@@ -1,0 +1,268 @@
+{% extends "base/base.html" %}
+
+{% block titulo %}Detalle del medidor{% endblock %}
+{% block encabezado %}Detalle del medidor{% endblock %}
+
+{% block contenido %}
+
+<div class="flex gap-2 mb-4">
+    <a href="{% url 'medidores:lista' %}"
+       class="px-4 py-2 bg-gray-200 rounded-lg">
+        Volver
+    </a>
+
+    <a href="{% url 'abonados:detalle' medidor.abonado.id %}"
+       class="px-4 py-2 bg-slate-700 text-white rounded-lg">
+        Ver abonado
+    </a>
+    <a href="{% url 'medidores:detalle_pdf' medidor.id %}"
+    target="_blank"
+    class="px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600">
+        Ver PDF
+    </a>
+    {% if puede_gestionar_abonados %}
+    <a href="{% url 'medidores:editar' medidor.id %}"
+    class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-500">
+        Editar
+    </a>
+    {% endif %}
+</div>
+
+
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Estado medidor</p>
+
+        {% if medidor.estado == "ACTIVO" %}
+            <p class="text-2xl font-bold text-green-700">Activo</p>
+        {% elif medidor.estado == "SUSPENDIDO" %}
+            <p class="text-2xl font-bold text-red-700">Suspendido</p>
+        {% elif medidor.estado == "DANADO" %}
+            <p class="text-2xl font-bold text-yellow-700">Dañado</p>
+        {% else %}
+            <p class="text-2xl font-bold text-gray-700">Retirado</p>
+        {% endif %}
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Lecturas registradas</p>
+        <p class="text-2xl font-bold">{{ total_lecturas }}</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Consumo acumulado</p>
+        <p class="text-2xl font-bold">{{ consumo_acumulado }}</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Facturas pendientes</p>
+        <p class="text-2xl font-bold text-red-700">
+            {{ facturas_pendientes }}
+        </p>
+    </div>
+
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <h3 class="text-lg font-semibold mb-4">Datos del medidor</h3>
+
+        <div class="space-y-3 text-sm">
+            <div>
+                <p class="text-gray-500">Número</p>
+                <p class="font-semibold">{{ medidor.numero }}</p>
+            </div>
+
+            <div>
+                <p class="text-gray-500">Estado</p>
+                <p class="font-semibold">{{ medidor.get_estado_display }}</p>
+            </div>
+
+            <div>
+                <p class="text-gray-500">Marca</p>
+                <p class="font-semibold">{{ medidor.marca|default:"-" }}</p>
+            </div>
+
+            <div>
+                <p class="text-gray-500">Modelo</p>
+                <p class="font-semibold">{{ medidor.modelo|default:"-" }}</p>
+            </div>
+
+            <div>
+                <p class="text-gray-500">Lectura inicial</p>
+                <p class="font-semibold">{{ medidor.lectura_inicial }}</p>
+            </div>
+
+            <div>
+                <p class="text-gray-500">Fecha instalación</p>
+                <p class="font-semibold">{{ medidor.fecha_instalacion|date:"d/m/Y"|default:"-" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <h3 class="text-lg font-semibold mb-4">Abonado asociado</h3>
+
+        <div class="space-y-3 text-sm">
+            <div>
+                <p class="text-gray-500">Abonado</p>
+                <p class="font-semibold">{{ medidor.abonado }}</p>
+            </div>
+
+            <div>
+                <p class="text-gray-500">Cédula/RUC</p>
+                <p class="font-semibold">{{ medidor.abonado.cedula_ruc }}</p>
+            </div>
+
+            <div>
+                <p class="text-gray-500">Sector</p>
+                <p class="font-semibold">{{ medidor.abonado.sector }}</p>
+            </div>
+
+            <div>
+                <p class="text-gray-500">Ruta</p>
+                <p class="font-semibold">{{ medidor.abonado.ruta }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <h3 class="text-lg font-semibold mb-4">Última lectura</h3>
+
+        {% if ultima_lectura %}
+            <div class="space-y-3 text-sm">
+                <div>
+                    <p class="text-gray-500">Período</p>
+                    <p class="font-semibold">{{ ultima_lectura.periodo }}</p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500">Lectura anterior</p>
+                    <p class="font-semibold">{{ ultima_lectura.lectura_anterior }}</p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500">Lectura actual</p>
+                    <p class="font-semibold">{{ ultima_lectura.lectura_actual }}</p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500">Consumo</p>
+                    <p class="font-semibold">{{ ultima_lectura.consumo }}</p>
+                </div>
+            </div>
+        {% else %}
+            <p class="text-gray-500 text-sm">
+                No existen lecturas registradas.
+            </p>
+        {% endif %}
+    </div>
+
+</div>
+
+<div class="bg-white rounded-xl shadow p-5 mt-6">
+
+    <h3 class="text-lg font-semibold mb-4">Historial de lecturas</h3>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-100">
+                <tr>
+                    <th class="p-3 text-left">Período</th>
+                    <th class="p-3 text-right">Anterior</th>
+                    <th class="p-3 text-right">Actual</th>
+                    <th class="p-3 text-right">Consumo</th>
+                    <th class="p-3 text-left">Observación</th>
+                    <th class="p-3 text-center">Registrada</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for lectura in lecturas %}
+                <tr class="border-b hover:bg-slate-50">
+                    <td class="p-3">{{ lectura.periodo }}</td>
+                    <td class="p-3 text-right">{{ lectura.lectura_anterior }}</td>
+                    <td class="p-3 text-right">{{ lectura.lectura_actual }}</td>
+                    <td class="p-3 text-right font-semibold">{{ lectura.consumo }}</td>
+                    <td class="p-3">{{ lectura.observacion|default:"-" }}</td>
+                    <td class="p-3 text-center">
+                        {% if lectura.lectura_registrada %}
+                            <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                                Sí
+                            </span>
+                        {% else %}
+                            <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded">
+                                No
+                            </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="p-5 text-center text-gray-500">
+                        No existen lecturas registradas.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<div class="bg-white rounded-xl shadow p-5 mt-6">
+
+    <h3 class="text-lg font-semibold mb-4">
+        Facturas generadas por este medidor
+    </h3>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-100">
+                <tr>
+                    <th class="p-3 text-left">Factura</th>
+                    <th class="p-3 text-left">Período</th>
+                    <th class="p-3 text-right">Total</th>
+                    <th class="p-3 text-right">Pagado</th>
+                    <th class="p-3 text-right">Saldo</th>
+                    <th class="p-3 text-center">Estado</th>
+                    <th class="p-3 text-center">Acción</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for factura in facturas %}
+                <tr class="border-b hover:bg-slate-50">
+                    <td class="p-3">{{ factura.numero }}</td>
+                    <td class="p-3">{{ factura.periodo }}</td>
+                    <td class="p-3 text-right">${{ factura.total|floatformat:2 }}</td>
+                    <td class="p-3 text-right">${{ factura.total_pagado|floatformat:2 }}</td>
+                    <td class="p-3 text-right font-semibold">${{ factura.saldo_pendiente|floatformat:2 }}</td>
+                    <td class="p-3 text-center">
+                        <span class="px-2 py-1 text-xs bg-gray-100 rounded">
+                            {{ factura.estado }}
+                        </span>
+                    </td>
+                    <td class="p-3 text-center">
+                        <a href="{% url 'facturacion:detalle' factura.id %}"
+                           class="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-600">
+                            Ver
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="p-5 text-center text-gray-500">
+                        No existen facturas generadas para este medidor.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

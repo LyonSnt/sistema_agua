@@ -5,11 +5,44 @@
 
 {% block contenido %}
 
-<div class="mb-4">
+<div class="flex flex-wrap gap-2 mb-4">
+
     <a href="{% url 'abonados:lista' %}"
        class="px-4 py-2 bg-gray-200 rounded-lg">
         Volver
     </a>
+    <a href="{% url 'abonados:detalle_pdf' abonado.id %}"
+    target="_blank"
+    class="px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600">
+        Ver PDF
+    </a>
+
+    {% if factura_pendiente %}
+        {% if puede_cobrar %}
+            <a href="{% url 'pagos:cobrar' factura_pendiente.id %}"
+            class="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-600">
+                Cobrar
+            </a>
+        {% endif %}
+    {% endif %}
+
+    {% if abonado.estado_servicio == "ACTIVO" and saldo_pendiente > 0 %}
+        {% if puede_suspender %}
+            <a href="{% url 'servicios:suspender' %}?abonado={{ abonado.id }}"
+            class="px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-600">
+                Suspender
+            </a>
+        {% endif %}
+
+    {% elif abonado.estado_servicio == "SUSPENDIDO" %}
+        {% if puede_reconectar %}
+            <a href="{% url 'servicios:reconectar_por_abonado' abonado.id %}"
+            class="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-600">
+                Reconectar
+            </a>
+        {% endif %}
+    {% endif %}
+
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -147,7 +180,7 @@
 
     <div class="lg:col-span-2 space-y-6">
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="bg-white rounded-xl shadow p-5">
                 <p class="text-sm text-gray-500">Estado servicio</p>
                 {% if abonado.estado_servicio == "SUSPENDIDO" %}
@@ -159,14 +192,27 @@
 
             <div class="bg-white rounded-xl shadow p-5">
                 <p class="text-sm text-gray-500">Estado cuenta</p>
-                <p class="text-2xl font-bold">
-                    {{ abonado.estado_cuenta }}
-                </p>
+                {% if abonado.estado_cuenta == "AL_DIA" %}
+                    <p class="text-2xl font-bold text-green-600">
+                        Al día
+                    </p>
+                {% else %}
+                    <p class="text-2xl font-bold text-red-600">
+                        Con deuda
+                    </p>
+                {% endif %}
             </div>
 
             <div class="bg-white rounded-xl shadow p-5">
                 <p class="text-sm text-gray-500">Facturas</p>
                 <p class="text-2xl font-bold">{{ facturas.count }}</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-5">
+                <p class="text-sm text-gray-500">Saldo pendiente</p>
+                <p class="text-2xl font-bold text-red-700">
+                    ${{ saldo_pendiente|floatformat:2 }}
+                </p>
             </div>
         </div>
 
@@ -331,80 +377,80 @@
 
         <div class="bg-white rounded-xl shadow p-5 mt-6">
 
-    <h3 class="text-lg font-semibold mb-4">
-        Historial de suspensiones
-    </h3>
+            <h3 class="text-lg font-semibold mb-4">
+                Historial de suspensiones
+            </h3>
 
-    <div class="overflow-x-auto">
+            <div class="overflow-x-auto">
 
-        <table class="w-full text-sm">
+                <table class="w-full text-sm">
 
-            <thead>
-                <tr class="bg-slate-100">
-                    <th class="p-3 text-left">Fecha</th>
-                    <th class="p-3 text-left">Estado</th>
-                    <th class="p-3 text-left">Motivo</th>
-                    <th class="p-3 text-left">Reconexión</th>
-                </tr>
-            </thead>
+                    <thead>
+                        <tr class="bg-slate-100">
+                            <th class="p-3 text-left">Fecha</th>
+                            <th class="p-3 text-left">Estado</th>
+                            <th class="p-3 text-left">Motivo</th>
+                            <th class="p-3 text-left">Reconexión</th>
+                        </tr>
+                    </thead>
 
-            <tbody>
+                    <tbody>
 
-                {% for item in historial_suspensiones %}
+                        {% for item in historial_suspensiones %}
 
-                <tr class="border-b">
+                        <tr class="border-b">
 
-                    <td class="p-3">
-                        {{ item.fecha_suspension|date:"d/m/Y" }}
-                    </td>
+                            <td class="p-3">
+                                {{ item.fecha_suspension|date:"d/m/Y" }}
+                            </td>
 
-                    <td class="p-3">
+                            <td class="p-3">
 
-                        {% if item.estado == "SUSPENDIDO" %}
-                            <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
-                                Suspendido
-                            </span>
+                                {% if item.estado == "SUSPENDIDO" %}
+                                    <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
+                                        Suspendido
+                                    </span>
 
-                        {% elif item.estado == "RECONECTADO" %}
-                            <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
-                                Reconectado
-                            </span>
+                                {% elif item.estado == "RECONECTADO" %}
+                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                                        Reconectado
+                                    </span>
 
-                        {% else %}
-                            <span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
-                                Anulado
-                            </span>
-                        {% endif %}
+                                {% else %}
+                                    <span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
+                                        Anulado
+                                    </span>
+                                {% endif %}
 
-                    </td>
+                            </td>
 
-                    <td class="p-3">
-                        {{ item.motivo_suspension }}
-                    </td>
+                            <td class="p-3">
+                                {{ item.motivo_suspension }}
+                            </td>
 
-                    <td class="p-3">
-                        {{ item.fecha_reconexion|date:"d/m/Y"|default:"-" }}
-                    </td>
+                            <td class="p-3">
+                                {{ item.fecha_reconexion|date:"d/m/Y"|default:"-" }}
+                            </td>
 
-                </tr>
+                        </tr>
 
-                {% empty %}
+                        {% empty %}
 
-                <tr>
-                    <td colspan="4" class="p-3 text-center text-gray-500">
-                        No registra suspensiones.
-                    </td>
-                </tr>
+                        <tr>
+                            <td colspan="4" class="p-3 text-center text-gray-500">
+                                No registra suspensiones.
+                            </td>
+                        </tr>
 
-                {% endfor %}
+                        {% endfor %}
 
-            </tbody>
+                    </tbody>
 
-        </table>
+                </table>
 
-    </div>
+            </div>
 
-</div>
+        </div>
 
     </div>
 </div>

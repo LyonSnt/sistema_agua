@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+
+<style>
+    @page {
+        size: A4;
+        margin: 20px;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 11px;
+        color: #222;
+    }
+
+    .encabezado {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .titulo {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .subtitulo {
+        font-size: 12px;
+        color: #666;
+    }
+
+    h3 {
+        margin-top: 18px;
+        margin-bottom: 8px;
+        font-size: 13px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 14px;
+    }
+
+    th {
+        background: #f1f5f9;
+        padding: 7px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+
+    td {
+        padding: 7px;
+        border: 1px solid #ddd;
+    }
+
+    .label {
+        font-weight: bold;
+        width: 25%;
+    }
+
+    .text-right {
+        text-align: right;
+    }
+
+    .estado-rojo {
+        color: #b91c1c;
+        font-weight: bold;
+    }
+
+    .estado-verde {
+        color: #15803d;
+        font-weight: bold;
+    }
+
+    .footer {
+        margin-top: 40px;
+        font-size: 10px;
+        color: #555;
+        text-align: center;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="encabezado">
+    <div class="titulo">
+        {{ configuracion.nombre|default:"Sistema de Agua Potable" }}
+    </div>
+    <div class="subtitulo">
+        Ficha completa del abonado
+    </div>
+</div>
+
+<h3>Datos generales</h3>
+
+<table>
+    <tr>
+        <td class="label">Código</td>
+        <td>{{ abonado.codigo }}</td>
+        <td class="label">Cédula/RUC</td>
+        <td>{{ abonado.cedula_ruc }}</td>
+    </tr>
+    <tr>
+        <td class="label">Abonado</td>
+        <td>{{ abonado }}</td>
+        <td class="label">Teléfono</td>
+        <td>{{ abonado.telefono|default:"-" }}</td>
+    </tr>
+    <tr>
+        <td class="label">Correo</td>
+        <td>{{ abonado.correo|default:"-" }}</td>
+        <td class="label">Sector</td>
+        <td>{{ abonado.sector }}</td>
+    </tr>
+    <tr>
+        <td class="label">Ruta</td>
+        <td>{{ abonado.ruta }}</td>
+        <td class="label">Dirección</td>
+        <td>{{ abonado.direccion }}</td>
+    </tr>
+</table>
+
+<h3>Estado y resumen financiero</h3>
+
+<table>
+    <tr>
+        <td class="label">Estado servicio</td>
+        <td>
+            {% if abonado.estado_servicio == "ACTIVO" %}
+                <span class="estado-verde">Activo</span>
+            {% else %}
+                <span class="estado-rojo">Suspendido</span>
+            {% endif %}
+        </td>
+
+        <td class="label">Estado cuenta</td>
+        <td>
+            {% if abonado.estado_cuenta == "AL_DIA" %}
+                <span class="estado-verde">Al día</span>
+            {% else %}
+                <span class="estado-rojo">Con deuda</span>
+            {% endif %}
+        </td>
+    </tr>
+
+    <tr>
+        <td class="label">Total facturado</td>
+        <td>${{ total_facturado|floatformat:2 }}</td>
+        <td class="label">Total pagado</td>
+        <td>${{ total_pagado|floatformat:2 }}</td>
+    </tr>
+
+    <tr>
+        <td class="label">Saldo pendiente</td>
+        <td>${{ saldo_pendiente|floatformat:2 }}</td>
+        <td class="label">Facturas pendientes</td>
+        <td>{{ facturas_pendientes }}</td>
+    </tr>
+
+    <tr>
+        <td class="label">Facturas pagadas</td>
+        <td>{{ facturas_pagadas }}</td>
+        <td class="label">Total facturas</td>
+        <td>{{ facturas.count }}</td>
+    </tr>
+</table>
+
+<h3>Información del medidor</h3>
+
+<table>
+    {% if medidor %}
+    <tr>
+        <td class="label">Número</td>
+        <td>{{ medidor.numero }}</td>
+        <td class="label">Estado</td>
+        <td>{{ medidor.get_estado_display }}</td>
+    </tr>
+
+    <tr>
+        <td class="label">Marca</td>
+        <td>{{ medidor.marca|default:"-" }}</td>
+        <td class="label">Modelo</td>
+        <td>{{ medidor.modelo|default:"-" }}</td>
+    </tr>
+
+    {% if ultima_lectura %}
+    <tr>
+        <td class="label">Último período</td>
+        <td>{{ ultima_lectura.periodo }}</td>
+        <td class="label">Consumo</td>
+        <td>{{ ultima_lectura.consumo }}</td>
+    </tr>
+
+    <tr>
+        <td class="label">Lectura anterior</td>
+        <td>{{ ultima_lectura.lectura_anterior }}</td>
+        <td class="label">Lectura actual</td>
+        <td>{{ ultima_lectura.lectura_actual }}</td>
+    </tr>
+    {% endif %}
+
+    {% else %}
+    <tr>
+        <td colspan="4">No registra medidor asignado.</td>
+    </tr>
+    {% endif %}
+</table>
+
+<h3>Facturas del abonado</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Factura</th>
+            <th>Período</th>
+            <th class="text-right">Total</th>
+            <th class="text-right">Pagado</th>
+            <th class="text-right">Saldo</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for factura in facturas %}
+        <tr>
+            <td>{{ factura.numero }}</td>
+            <td>{{ factura.periodo }}</td>
+            <td class="text-right">${{ factura.total|floatformat:2 }}</td>
+            <td class="text-right">${{ factura.total_pagado|floatformat:2 }}</td>
+            <td class="text-right">${{ factura.saldo_pendiente|floatformat:2 }}</td>
+            <td>{{ factura.estado }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">No existen facturas registradas.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>Historial de pagos</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Factura</th>
+            <th class="text-right">Valor</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for pago in pagos %}
+        <tr>
+            <td>{{ pago.fecha_pago|date:"d/m/Y H:i" }}</td>
+            <td>{{ pago.factura.numero }}</td>
+            <td class="text-right">${{ pago.valor_pagado|floatformat:2 }}</td>
+            <td>
+                {% if pago.anulado %}
+                    Anulado
+                {% else %}
+                    Válido
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">No existen pagos registrados.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>Historial de suspensiones</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Fecha suspensión</th>
+            <th>Estado</th>
+            <th>Motivo</th>
+            <th>Fecha reconexión</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for item in historial_suspensiones %}
+        <tr>
+            <td>{{ item.fecha_suspension|date:"d/m/Y" }}</td>
+            <td>{{ item.get_estado_display }}</td>
+            <td>{{ item.motivo_suspension }}</td>
+            <td>{{ item.fecha_reconexion|date:"d/m/Y"|default:"-" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">No registra suspensiones.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="footer">
+    Documento generado desde el sistema de facturación de agua potable.
+</div>
+
+</body>
+</html>

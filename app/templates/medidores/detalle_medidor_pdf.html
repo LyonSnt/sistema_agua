@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+
+<style>
+    @page {
+        size: A4;
+        margin: 20px;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 11px;
+        color: #222;
+    }
+
+    .encabezado {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .titulo {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .subtitulo {
+        font-size: 12px;
+        color: #666;
+    }
+
+    h3 {
+        margin-top: 18px;
+        margin-bottom: 8px;
+        font-size: 13px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 14px;
+    }
+
+    th {
+        background: #f1f5f9;
+        padding: 7px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+
+    td {
+        padding: 7px;
+        border: 1px solid #ddd;
+    }
+
+    .label {
+        font-weight: bold;
+        width: 25%;
+    }
+
+    .text-right {
+        text-align: right;
+    }
+
+    .estado-verde {
+        color: #15803d;
+        font-weight: bold;
+    }
+
+    .estado-rojo {
+        color: #b91c1c;
+        font-weight: bold;
+    }
+
+    .estado-amarillo {
+        color: #a16207;
+        font-weight: bold;
+    }
+
+    .footer {
+        margin-top: 40px;
+        font-size: 10px;
+        color: #555;
+        text-align: center;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="encabezado">
+    <div class="titulo">
+        {{ configuracion.nombre|default:"Sistema de Agua Potable" }}
+    </div>
+    <div class="subtitulo">
+        Ficha completa del medidor
+    </div>
+</div>
+
+<h3>Datos del medidor</h3>
+
+<table>
+    <tr>
+        <td class="label">Número</td>
+        <td>{{ medidor.numero }}</td>
+        <td class="label">Estado</td>
+        <td>
+            {% if medidor.estado == "ACTIVO" %}
+                <span class="estado-verde">Activo</span>
+            {% elif medidor.estado == "SUSPENDIDO" %}
+                <span class="estado-rojo">Suspendido</span>
+            {% elif medidor.estado == "DANADO" %}
+                <span class="estado-amarillo">Dañado</span>
+            {% else %}
+                Retirado
+            {% endif %}
+        </td>
+    </tr>
+
+    <tr>
+        <td class="label">Marca</td>
+        <td>{{ medidor.marca|default:"-" }}</td>
+        <td class="label">Modelo</td>
+        <td>{{ medidor.modelo|default:"-" }}</td>
+    </tr>
+
+    <tr>
+        <td class="label">Lectura inicial</td>
+        <td>{{ medidor.lectura_inicial }}</td>
+        <td class="label">Fecha instalación</td>
+        <td>{{ medidor.fecha_instalacion|date:"d/m/Y"|default:"-" }}</td>
+    </tr>
+</table>
+
+<h3>Abonado asociado</h3>
+
+<table>
+    <tr>
+        <td class="label">Abonado</td>
+        <td>{{ medidor.abonado }}</td>
+        <td class="label">Cédula/RUC</td>
+        <td>{{ medidor.abonado.cedula_ruc }}</td>
+    </tr>
+
+    <tr>
+        <td class="label">Sector</td>
+        <td>{{ medidor.abonado.sector }}</td>
+        <td class="label">Ruta</td>
+        <td>{{ medidor.abonado.ruta }}</td>
+    </tr>
+
+    <tr>
+        <td class="label">Dirección</td>
+        <td colspan="3">{{ medidor.abonado.direccion }}</td>
+    </tr>
+</table>
+
+<h3>Resumen del medidor</h3>
+
+<table>
+    <tr>
+        <td class="label">Lecturas registradas</td>
+        <td>{{ total_lecturas }}</td>
+        <td class="label">Consumo acumulado</td>
+        <td>{{ consumo_acumulado }}</td>
+    </tr>
+
+    <tr>
+        <td class="label">Facturas generadas</td>
+        <td>{{ total_facturas }}</td>
+        <td class="label">Facturas pendientes</td>
+        <td>{{ facturas_pendientes }}</td>
+    </tr>
+</table>
+
+<h3>Última lectura</h3>
+
+<table>
+    {% if ultima_lectura %}
+    <tr>
+        <td class="label">Período</td>
+        <td>{{ ultima_lectura.periodo }}</td>
+        <td class="label">Consumo</td>
+        <td>{{ ultima_lectura.consumo }}</td>
+    </tr>
+
+    <tr>
+        <td class="label">Lectura anterior</td>
+        <td>{{ ultima_lectura.lectura_anterior }}</td>
+        <td class="label">Lectura actual</td>
+        <td>{{ ultima_lectura.lectura_actual }}</td>
+    </tr>
+    {% else %}
+    <tr>
+        <td colspan="4">No existen lecturas registradas.</td>
+    </tr>
+    {% endif %}
+</table>
+
+<h3>Historial de lecturas</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Período</th>
+            <th class="text-right">Anterior</th>
+            <th class="text-right">Actual</th>
+            <th class="text-right">Consumo</th>
+            <th>Registrada</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for lectura in lecturas %}
+        <tr>
+            <td>{{ lectura.periodo }}</td>
+            <td class="text-right">{{ lectura.lectura_anterior }}</td>
+            <td class="text-right">{{ lectura.lectura_actual }}</td>
+            <td class="text-right">{{ lectura.consumo }}</td>
+            <td>
+                {% if lectura.lectura_registrada %}
+                    Sí
+                {% else %}
+                    No
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No existen lecturas registradas.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>Facturas generadas por este medidor</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Factura</th>
+            <th>Período</th>
+            <th class="text-right">Total</th>
+            <th class="text-right">Pagado</th>
+            <th class="text-right">Saldo</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for factura in facturas %}
+        <tr>
+            <td>{{ factura.numero }}</td>
+            <td>{{ factura.periodo }}</td>
+            <td class="text-right">${{ factura.total|floatformat:2 }}</td>
+            <td class="text-right">${{ factura.total_pagado|floatformat:2 }}</td>
+            <td class="text-right">${{ factura.saldo_pendiente|floatformat:2 }}</td>
+            <td>{{ factura.estado }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">No existen facturas generadas para este medidor.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="footer">
+    Documento generado desde el sistema de facturación de agua potable.
+</div>
+
+</body>
+</html>

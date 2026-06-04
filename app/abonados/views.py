@@ -11,14 +11,14 @@ from pagos.models import Pago
 from medidores.models import Medidor
 from lecturas.models import Lectura
 
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from weasyprint import HTML
 
-@rol_requerido(
-    "Administrador",
-    "Supervisor",
-    "Cajero",
-    "Lecturista",
-    "Consulta"
-)
+from configuracion_institucional.utils import obtener_configuracion
+
+
+@rol_requerido("Administrador", "Supervisor", "Cajero", "Lecturista", "Consulta")
 def lista_abonados(request):
     busqueda = request.GET.get("q", "")
 
@@ -48,13 +48,7 @@ def lista_abonados(request):
 
     return render(request, "abonados/lista_abonados.html", contexto)
 
-@rol_requerido(
-    "Administrador",
-    "Supervisor",
-    "Cajero",
-    "Lecturista",
-    "Consulta"
-)
+@rol_requerido("Administrador", "Supervisor", "Cajero", "Lecturista", "Consulta")
 def detalle_abonado(request, abonado_id):
     abonado = get_object_or_404(
         Abonado.objects.select_related("sector", "ruta"),
@@ -104,7 +98,9 @@ def detalle_abonado(request, abonado_id):
             "-periodo__mes"
         ).first()
 
-
+    factura_pendiente = facturas.filter(
+        estado__in=["PENDIENTE", "PARCIAL"]
+    ).order_by("fecha_emision").first()
 
     contexto = {
         "abonado": abonado,
@@ -118,6 +114,7 @@ def detalle_abonado(request, abonado_id):
         "facturas_pendientes": facturas_pendientes,
         "facturas_pagadas": facturas_pagadas,
         "historial_suspensiones": historial_suspensiones,
+        "factura_pendiente": factura_pendiente,
     }
 
     return render(
@@ -125,6 +122,90 @@ def detalle_abonado(request, abonado_id):
         "abonados/detalle_abonado.html",
         contexto
     )
+
+
+@rol_requerido("Administrador", "Supervisor", "Cajero", "Lecturista", "Consulta")
+def detalle_abonado_pdf(request, abonado_id):
+    abonado = get_object_or_404(
+        Abonado.objects.select_related("sector", "ruta"),
+        id=abonado_id,
+        activo=True
+    )
+
+    facturas = abonado.facturas.select_related(
+        "periodo"
+    ).prefetch_related(
+        "pagos",
+        "detalles"
+    ).order_by("-fecha_emision", "-numero")
+
+    pagos = Pago.objects.select_related(
+        "factura"
+    ).filter(
+        factura__abonado=abonado,
+        activo=True
+    ).order_by("-fecha_pago")
+
+    medidor = abonado.medidores.filter(
+        activo=True
+    ).first()
+
+    ultima_lectura = None
+
+    if medidor:
+        ultima_lectura = medidor.lecturas.order_by(
+            "-periodo__anio",
+            "-periodo__mes"
+        ).first()
+
+    historial_suspensiones = abonado.suspensiones.filter(
+        activo=True
+    ).order_by("-fecha_suspension")
+
+    total_facturado = sum(f.total for f in facturas)
+    total_pagado = sum(f.total_pagado for f in facturas)
+    saldo_pendiente = sum(f.saldo_pendiente for f in facturas)
+
+    facturas_pendientes = facturas.filter(
+        estado__in=["PENDIENTE", "PARCIAL"]
+    ).count()
+
+    facturas_pagadas = facturas.filter(
+        estado="PAGADA"
+    ).count()
+
+    html_string = render_to_string(
+        "abonados/detalle_abonado_pdf.html",
+        {
+            "abonado": abonado,
+            "facturas": facturas,
+            "pagos": pagos,
+            "medidor": medidor,
+            "ultima_lectura": ultima_lectura,
+            "historial_suspensiones": historial_suspensiones,
+            "total_facturado": total_facturado,
+            "total_pagado": total_pagado,
+            "saldo_pendiente": saldo_pendiente,
+            "facturas_pendientes": facturas_pendientes,
+            "facturas_pagadas": facturas_pagadas,
+            "configuracion": obtener_configuracion(),
+        }
+    )
+
+    pdf = HTML(string=html_string).write_pdf()
+
+    response = HttpResponse(pdf, content_type="application/pdf")
+    response["Content-Disposition"] = (
+        f'inline; filename="ficha_abonado_{abonado.codigo}.pdf"'
+    )
+
+    return response
+
+
+
+
+
+
 
 
 

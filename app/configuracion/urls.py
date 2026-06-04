@@ -34,4 +34,5 @@ urlpatterns = [
     path("logout/", LogoutAuditoriaView.as_view(), name="logout"),
     path("multas/", include("multas.urls")),
     path("servicios/", include("servicios.urls")),
+    path("medidores/", include("medidores.urls")),
 ]

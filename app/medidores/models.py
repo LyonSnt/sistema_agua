@@ -59,3 +59,21 @@ class Medidor(ModeloBase):
 
     def __str__(self):
         return f"{self.numero} - {self.abonado}"
+
+
+class CambioMedidor(ModeloBase):
+    abonado = models.ForeignKey(Abonado, on_delete=models.PROTECT)
+    medidor_anterior = models.ForeignKey(
+        Medidor,
+        on_delete=models.PROTECT,
+        related_name="cambios_como_anterior"
+    )
+    medidor_nuevo = models.ForeignKey(
+        Medidor,
+        on_delete=models.PROTECT,
+        related_name="cambios_como_nuevo"
+    )
+    fecha_cambio = models.DateField()
+    lectura_final_anterior = models.DecimalField(max_digits=10, decimal_places=2)
+    lectura_inicial_nuevo = models.DecimalField(max_digits=10, decimal_places=2)
+    motivo = models.TextField()
