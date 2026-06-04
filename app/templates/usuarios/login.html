@@ -1,9 +1,12 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar sesión</title>
+
+    <link rel="icon" href="{% static 'img/favicon.png' %}">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -13,39 +16,50 @@
 
     <!-- IMAGEN -->
     <div class="hidden lg:block relative">
-
         <img
-            src="/static/img/fondo.jpg"
+            src="{% static 'img/fondo.jpg' %}"
             class="w-full h-full object-cover"
             alt="Sistema de Agua">
 
         <div class="absolute inset-0 bg-slate-900/40"></div>
 
-        <div class="absolute bottom-10 left-10 right-10 text-white">
-            <h2 class="text-4xl font-bold mb-4">
+        <div class="absolute bottom-16 left-10 right-10 text-white">
+            <h2 class="text-3xl font-bold mb-3">
                 Sistema de Facturación de Agua Potable
             </h2>
 
-            <p class="text-lg">
+            <p class="text-base">
                 Gestión de abonados, medidores, lecturas, facturación,
                 cartera, suspensiones y multas.
             </p>
         </div>
-
     </div>
 
     <!-- LOGIN -->
     <div class="flex items-center justify-center p-6">
 
-        <div class="w-full max-w-md bg-white rounded-xl shadow p-8">
+        <div class="w-full max-w-lg bg-white rounded-xl shadow p-8">
 
             <div class="mb-6 text-center">
+
+                <p class="text-sm uppercase tracking-wide text-slate-600 mb-4">
+                    Junta Administradora de Agua Potable
+                </p>
+
+                <img
+                    src="{% static 'img/favicon.png' %}"
+                    alt="Logo"
+                    class="h-24 mx-auto mb-3 object-contain"
+                >
+
                 <h1 class="text-3xl font-bold text-slate-800">
                     Sistema de Agua
                 </h1>
+
                 <p class="text-sm text-gray-500">
                     Iniciar sesión
                 </p>
+
             </div>
 
             {% if form.errors %}
