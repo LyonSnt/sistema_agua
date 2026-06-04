@@ -29,21 +29,20 @@
             class="md:hidden bg-slate-900 text-white px-4 py-3 w-full text-left">
         ☰ Menú
     </button>
-    <div id="fondoMenu" class="hidden fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"></div>
+    <div id="fondoMenu" class="md:hidden bg-slate-900 text-white px-4 py-2 w-full text-left text-sm"></div>
 
 
     <div class="min-h-screen flex flex-col md:flex-row">
-<aside id="menuMobile"
-       class="hidden fixed top-0 left-0 z-50 h-screen w-72 overflow-y-auto bg-slate-900 text-white md:static md:block md:h-auto md:w-64">
-        <div class="p-5 border-b border-slate-700">
-                <h1 class="text-lg font-bold">Sistema de Agua</h1>
+        <aside id="menuMobile"
+            class="hidden fixed top-0 left-0 z-50 h-screen w-72 overflow-y-auto bg-slate-900 text-white md:static md:block md:h-auto md:w-64">
+            <div class="p-5 border-b border-slate-700">
+                <h1 class="text-base font-bold">Sistema de Agua</h1>
                 <p class="text-sm text-slate-300">Facturación</p>
             </div>
 
             {% with ruta=request.path %}
 
-            <nav class="p-4 space-y-4">
-
+            <nav class="p-4 space-y-3 text-sm">
                 <!-- INICIO -->
                 <div>
                     <p class="px-4 mb-1 text-xs uppercase text-slate-400">Inicio</p>
@@ -220,7 +219,7 @@
         <div class="flex-1">
             <header class="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
                 <div>
-                    <h2 class="text-xl font-semibold">{% block encabezado %}Panel principal{% endblock %}</h2>
+                    <h2 class="text-lg font-semibold">{% block encabezado %}Panel principal{% endblock %}</h2>
                     <p class="text-sm text-gray-500">Sistema de facturación de agua potable</p>
                 </div>
 
@@ -236,7 +235,7 @@
                 </div>
             </header>
 
-            <main class="p-6">
+            <main class="p-5">
                 {% block contenido %}
                 {% endblock %}
             </main>
