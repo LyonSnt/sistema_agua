@@ -2,6 +2,7 @@ services:
   web:
     build: .
     container_name: sistema_agua_web
+    restart: unless-stopped
     command: python manage.py runserver 0.0.0.0:8015
     volumes:
       - ./app:/app

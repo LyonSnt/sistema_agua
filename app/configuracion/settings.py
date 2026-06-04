@@ -25,38 +25,23 @@ environ.Env.read_env(os.path.join(BASE_DIR.parent, '.env'))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 #SECRET_KEY = 'django-insecure-2)y42fv=g!cdqp1yi@nri&au2@9a*l5238q1=&8(lw8t)h8dk)'
+
 SECRET_KEY = os.getenv("SECRET_KEY")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-#DEBUG = False
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
-#ALLOWED_HOSTS = []
-#ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
-#ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = os.getenv(
+    "ALLOWED_HOSTS",
+    "localhost,127.0.0.1"
+).split(",")
 
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    "192.168.110.207",
-    ".ngrok-free.app",
-]
+CSRF_TRUSTED_ORIGINS = os.getenv(
+    "CSRF_TRUSTED_ORIGINS",
+    ""
+).split(",")
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://*.ngrok-free.app",
-]
-
-
-# La sesión dura 30 minutos
-#SESSION_COOKIE_AGE = 1800
-
-# La sesión dura 1 hora
-SESSION_COOKIE_AGE = 3600
-
-# La sesión expira cuando se cierra el navegador
+SESSION_COOKIE_AGE = int(os.getenv("SESSION_COOKIE_AGE", "3600"))
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-
-# Renueva el tiempo de sesión en cada petición
 SESSION_SAVE_EVERY_REQUEST = True
 
 # Application definition
