@@ -33,3 +33,7 @@ media/
 
 # Windows
 Thumbs.db
+
+# Es para subir local a nube
+ARQUITECTURA_PROYECTO_AGUA.md
+ngrok-v3-stable-linux-amd64.tgz
