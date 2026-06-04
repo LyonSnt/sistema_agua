@@ -8,3 +8,4 @@ ipython
 openpyxl==3.1.5
 weasyprint
 Pillow
+whitenoise
