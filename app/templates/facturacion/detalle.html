@@ -6,39 +6,39 @@
 {% block contenido %}
 
 
-<div class="mb-4 no-print space-x-1">
+<div class="mb-4 no-print flex flex-wrap gap-2">
+
     <button onclick="window.print()"
-            class="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-700">
+            class="px-4 py-2 text-sm bg-slate-900 text-white rounded-lg hover:bg-slate-700">
         Imprimir
     </button>
 
     {% if factura.estado != "ANULADA" and puede_anular_factura %}
         <a href="{% url 'facturacion:anular' factura.id %}"
-        class="px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-600">
+        class="px-4 py-2 text-sm bg-red-700 text-white rounded-lg hover:bg-red-600">
             Anular factura
         </a>
     {% endif %}
 
     <a href="{% url 'facturacion:pendientes' %}"
-       {% comment %} class="px-4 py-2 bg-gray-200 rounded-lg"> {% endcomment %}
-       class="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600">
+       class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600">
         Volver
     </a>
 
     <a href="{% url 'facturacion:pdf' factura.id %}"
-    target="_blank"
-    class="px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600">
+       target="_blank"
+       class="px-4 py-2 text-sm bg-blue-700 text-white rounded-lg hover:bg-blue-600">
         Ver PDF
     </a>
 
     {% if factura.estado == "PENDIENTE" and puede_agregar_rubro_factura %}
     <a href="{% url 'facturacion:agregar_rubro' factura.id %}"
-    class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-500">
+       class="px-4 py-2 text-sm bg-amber-600 text-white rounded-lg hover:bg-amber-500">
         Agregar rubro
     </a>
     {% endif %}
-</div>
 
+</div>
 
 
 

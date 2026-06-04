@@ -105,39 +105,42 @@
                         </span>
                     </td>
 
-                    <td class="p-3 text-center space-x-1">
+                    <td class="p-3 text-center">
+                        <div class="flex items-center justify-center gap-1">
 
-                        {% if puede_ver_facturas %}
-                        <a href="{% url 'facturacion:detalle' factura.id %}"
-                        class="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-600">
-                            Ver factura
-                        </a>
-                        {% endif %}
+                            {% if puede_ver_facturas %}
+                            <a href="{% url 'facturacion:detalle' factura.id %}"
+                            class="px-3 py-1 text-sm bg-slate-700 text-white rounded hover:bg-slate-600">
+                                Ver
+                            </a>
+                            {% endif %}
 
-                        {% if factura.pagos_validos %}
-                            {% with pago=factura.pagos_validos.0 %}
+                            {% if factura.pagos_validos %}
+                                {% with pago=factura.pagos_validos.0 %}
 
-                                {% if puede_ver_comprobante %}
-                                <a href="{% url 'pagos:comprobante' pago.id %}"
-                                class="px-3 py-1 bg-green-700 text-white rounded hover:bg-green-600">
-                                    Comprobante
-                                </a>
-                                {% endif %}
+                                    {% if puede_ver_comprobante %}
+                                    <a href="{% url 'pagos:comprobante' pago.id %}"
+                                    class="px-3 py-1 text-sm bg-green-700 text-white rounded hover:bg-green-600">
+                                        Comprobante
+                                    </a>
+                                    {% endif %}
 
-                                {% if puede_anular_pago %}
-                                <a href="{% url 'pagos:anular' pago.id %}"
-                                class="px-3 py-1 bg-red-700 text-white rounded hover:bg-red-600">
-                                    Anular Pago
-                                </a>
-                                {% endif %}
+                                    {% if puede_anular_pago %}
+                                    <a href="{% url 'pagos:anular' pago.id %}"
+                                    class="px-3 py-1 text-sm bg-red-700 text-white rounded hover:bg-red-600">
+                                        Anular
+                                    </a>
+                                    {% endif %}
 
-                            {% endwith %}
-                        {% else %}
-                            <span class="text-gray-400">Sin pagos</span>
-                        {% endif %}
+                                {% endwith %}
+                            {% else %}
+                                <span class="text-sm text-gray-400">
+                                    Sin pagos
+                                </span>
+                            {% endif %}
 
+                        </div>
                     </td>
-
                 </tr>
 
                 {% empty %}

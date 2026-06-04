@@ -90,7 +90,7 @@
 
                             {% if item.facturas and puede_cobrar %}
                                 <a href="{% url 'pagos:cobrar' item.facturas.0.id %}"
-                                class="px-3 py-1 bg-green-700 text-white rounded hover:bg-green-600">
+                                class="px-3 py-1 text-sm bg-green-700 text-white rounded hover:bg-green-600">
                                     Cobrar
                                 </a>
                             {% endif %}
@@ -98,11 +98,11 @@
                             {% if puede_suspender %}
                                 {% if item.abonado.estado_servicio != "SUSPENDIDO" %}
                                     <a href="{% url 'servicios:suspender' %}?abonado={{ item.abonado.id }}"
-                                    class="inline-flex items-center justify-center w-24 px-3 py-1 bg-red-700 text-white rounded hover:bg-red-600">
+                                    class="inline-flex items-center justify-center w-24 px-3 py-1 text-sm bg-red-700 text-white rounded hover:bg-red-600">
                                         Suspender
                                     </a>
                                 {% else %}
-                                    <span class="inline-flex items-center justify-center w-24 px-3 py-1 text-gray-400">
+                                    <span class="inline-flex items-center justify-center w-24 px-3 py-1 text-sm text-gray-400">
                                         -
                                     </span>
                                 {% endif %}

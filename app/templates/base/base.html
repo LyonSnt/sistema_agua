@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block titulo %}Sistema de Agua{% endblock %}</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -29,10 +29,13 @@
             class="md:hidden bg-slate-900 text-white px-4 py-3 w-full text-left">
         ☰ Menú
     </button>
+    <div id="fondoMenu" class="hidden fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"></div>
+
 
     <div class="min-h-screen flex flex-col md:flex-row">
-        <aside id="menuMobile" class="hidden md:block w-64 bg-slate-900 text-white">
-            <div class="p-5 border-b border-slate-700">
+<aside id="menuMobile"
+       class="hidden fixed top-0 left-0 z-50 h-screen w-72 overflow-y-auto bg-slate-900 text-white md:static md:block md:h-auto md:w-64">
+        <div class="p-5 border-b border-slate-700">
                 <h1 class="text-lg font-bold">Sistema de Agua</h1>
                 <p class="text-sm text-slate-300">Facturación</p>
             </div>
@@ -246,10 +249,24 @@
 <script>
 const btn = document.getElementById('btnMenu');
 const menu = document.getElementById('menuMobile');
+const fondo = document.getElementById('fondoMenu');
 
-if (btn && menu) {
-    btn.addEventListener('click', () => {
-        menu.classList.toggle('hidden');
+function abrirMenu() {
+    menu.classList.remove('hidden');
+    fondo.classList.remove('hidden');
+}
+
+function cerrarMenu() {
+    menu.classList.add('hidden');
+    fondo.classList.add('hidden');
+}
+
+if (btn && menu && fondo) {
+    btn.addEventListener('click', abrirMenu);
+    fondo.addEventListener('click', cerrarMenu);
+
+    menu.querySelectorAll('a').forEach((enlace) => {
+        enlace.addEventListener('click', cerrarMenu);
     });
 }
 </script>

@@ -7,24 +7,27 @@
 
 <div class="bg-white rounded-xl shadow p-5">
 
-    <div class="flex justify-between items-center mb-5">
+    <div class="flex justify-between items-center gap-3 mb-5">
         <h3 class="text-lg font-semibold">Listado de abonados</h3>
 
-        <a href="/admin/abonados/abonado/add/"
-           class="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-700">
-            Nuevo abonado
+        {% if puede_gestionar_medidores %}
+        <a href="{% url 'medidores:crear' %}"
+        class="shrink-0 inline-flex items-center justify-center px-3 py-2 text-sm bg-slate-900 text-white rounded-lg hover:bg-slate-700 whitespace-nowrap">
+            Nuevo medidor
         </a>
+        {% endif %}
     </div>
 
-    <form method="get" class="mb-5 space-x-1">
+    <form method="get" class="mb-5 flex items-center gap-2">
         <input
             type="text"
             name="q"
             value="{{ busqueda }}"
             placeholder="Buscar por nombre, cédula o código..."
-            class="w-full md:w-1/2 px-4 py-2 border rounded-lg"
+            class="flex-1 min-w-0 px-4 py-2 border rounded-lg"
         >
-        <button class="px-4 py-2 bg-slate-800 text-white rounded-lg">
+
+        <button class="shrink-0 px-4 py-2 text-sm bg-slate-800 text-white rounded-lg whitespace-nowrap">
             Buscar
         </button>
     </form>

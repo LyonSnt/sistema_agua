@@ -63,20 +63,20 @@
                         {% endif %}
                     </td>
                     <td class="p-3 text-center">
-                        <div class="flex flex-wrap gap-2 justify-center">
+                        <div class="flex items-center justify-center gap-1">
 
                             {% if multa.estado == "PENDIENTE" %}
 
                                 {% if puede_cobrar_multa %}
                                 <a href="{% url 'multas:cobrar' multa.id %}"
-                                class="px-3 py-1 bg-green-700 text-white rounded">
+                                class="px-3 py-1 text-sm bg-green-700 text-white rounded hover:bg-green-600">
                                     Cobrar
                                 </a>
                                 {% endif %}
 
                                 {% if puede_anular_multa %}
                                 <a href="{% url 'multas:anular' multa.id %}"
-                                class="px-3 py-1 bg-red-700 text-white rounded">
+                                class="px-3 py-1 text-sm bg-red-700 text-white rounded hover:bg-red-600">
                                     Anular
                                 </a>
                                 {% endif %}
@@ -86,20 +86,24 @@
                                 {% if puede_ver_reporte_multas %}
                                 <a href="{% url 'multas:comprobante_pdf' multa.id %}"
                                 target="_blank"
-                                class="px-3 py-1 bg-blue-700 text-white rounded">
+                                class="px-3 py-1 text-sm bg-blue-700 text-white rounded hover:bg-blue-600">
                                     Comprobante
                                 </a>
                                 {% endif %}
 
                                 {% if puede_anular_multa %}
                                 <a href="{% url 'multas:anular' multa.id %}"
-                                class="px-3 py-1 bg-red-700 text-white rounded">
+                                class="px-3 py-1 text-sm bg-red-700 text-white rounded hover:bg-red-600">
                                     Anular
                                 </a>
                                 {% endif %}
 
                             {% else %}
-                                -
+
+                                <span class="text-sm text-gray-400">
+                                    -
+                                </span>
+
                             {% endif %}
 
                         </div>
