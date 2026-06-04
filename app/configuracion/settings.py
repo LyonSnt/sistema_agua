@@ -46,6 +46,19 @@ CSRF_TRUSTED_ORIGINS = [
     "https://*.ngrok-free.app",
 ]
 
+
+# La sesión dura 30 minutos
+#SESSION_COOKIE_AGE = 1800
+
+# La sesión dura 1 hora
+SESSION_COOKIE_AGE = 3600
+
+# La sesión expira cuando se cierra el navegador
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# Renueva el tiempo de sesión en cada petición
+SESSION_SAVE_EVERY_REQUEST = True
+
 # Application definition
 
 INSTALLED_APPS = [
