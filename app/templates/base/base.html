@@ -5,24 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block titulo %}Sistema de Agua{% endblock %}</title>
     
+{% load static %}
+
+    <link rel="stylesheet" href="{% static 'css/print.css' %}">
+    <link rel="stylesheet" href="{% static 'css/toast.css' %}">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
     <link rel="icon" href="{% static 'img/favicon.png' %}">
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-@media print {
-    aside,
-    nav,
-    .no-print,
-    button,
-    .btn,
-    a {
-        display: none !important;
-    }
-
-    body {
-        background: white !important;
-    }
-}
-</style>
 </head>
 
 <body class="bg-gray-100 text-gray-800">
@@ -244,31 +233,59 @@
 
     </div>
 
+    {% if messages %}
+    <div id="toast-container" class="fixed top-6 right-6 z-50 space-y-3">
+        {% for message in messages %}
+            <div
+                class="
+                    toast-message
+                    min-w-[380px]
+                    max-w-md
+                    px-5
+                    py-4
+                    rounded-2xl
+                    backdrop-blur-md
+                    shadow-2xl
+                    border
+                    transition-all
+                    duration-300
 
+                    {% if message.tags == 'success' %}
+                        bg-green-600/90 border-green-400 text-white
+                    {% endif %}
 
-<script>
-const btn = document.getElementById('btnMenu');
-const menu = document.getElementById('menuMobile');
-const fondo = document.getElementById('fondoMenu');
+                    {% if message.tags == 'error' %}
+                        bg-red-600/90 border-red-400 text-white
+                    {% endif %}
 
-function abrirMenu() {
-    menu.classList.remove('hidden');
-    fondo.classList.remove('hidden');
-}
+                    {% if message.tags == 'warning' %}
+                        bg-amber-500/90 border-amber-300 text-slate-900
+                    {% endif %}
 
-function cerrarMenu() {
-    menu.classList.add('hidden');
-    fondo.classList.add('hidden');
-}
+                    {% if message.tags == 'info' %}
+                        bg-blue-600/90 border-blue-400 text-white
+                    {% endif %}
+                "
+            >
+                <div class="flex items-start justify-between gap-4">
+                    <span class="text-base font-medium leading-relaxed">
+                        {{ message }}
+                    </span>
 
-if (btn && menu && fondo) {
-    btn.addEventListener('click', abrirMenu);
-    fondo.addEventListener('click', cerrarMenu);
-
-    menu.querySelectorAll('a').forEach((enlace) => {
-        enlace.addEventListener('click', cerrarMenu);
-    });
-}
-</script>
+                    <button
+                        type="button"
+                        class="text-xl font-bold opacity-70 hover:opacity-100 transition"
+                        onclick="this.closest('.toast-message').remove()"
+                    >
+                        ×
+                    </button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <script src="{% static 'js/menu.js' %}"></script>
+    <script src="{% static 'js/toast.js' %}"></script>
+    <script src="{% static 'js/app.js' %}"></script>
 </body>
 </html>

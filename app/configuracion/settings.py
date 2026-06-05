@@ -181,12 +181,29 @@ LOGIN_REDIRECT_URL = "/panel/"
 LOGOUT_REDIRECT_URL = "/login/"
 
 
+# ==================================================
+# DJANGO AXES - PROTECCIÓN CONTRA FUERZA BRUTA
+# ==================================================
+
 AUTHENTICATION_BACKENDS = [
     "axes.backends.AxesStandaloneBackend",
     "django.contrib.auth.backends.ModelBackend",
 ]
 
+# Máximo 5 intentos fallidos
 AXES_FAILURE_LIMIT = 3
-AXES_COOLOFF_TIME = 1
+
+# Bloqueo durante 15 minutos
+AXES_COOLOFF_TIME = 0.25
+
+# Bloqueo por usuario + IP
 AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = True
+
+# Si inicia sesión correctamente, reinicia el contador
 AXES_RESET_ON_SUCCESS = True
+
+# Mostrar nuestra plantilla de login
+AXES_LOCKOUT_TEMPLATE = "usuarios/login.html"
+
+# Función personalizada para el mensaje
+AXES_LOCKOUT_CALLABLE = "usuarios.views.axes_lockout_response"

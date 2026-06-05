@@ -1,0 +1,16 @@
+@media print {
+
+    aside,
+    nav,
+    .no-print,
+    button,
+    .btn,
+    a {
+        display: none !important;
+    }
+
+    body {
+        background: white !important;
+    }
+
+}
