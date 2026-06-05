@@ -1,10 +1,7 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect, render
 from facturacion.models import Factura, FacturaDetalle
-from django.shortcuts import get_object_or_404
 
 from django.contrib import messages
-from django.shortcuts import redirect
 from lecturas.models import PeriodoFacturacion, Lectura
 from facturacion.servicios import generar_factura_desde_lectura
 from django.utils import timezone
@@ -19,6 +16,7 @@ from tarifas.models import Rubro
 from decimal import Decimal
 from django.db.models import Sum
 from django.core.paginator import Paginator
+from django.views.decorators.http import require_http_methods
 
 
 @rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
@@ -76,6 +74,7 @@ def detalle_factura(request, factura_id):
     })
 
 @rol_requerido("Administrador", "Supervisor")
+@require_http_methods(["GET", "POST"])
 def generar_facturacion_periodo(request):
     periodos = PeriodoFacturacion.objects.filter(activo=True).order_by("-anio", "-mes")
 
@@ -187,6 +186,7 @@ def generar_facturacion_periodo(request):
     })
 
 @rol_requerido("Administrador")
+@require_http_methods(["GET", "POST"])
 def anular_factura(request, factura_id):
     factura = get_object_or_404(
         Factura,
@@ -262,6 +262,7 @@ def factura_pdf(request, factura_id):
 
 
 @rol_requerido("Administrador", "Supervisor")
+@require_http_methods(["GET", "POST"])
 def agregar_rubro_factura(request, factura_id):
 
     factura = get_object_or_404(

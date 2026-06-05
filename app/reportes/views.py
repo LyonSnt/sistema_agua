@@ -1,39 +1,71 @@
 from decimal import Decimal
 
-from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.shortcuts import render
 from django.utils import timezone
 
 from pagos.models import Pago
 from facturacion.models import Factura
 from usuarios.decoradores import rol_requerido
-from decimal import Decimal
-from django.utils import timezone
 from django.http import HttpResponse
 from openpyxl import Workbook
-from datetime import date
+from datetime import date, datetime
 from calendar import monthrange
 from django.db.models.functions import TruncDate
-from django.db.models import Count
-from django.db.models import Sum
-from django.db.models import Count
-from facturacion.models import Factura
+from django.db.models import Count, Sum
 from multas.models import Multa
 from django.db.models import Prefetch
 from django.template.loader import render_to_string
 from weasyprint import HTML
-from datetime import datetime
 from django.core.paginator import Paginator
+
+
+def obtener_fecha_reporte(request, nombre_parametro="fecha"):
+    valor = request.GET.get(nombre_parametro)
+
+    if not valor:
+        return timezone.localdate()
+
+    try:
+        return datetime.strptime(valor, "%Y-%m-%d").date()
+    except (TypeError, ValueError):
+        messages.warning(
+            request,
+            "La fecha ingresada no es válida. Se usó la fecha actual."
+        )
+        return timezone.localdate()
+
+
+def obtener_periodo_mensual_reporte(request):
+    hoy = timezone.localdate()
+    anio_param = request.GET.get("anio", hoy.year)
+    mes_param = request.GET.get("mes", hoy.month)
+
+    try:
+        anio = int(anio_param)
+        mes = int(mes_param)
+
+        if mes < 1 or mes > 12:
+            raise ValueError
+
+        fecha_inicio = date(anio, mes, 1)
+        fecha_fin = date(anio, mes, monthrange(anio, mes)[1])
+    except (TypeError, ValueError):
+        messages.warning(
+            request,
+            "El período ingresado no es válido. Se usó el mes actual."
+        )
+        anio = hoy.year
+        mes = hoy.month
+        fecha_inicio = date(anio, mes, 1)
+        fecha_fin = date(anio, mes, monthrange(anio, mes)[1])
+
+    return anio, mes, fecha_inicio, fecha_fin
 
 
 @rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
 def cierre_diario(request):
-    fecha_param = request.GET.get("fecha")
-
-    if fecha_param:
-        fecha = datetime.strptime(fecha_param, "%Y-%m-%d").date()
-    else:
-        fecha = timezone.localdate()
+    fecha = obtener_fecha_reporte(request)
     pagos = Pago.objects.select_related(
         "factura",
         "factura__abonado",
@@ -115,12 +147,7 @@ def cierre_diario(request):
 
 @rol_requerido("Administrador", "Supervisor")
 def cierre_diario_pdf(request):
-    fecha_param = request.GET.get("fecha")
-
-    if fecha_param:
-        fecha = datetime.strptime(fecha_param, "%Y-%m-%d").date()
-    else:
-        fecha = timezone.localdate()
+    fecha = obtener_fecha_reporte(request)
     pagos = Pago.objects.select_related(
         "factura",
         "factura__abonado",
@@ -305,7 +332,7 @@ def facturas_anuladas(request):
 
 @rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
 def recaudacion_diaria(request):
-    fecha = request.GET.get("fecha") or timezone.localdate()
+    fecha = obtener_fecha_reporte(request)
 
     pagos = Pago.objects.select_related(
         "factura",
@@ -373,9 +400,9 @@ def recaudacion_diaria(request):
         "total_general": total_general,
     })
 
-@rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
+@rol_requerido("Administrador", "Supervisor")
 def exportar_recaudacion_diaria_excel(request):
-    fecha = request.GET.get("fecha") or timezone.localdate()
+    fecha = obtener_fecha_reporte(request)
 
     pagos = Pago.objects.select_related(
         "factura",
@@ -434,13 +461,7 @@ def exportar_recaudacion_diaria_excel(request):
 
 @rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
 def recaudacion_mensual(request):
-    hoy = timezone.localdate()
-
-    anio = int(request.GET.get("anio", hoy.year))
-    mes = int(request.GET.get("mes", hoy.month))
-
-    fecha_inicio = date(anio, mes, 1)
-    fecha_fin = date(anio, mes, monthrange(anio, mes)[1])
+    anio, mes, fecha_inicio, fecha_fin = obtener_periodo_mensual_reporte(request)
 
     pagos = Pago.objects.select_related(
         "factura",
@@ -519,15 +540,9 @@ def recaudacion_mensual(request):
         "total_anulado": total_anulado,
     })
 
-@rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
+@rol_requerido("Administrador", "Supervisor")
 def recaudacion_mensual_pdf(request):
-    hoy = timezone.localdate()
-
-    anio = int(request.GET.get("anio", hoy.year))
-    mes = int(request.GET.get("mes", hoy.month))
-
-    fecha_inicio = date(anio, mes, 1)
-    fecha_fin = date(anio, mes, monthrange(anio, mes)[1])
+    anio, mes, fecha_inicio, fecha_fin = obtener_periodo_mensual_reporte(request)
 
     pagos = Pago.objects.select_related(
         "factura",
@@ -606,15 +621,9 @@ def recaudacion_mensual_pdf(request):
 
     return response
 
-@rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
+@rol_requerido("Administrador", "Supervisor")
 def exportar_recaudacion_mensual_excel(request):
-    hoy = timezone.localdate()
-
-    anio = int(request.GET.get("anio", hoy.year))
-    mes = int(request.GET.get("mes", hoy.month))
-
-    fecha_inicio = date(anio, mes, 1)
-    fecha_fin = date(anio, mes, monthrange(anio, mes)[1])
+    anio, mes, fecha_inicio, fecha_fin = obtener_periodo_mensual_reporte(request)
 
     pagos = Pago.objects.select_related(
         "factura",
@@ -728,7 +737,7 @@ def cartera_vencida(request):
         "total_abonados_mora": len(cartera),
     })
 
-@rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
+@rol_requerido("Administrador", "Supervisor")
 def exportar_cartera_vencida_excel(request):
 
     facturas = Factura.objects.select_related(
@@ -806,8 +815,5 @@ def exportar_cartera_vencida_excel(request):
     wb.save(response)
 
     return response
-
-
-
 
 

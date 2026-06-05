@@ -60,6 +60,7 @@ def roles_usuario(request):
         "puede_anular_multa": es_admin,
         "puede_cobrar_multa": es_admin or es_supervisor or es_cajero,
         "puede_ver_reporte_multas": es_admin or es_supervisor or es_cajero or es_consulta,
+        "puede_exportar_multas": es_admin or es_supervisor,
 
         # Sistema
         "puede_administrar_sistema": es_admin,

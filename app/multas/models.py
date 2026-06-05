@@ -50,6 +50,9 @@ class Multa(ModeloBase):
         ordering = ["-fecha", "abonado"]
 
     def clean(self):
+        if self.valor is None:
+            return
+
         if self.valor <= Decimal("0.00"):
             raise ValidationError("El valor de la multa debe ser mayor a cero.")
 

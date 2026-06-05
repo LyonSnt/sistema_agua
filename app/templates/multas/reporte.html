@@ -46,10 +46,12 @@
         <button class="px-4 py-2 bg-slate-800 text-white rounded-lg">
             Consultar
         </button>
-        <a href="{% url 'multas:reporte_excel' %}?estado={{ estado }}&tipo={{ tipo }}&fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}"
-        class="px-4 py-2 bg-green-700 text-white rounded-lg">
-            Exportar Excel
-        </a>
+        {% if puede_exportar_multas %}
+            <a href="{% url 'multas:reporte_excel' %}?estado={{ estado }}&tipo={{ tipo }}&fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}"
+            class="px-4 py-2 bg-green-700 text-white rounded-lg">
+                Exportar Excel
+            </a>
+        {% endif %}
     </form>
 </div>
 

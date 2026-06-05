@@ -2,11 +2,12 @@ from datetime import date
 
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils import timezone
+from django.views.decorators.http import require_http_methods
 
 from usuarios.decoradores import rol_requerido
 from auditoria.utils import registrar_auditoria
 from abonados.models import Abonado
+from .forms import ReconectarServicioForm, SuspenderServicioForm
 from .models import SuspensionServicio
 from django.urls import reverse
 
@@ -54,67 +55,69 @@ def lista_suspensiones(request):
 
 
 @rol_requerido("Administrador", "Supervisor")
+@require_http_methods(["GET", "POST"])
 def suspender_servicio(request):
     abonado_id = request.GET.get("abonado") or request.POST.get("abonado")
 
     abonados = Abonado.objects.filter(activo=True)
 
     if request.method == "POST":
-        motivo = request.POST.get("motivo_suspension")
+        form = SuspenderServicioForm(request.POST)
 
-        if not motivo:
-            messages.error(request, "Debe ingresar el motivo de suspensión.")
-            return redirect("servicios:suspender")
+        if form.is_valid():
+            existe_suspension = SuspensionServicio.objects.filter(
+                abonado=form.cleaned_data["abonado"],
+                estado="SUSPENDIDO",
+                activo=True,
+            ).exists()
 
-        existe_suspension = SuspensionServicio.objects.filter(
-            abonado_id=abonado_id,
-            estado="SUSPENDIDO",
-            activo=True,
-        ).exists()
+            if existe_suspension:
+                messages.error(
+                    request,
+                    "Este abonado ya tiene una suspensión activa."
+                )
+                return redirect(
+                    f"{reverse('servicios:suspender')}?abonado={form.cleaned_data['abonado'].id}"
+                )
 
-        if existe_suspension:
-            messages.error(
+            suspension = form.save(commit=False)
+            suspension.creado_por = request.user
+            suspension.actualizado_por = request.user
+            suspension.save()
+
+            # Actualizar estado actual del servicio del abonado
+            suspension.abonado.estado_servicio = "SUSPENDIDO"
+            suspension.abonado.save(update_fields=["estado_servicio"])
+
+            registrar_auditoria(
                 request,
-                "Este abonado ya tiene una suspensión activa."
+                accion="SUSPENDER_SERVICIO",
+                modulo="Servicios",
+                descripcion=f"Suspendió el servicio de {suspension.abonado}",
+                objeto=suspension,
             )
-            # return redirect("servicios:suspender")
-            return redirect(f"{reverse('servicios:suspender')}?abonado={abonado_id}")
 
-        suspension = SuspensionServicio.objects.create(
-            abonado_id=abonado_id,
-            fecha_suspension=request.POST.get("fecha_suspension"),
-            motivo_suspension=motivo,
-            creado_por=request.user,
-            actualizado_por=request.user,
-        )
+            messages.success(request, "Servicio suspendido correctamente.")
+            return redirect("servicios:lista")
 
-        # Actualizar estado actual del servicio del abonado
-        suspension.abonado.estado_servicio = "SUSPENDIDO"
-        suspension.abonado.save(update_fields=["estado_servicio"])
+        messages.error(request, "Revise los datos ingresados.")
+    else:
+        form = SuspenderServicioForm(initial={
+            "abonado": abonado_id,
+            "fecha_suspension": date.today().strftime("%Y-%m-%d"),
+        })
 
-        registrar_auditoria(
-            request,
-            accion="SUSPENDER_SERVICIO",
-            modulo="Servicios",
-            descripcion=f"Suspendió el servicio de {suspension.abonado}",
-            objeto=suspension,
-        )
-
-        messages.success(request, "Servicio suspendido correctamente.")
-        return redirect("servicios:lista")
-
-    # return render(request, "servicios/suspender.html", {
-    #     "abonados": abonados,
-    #     "hoy": timezone.localdate(),
-    # })
     return render(request, "servicios/suspender.html", {
         "abonados": abonados,
         "abonado_id": abonado_id,
+        "abonado_seleccionado": form["abonado"].value() or abonado_id,
+        "form": form,
         "hoy": date.today().strftime("%Y-%m-%d")
     })
 
 
 @rol_requerido("Administrador", "Supervisor")
+@require_http_methods(["GET", "POST"])
 def reconectar_servicio(request, suspension_id):
     suspension = get_object_or_404(
         SuspensionServicio,
@@ -124,28 +127,38 @@ def reconectar_servicio(request, suspension_id):
     )
 
     if request.method == "POST":
-        suspension.estado = "RECONECTADO"
-        suspension.fecha_reconexion = request.POST.get("fecha_reconexion")
-        suspension.observacion_reconexion = request.POST.get("observacion_reconexion", "")
-        suspension.actualizado_por = request.user
-        suspension.save()
+        form = ReconectarServicioForm(request.POST, instance=suspension)
 
-        suspension.abonado.estado_servicio = "ACTIVO"
-        suspension.abonado.save(update_fields=["estado_servicio"])
+        if form.is_valid():
+            suspension = form.save(commit=False)
+            suspension.estado = "RECONECTADO"
+            suspension.actualizado_por = request.user
+            suspension.save()
 
-        registrar_auditoria(
-            request,
-            accion="RECONECTAR_SERVICIO",
-            modulo="Servicios",
-            descripcion=f"Reconectó el servicio de {suspension.abonado}",
-            objeto=suspension,
+            suspension.abonado.estado_servicio = "ACTIVO"
+            suspension.abonado.save(update_fields=["estado_servicio"])
+
+            registrar_auditoria(
+                request,
+                accion="RECONECTAR_SERVICIO",
+                modulo="Servicios",
+                descripcion=f"Reconectó el servicio de {suspension.abonado}",
+                objeto=suspension,
+            )
+
+            messages.success(request, "Servicio reconectado correctamente.")
+            return redirect("servicios:lista")
+
+        messages.error(request, "Revise los datos ingresados.")
+    else:
+        form = ReconectarServicioForm(
+            instance=suspension,
+            initial={"fecha_reconexion": date.today().strftime("%Y-%m-%d")},
         )
-
-        messages.success(request, "Servicio reconectado correctamente.")
-        return redirect("servicios:lista")
 
     return render(request, "servicios/reconectar.html", {
         "suspension": suspension,
+        "form": form,
         "hoy": date.today().strftime("%Y-%m-%d")
     })
 

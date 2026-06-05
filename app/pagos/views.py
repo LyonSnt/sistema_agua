@@ -1,12 +1,12 @@
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
+from django.views.decorators.http import require_http_methods
 from django.shortcuts import get_object_or_404, redirect, render
 
 from facturacion.models import Factura
 from .models import Pago
-from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from usuarios.decoradores import rol_requerido
 from auditoria.utils import registrar_auditoria
@@ -18,6 +18,7 @@ from django.urls import reverse
 
 
 @rol_requerido("Administrador", "Supervisor", "Cajero")
+@require_http_methods(["GET", "POST"])
 def cobrar_factura(request, factura_id):
     factura = get_object_or_404(
         Factura,
@@ -30,22 +31,40 @@ def cobrar_factura(request, factura_id):
         metodo_pago = request.POST.get("metodo_pago", "EFECTIVO")
         referencia = request.POST.get("referencia", "")
         observacion = request.POST.get("observacion", "")
-        valor_pagado = Decimal(request.POST.get("valor_pagado", "0"))
-        print("VALOR RECIBIDO:", valor_pagado)
-        messages.warning(
-            request,
-            f"Valor recibido: {valor_pagado}"
-        )
+        valor_recibido = request.POST.get("valor_pagado", "0")
 
-        pago = Pago.objects.create(
-            factura=factura,
-            metodo_pago=metodo_pago,
-            valor_pagado=valor_pagado,
-            referencia=referencia,
-            observacion=observacion,
-            creado_por=request.user,
-            actualizado_por=request.user,
-        )
+        try:
+            valor_pagado = Decimal(valor_recibido)
+
+            if not valor_pagado.is_finite():
+                raise InvalidOperation
+
+        except (InvalidOperation, TypeError):
+            messages.error(
+                request,
+                "Ingrese un valor de pago válido."
+            )
+            return render(request, "pagos/cobrar.html", {
+                "factura": factura,
+            })
+
+        try:
+            pago = Pago.objects.create(
+                factura=factura,
+                metodo_pago=metodo_pago,
+                valor_pagado=valor_pagado,
+                referencia=referencia,
+                observacion=observacion,
+                creado_por=request.user,
+                actualizado_por=request.user,
+            )
+        except ValidationError as exc:
+            for error in exc.messages:
+                messages.error(request, error)
+
+            return render(request, "pagos/cobrar.html", {
+                "factura": factura,
+            })
 
         registrar_auditoria(
             request,
@@ -79,6 +98,7 @@ def comprobante_pago(request, pago_id):
     })
 
 @rol_requerido("Administrador")
+@require_http_methods(["GET", "POST"])
 def anular_pago(request, pago_id):
     pago = get_object_or_404(
         Pago,

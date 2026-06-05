@@ -5,6 +5,7 @@ from django.utils import timezone
 from usuarios.decoradores import rol_requerido
 from auditoria.utils import registrar_auditoria
 from abonados.models import Abonado
+from .forms import MultaForm
 from .models import Multa
 
 from django.http import HttpResponse
@@ -12,6 +13,7 @@ from django.template.loader import render_to_string
 from weasyprint import HTML
 from openpyxl import Workbook
 from django.core.paginator import Paginator
+from django.views.decorators.http import require_http_methods
 
 
 @rol_requerido("Administrador", "Supervisor", "Cajero")
@@ -42,39 +44,44 @@ def lista_multas(request):
 
 
 @rol_requerido("Administrador", "Supervisor", "Cajero")
+@require_http_methods(["GET", "POST"])
 def crear_multa(request):
     abonados = Abonado.objects.filter(activo=True).order_by("apellidos", "nombres")
 
     if request.method == "POST":
-        multa = Multa.objects.create(
-            abonado_id=request.POST.get("abonado"),
-            tipo=request.POST.get("tipo"),
-            motivo=request.POST.get("motivo"),
-            fecha=request.POST.get("fecha"),
-            valor=request.POST.get("valor"),
-            creado_por=request.user,
-            actualizado_por=request.user,
-        )
+        form = MultaForm(request.POST)
 
-        registrar_auditoria(
-            request,
-            accion="CREAR",
-            modulo="Multas",
-            descripcion=f"Registró multa para {multa.abonado} por ${multa.valor}",
-            objeto=multa,
-        )
+        if form.is_valid():
+            multa = form.save(commit=False)
+            multa.creado_por = request.user
+            multa.actualizado_por = request.user
+            multa.save()
 
-        messages.success(request, "Multa registrada correctamente.")
-        return redirect("multas:lista")
+            registrar_auditoria(
+                request,
+                accion="CREAR",
+                modulo="Multas",
+                descripcion=f"Registró multa para {multa.abonado} por ${multa.valor}",
+                objeto=multa,
+            )
+
+            messages.success(request, "Multa registrada correctamente.")
+            return redirect("multas:lista")
+
+        messages.error(request, "Revise los datos ingresados.")
+    else:
+        form = MultaForm()
 
     return render(request, "multas/crear.html", {
         "abonados": abonados,
+        "form": form,
         "tipos": Multa.TIPOS,
         "hoy": timezone.localdate(),
     })
 
 
 @rol_requerido("Administrador", "Supervisor", "Cajero")
+@require_http_methods(["GET", "POST"])
 def cobrar_multa(request, multa_id):
     multa = get_object_or_404(
         Multa,
@@ -107,6 +114,7 @@ def cobrar_multa(request, multa_id):
     })
 
 @rol_requerido("Administrador")
+@require_http_methods(["GET", "POST"])
 def anular_multa(request, multa_id):
     multa = get_object_or_404(
         Multa,
@@ -223,7 +231,7 @@ def reporte_multas(request):
         "tipos": Multa.TIPOS,
     })
 
-@rol_requerido("Administrador", "Supervisor", "Cajero")
+@rol_requerido("Administrador", "Supervisor")
 def exportar_reporte_multas_excel(request):
     estado = request.GET.get("estado", "")
     tipo = request.GET.get("tipo", "")
@@ -295,7 +303,3 @@ def exportar_reporte_multas_excel(request):
 
     wb.save(response)
     return response
-
-
-
-

@@ -1,3 +1,5 @@
+from zipfile import BadZipFile
+
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -7,15 +9,40 @@ from .servicios import generar_lecturas_periodo
 from django.db import transaction
 from abonados.models import Sector, Ruta
 from .models import Lectura
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 from usuarios.decoradores import rol_requerido
 
 from django.http import HttpResponse
+from django.views.decorators.http import require_http_methods
 from openpyxl import Workbook, load_workbook
+from openpyxl.utils.exceptions import InvalidFileException
 from auditoria.utils import registrar_auditoria
+
+HOJA_CONTROL_LECTURAS = "_control"
+SESSION_IMPORTACION_LECTURAS = "importacion_lecturas_validas"
+SESSION_IMPORTACION_CONTEXTO = "importacion_lecturas_contexto"
+TAMANO_MAXIMO_EXCEL = 5 * 1024 * 1024
+
+
+def cargar_workbook_lecturas(archivo):
+    nombre = (archivo.name or "").lower()
+
+    if not nombre.endswith(".xlsx"):
+        raise ValueError("El archivo debe tener formato .xlsx.")
+
+    if archivo.size > TAMANO_MAXIMO_EXCEL:
+        raise ValueError("El archivo no debe superar los 5 MB.")
+
+    try:
+        return load_workbook(archivo)
+    except (InvalidFileException, BadZipFile, OSError, ValueError):
+        raise ValueError(
+            "No se pudo leer el archivo Excel. Descargue una nueva plantilla."
+        )
 
 
 @rol_requerido("Administrador", "Supervisor")
+@require_http_methods(["GET", "POST"])
 def generar_lecturas(request):
     periodos = PeriodoFacturacion.objects.filter(
         activo=True,
@@ -59,6 +86,7 @@ def generar_lecturas(request):
     })
 
 @rol_requerido("Administrador", "Supervisor", "Lecturista")
+@require_http_methods(["GET", "POST"])
 def registro_masivo_lecturas(request):
     periodos = PeriodoFacturacion.objects.filter(
         activo=True,
@@ -212,11 +240,23 @@ def registro_masivo_lecturas(request):
 @rol_requerido("Administrador", "Supervisor", "Lecturista")
 def descargar_plantilla_lecturas(request):
     periodo_id = request.GET.get("periodo")
+    sector_id = request.GET.get("sector")
+    ruta_id = request.GET.get("ruta")
+
     periodo = get_object_or_404(PeriodoFacturacion, id=periodo_id, activo=True)
 
     lecturas = Lectura.objects.select_related(
-        "medidor", "medidor__abonado"
+        "medidor",
+        "medidor__abonado",
+        "medidor__abonado__sector",
+        "medidor__abonado__ruta",
     ).filter(periodo=periodo, activo=True, lectura_registrada=False)
+
+    if sector_id:
+        lecturas = lecturas.filter(medidor__abonado__sector_id=sector_id)
+
+    if ruta_id:
+        lecturas = lecturas.filter(medidor__abonado__ruta_id=ruta_id)
 
     wb = Workbook()
     ws = wb.active
@@ -233,6 +273,17 @@ def descargar_plantilla_lecturas(request):
             "",
         ])
 
+    control = wb.create_sheet(HOJA_CONTROL_LECTURAS)
+    control.sheet_state = "hidden"
+    control.append(["periodo_id", periodo.id])
+    control.append(["sector_id", sector_id or ""])
+    control.append(["ruta_id", ruta_id or ""])
+    control.append([])
+    control.append(["lectura_id"])
+
+    for lectura in lecturas:
+        control.append([lectura.id])
+
     response = HttpResponse(
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
@@ -241,6 +292,7 @@ def descargar_plantilla_lecturas(request):
     return response
 
 @rol_requerido("Administrador", "Supervisor", "Lecturista")
+@require_http_methods(["GET", "POST"])
 def importar_lecturas_excel(request):
     periodos = PeriodoFacturacion.objects.filter(activo=True, estado="ABIERTO")
 
@@ -248,12 +300,36 @@ def importar_lecturas_excel(request):
         confirmar = request.POST.get("confirmar")
 
         if confirmar == "1":
-            filas_validas = request.session.get("importacion_lecturas_validas", [])
+            filas_validas = request.session.get(SESSION_IMPORTACION_LECTURAS, [])
+            contexto_importacion = request.session.get(SESSION_IMPORTACION_CONTEXTO)
+
+            if not contexto_importacion:
+                messages.error(
+                    request,
+                    "La sesión de importación expiró. Revise nuevamente el archivo."
+                )
+                return redirect("lecturas:importar_excel")
+
+            periodo_id = contexto_importacion.get("periodo_id")
+            ids_permitidos = set(
+                contexto_importacion.get("lecturas_permitidas", [])
+            )
 
             actualizadas = 0
 
             for item in filas_validas:
-                lectura = Lectura.objects.get(id=item["lectura_id"], activo=True)
+                lectura = Lectura.objects.get(
+                    id=item["lectura_id"],
+                    periodo_id=periodo_id,
+                    activo=True,
+                )
+
+                if lectura.id not in ids_permitidos:
+                    messages.error(
+                        request,
+                        "La importación contiene lecturas fuera de la plantilla original."
+                    )
+                    return redirect("lecturas:importar_excel")
 
                 if hasattr(lectura, "factura"):
                     continue
@@ -264,7 +340,8 @@ def importar_lecturas_excel(request):
                 lectura.save()
                 actualizadas += 1
 
-            request.session.pop("importacion_lecturas_validas", None)
+            request.session.pop(SESSION_IMPORTACION_LECTURAS, None)
+            request.session.pop(SESSION_IMPORTACION_CONTEXTO, None)
 
             registrar_auditoria(
                 request,
@@ -289,8 +366,46 @@ def importar_lecturas_excel(request):
             messages.error(request, "Debe seleccionar un archivo Excel.")
             return redirect("lecturas:importar_excel")
 
-        wb = load_workbook(archivo)
+        try:
+            wb = cargar_workbook_lecturas(archivo)
+        except ValueError as exc:
+            messages.error(request, str(exc))
+            return redirect("lecturas:importar_excel")
+
         ws = wb.active
+
+        if HOJA_CONTROL_LECTURAS not in wb.sheetnames:
+            messages.error(
+                request,
+                "El archivo no corresponde a una plantilla de lecturas vigente. Descargue una nueva plantilla."
+            )
+            return redirect("lecturas:importar_excel")
+
+        control = wb[HOJA_CONTROL_LECTURAS]
+        periodo_id = control["B1"].value
+        sector_id = control["B2"].value or None
+        ruta_id = control["B3"].value or None
+
+        try:
+            periodo = PeriodoFacturacion.objects.get(
+                id=periodo_id,
+                activo=True,
+                estado="ABIERTO",
+            )
+        except PeriodoFacturacion.DoesNotExist:
+            messages.error(
+                request,
+                "El período de la plantilla no está disponible para importación."
+            )
+            return redirect("lecturas:importar_excel")
+
+        lecturas_permitidas = set()
+
+        for fila in control.iter_rows(min_row=6, max_col=1, values_only=True):
+            lectura_id_control = fila[0]
+
+            if lectura_id_control:
+                lecturas_permitidas.add(int(lectura_id_control))
 
         filas_validas = []
         filas_error = []
@@ -303,6 +418,42 @@ def importar_lecturas_excel(request):
 
             try:
                 lectura = Lectura.objects.get(id=lectura_id, activo=True)
+
+                if lectura.id not in lecturas_permitidas:
+                    filas_error.append({
+                        "fila": fila_num,
+                        "medidor": medidor,
+                        "abonado": abonado,
+                        "error": "La lectura no pertenece a la plantilla original.",
+                    })
+                    continue
+
+                if lectura.periodo_id != periodo.id:
+                    filas_error.append({
+                        "fila": fila_num,
+                        "medidor": medidor,
+                        "abonado": abonado,
+                        "error": "La lectura no pertenece al período de la plantilla.",
+                    })
+                    continue
+
+                if sector_id and lectura.medidor.abonado.sector_id != int(sector_id):
+                    filas_error.append({
+                        "fila": fila_num,
+                        "medidor": medidor,
+                        "abonado": abonado,
+                        "error": "La lectura no pertenece al sector de la plantilla.",
+                    })
+                    continue
+
+                if ruta_id and lectura.medidor.abonado.ruta_id != int(ruta_id):
+                    filas_error.append({
+                        "fila": fila_num,
+                        "medidor": medidor,
+                        "abonado": abonado,
+                        "error": "La lectura no pertenece a la ruta de la plantilla.",
+                    })
+                    continue
 
                 if hasattr(lectura, "factura"):
                     filas_error.append({
@@ -326,6 +477,7 @@ def importar_lecturas_excel(request):
 
                 filas_validas.append({
                     "lectura_id": lectura.id,
+                    "periodo_id": lectura.periodo_id,
                     "medidor": medidor,
                     "abonado": abonado,
                     "anterior": str(lectura.lectura_anterior),
@@ -341,13 +493,20 @@ def importar_lecturas_excel(request):
                     "error": str(e),
                 })
 
-        request.session["importacion_lecturas_validas"] = filas_validas
+        request.session[SESSION_IMPORTACION_LECTURAS] = filas_validas
+        request.session[SESSION_IMPORTACION_CONTEXTO] = {
+            "periodo_id": periodo.id,
+            "sector_id": sector_id,
+            "ruta_id": ruta_id,
+            "lecturas_permitidas": list(lecturas_permitidas),
+        }
 
         return render(request, "lecturas/importar_excel.html", {
             "periodos": periodos,
             "filas_validas": filas_validas,
             "filas_error": filas_error,
             "modo_preview": True,
+            "periodo_importacion": periodo,
         })
 
     return render(request, "lecturas/importar_excel.html", {

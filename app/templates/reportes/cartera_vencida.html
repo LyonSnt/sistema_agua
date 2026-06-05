@@ -26,12 +26,14 @@
         Detalle por abonado
     </h3>
 
+    {% if puede_exportar_reportes %}
     <div class="mb-5">
-    <a href="{% url 'reportes:cartera_vencida_excel' %}"
-       class="px-4 py-2 bg-green-700 text-white rounded-lg">
-        Exportar Excel
-    </a>
-</div>
+        <a href="{% url 'reportes:cartera_vencida_excel' %}"
+        class="px-4 py-2 bg-green-700 text-white rounded-lg">
+            Exportar Excel
+        </a>
+    </div>
+    {% endif %}
 
     <div class="overflow-x-auto">
         <table class="w-full text-sm">

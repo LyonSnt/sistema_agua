@@ -16,11 +16,13 @@
         <button class="px-4 py-2 bg-slate-800 text-white rounded-lg">
             Consultar
         </button>
-        <a id="btnExportarExcel"
-        href="{% url 'reportes:recaudacion_diaria_excel' %}?fecha={{ fecha }}"
-        class="px-4 py-2 bg-green-700 text-white rounded-lg">
-            Exportar Excel
-        </a>
+        {% if puede_exportar_reportes %}
+            <a id="btnExportarExcel"
+            href="{% url 'reportes:recaudacion_diaria_excel' %}?fecha={{ fecha }}"
+            class="px-4 py-2 bg-green-700 text-white rounded-lg">
+                Exportar Excel
+            </a>
+        {% endif %}
     </form>
 </div>
 
