@@ -1,5 +1,9 @@
+from openpyxl import Workbook
+
 from django.core.paginator import Paginator
+from django.http import HttpResponse
 from django.shortcuts import render
+from django.utils import timezone
 from django.utils.dateparse import parse_date
 
 from usuarios.decoradores import rol_requerido
@@ -7,8 +11,7 @@ from usuarios.decoradores import rol_requerido
 from .models import Auditoria
 
 
-@rol_requerido("Administrador")
-def lista_auditoria(request):
+def obtener_auditorias_filtradas(request):
     accion = request.GET.get("accion", "")
     modulo = request.GET.get("modulo", "")
     usuario = request.GET.get("usuario", "")
@@ -36,6 +39,21 @@ def lista_auditoria(request):
     if fecha_parseada:
         auditorias = auditorias.filter(creado_en__date=fecha_parseada)
 
+    filtros = {
+        "accion": accion,
+        "modulo": modulo,
+        "usuario": usuario,
+        "busqueda": busqueda,
+        "fecha": fecha,
+    }
+
+    return auditorias, filtros
+
+
+@rol_requerido("Administrador")
+def lista_auditoria(request):
+    auditorias, filtros = obtener_auditorias_filtradas(request)
+
     modulos = (
         Auditoria.objects.exclude(modulo="")
         .order_by("modulo")
@@ -46,14 +64,6 @@ def lista_auditoria(request):
     paginator = Paginator(auditorias, 20)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-
-    filtros = {
-        "accion": accion,
-        "modulo": modulo,
-        "usuario": usuario,
-        "busqueda": busqueda,
-        "fecha": fecha,
-    }
 
     querystring = request.GET.copy()
     querystring.pop("page", None)
@@ -66,3 +76,43 @@ def lista_auditoria(request):
         "filtros": filtros,
         "querystring": querystring.urlencode(),
     })
+
+
+@rol_requerido("Administrador")
+def exportar_auditoria_excel(request):
+    auditorias, _ = obtener_auditorias_filtradas(request)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Auditoria"
+
+    ws.append([
+        "Fecha",
+        "Usuario",
+        "Acción",
+        "Módulo",
+        "Objeto",
+        "Descripción",
+        "IP",
+        "User agent",
+    ])
+
+    for auditoria in auditorias:
+        ws.append([
+            timezone.localtime(auditoria.creado_en).strftime("%d/%m/%Y %H:%M"),
+            auditoria.usuario.username if auditoria.usuario else "",
+            auditoria.get_accion_display(),
+            auditoria.modulo,
+            auditoria.objeto_repr,
+            auditoria.descripcion,
+            str(auditoria.ip or ""),
+            auditoria.user_agent,
+        ])
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = 'attachment; filename="auditoria.xlsx"'
+
+    wb.save(response)
+    return response

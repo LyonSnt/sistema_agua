@@ -1,6 +1,9 @@
+from io import BytesIO
+
 from django.contrib.auth.models import Group
 from django.test import TestCase
 from django.urls import reverse
+from openpyxl import load_workbook
 
 from usuarios.models import Usuario
 
@@ -79,3 +82,34 @@ class AuditoriaListaTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Anuló factura FAC001")
         self.assertNotContains(response, "Cambió medidor MED001 por MED002")
+
+    def test_administrador_exporta_excel_con_filtros(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(
+            reverse("auditoria:exportar_excel"),
+            {"accion": "CAMBIAR_MEDIDOR"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response["Content-Type"],
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+
+        wb = load_workbook(BytesIO(response.content))
+        ws = wb.active
+
+        self.assertEqual(ws.title, "Auditoria")
+        self.assertEqual(ws["A1"].value, "Fecha")
+        self.assertEqual(ws.max_row, 2)
+        self.assertEqual(ws["C2"].value, "Cambiar medidor")
+        self.assertEqual(ws["F2"].value, "Cambió medidor MED001 por MED002")
+
+    def test_supervisor_no_puede_exportar_excel(self):
+        self.client.force_login(self.supervisor)
+
+        response = self.client.get(reverse("auditoria:exportar_excel"))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], reverse("panel:inicio"))
