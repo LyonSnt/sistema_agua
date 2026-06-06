@@ -12,6 +12,8 @@ from facturacion.models import Factura
 from pagos.models import Pago
 from lecturas.models import Lectura
 from auditoria.models import Auditoria
+from medidores.models import CambioMedidor
+from multas.models import Multa
 from usuarios.decoradores import rol_requerido
 
 
@@ -90,6 +92,54 @@ def inicio(request):
         if abonado.estado_cuenta() == "MOROSO":
             abonados_morosos += 1
 
+    abonados_suspendidos = Abonado.objects.filter(
+        activo=True,
+        estado_servicio="SUSPENDIDO",
+    )
+
+    pendientes_reconexion = [
+        abonado
+        for abonado in abonados_suspendidos.select_related("sector", "ruta")
+        if abonado.estado_cuenta() == "AL_DIA"
+    ]
+
+    multas_pendientes_qs = Multa.objects.select_related(
+        "abonado"
+    ).filter(
+        activo=True,
+        estado="PENDIENTE",
+    ).order_by("-fecha", "-id")
+
+    pagos_anulados_recientes = Pago.objects.select_related(
+        "factura",
+        "factura__abonado",
+        "actualizado_por",
+    ).filter(
+        activo=True,
+        anulado=True,
+        fecha_anulacion__date__gte=hace_7_dias,
+    ).order_by("-fecha_anulacion")[:5]
+
+    facturas_anuladas_recientes = Factura.objects.select_related(
+        "abonado",
+        "periodo",
+        "actualizado_por",
+    ).filter(
+        activo=True,
+        estado="ANULADA",
+        fecha_anulacion__date__gte=hace_7_dias,
+    ).order_by("-fecha_anulacion")[:5]
+
+    cambios_medidor_recientes = CambioMedidor.objects.select_related(
+        "abonado",
+        "medidor_anterior",
+        "medidor_nuevo",
+        "creado_por",
+    ).filter(
+        activo=True,
+        fecha_cambio__gte=hace_7_dias,
+    ).order_by("-fecha_cambio", "-id")[:5]
+
     ultimos_pagos = Pago.objects.select_related(
         "factura",
         "factura__abonado",
@@ -115,6 +165,14 @@ def inicio(request):
         "recaudado_mes": recaudado_mes,
         "lecturas_pendientes": lecturas_pendientes,
         "abonados_morosos": abonados_morosos,
+        "abonados_suspendidos": abonados_suspendidos.count(),
+        "pendientes_reconexion": pendientes_reconexion[:5],
+        "pendientes_reconexion_total": len(pendientes_reconexion),
+        "multas_pendientes": multas_pendientes_qs[:5],
+        "multas_pendientes_total": multas_pendientes_qs.count(),
+        "pagos_anulados_recientes": pagos_anulados_recientes,
+        "facturas_anuladas_recientes": facturas_anuladas_recientes,
+        "cambios_medidor_recientes": cambios_medidor_recientes,
 
         "ultimos_pagos": ultimos_pagos,
         "ultimas_acciones": ultimas_acciones,

@@ -9,7 +9,7 @@
 <p class="text-sm text-gray-500 mb-6">Recaudación diaria separada por rubros.</p>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-     <div class="bg-white rounded-xl shadow p-5 border-l-4 border-red-600">
+    <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Recaudado hoy</p>
         <h3 class="text-2xl font-bold mt-2 text-blue-700">${{ recaudado_hoy|floatformat:2 }}</h3>
     </div>
@@ -32,6 +32,45 @@
     <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Pagos hoy</p>
         <h3 class="text-2xl font-bold mt-2">{{ pagos_hoy }}</h3>
+    </div>
+</div>
+
+<h2 class="text-xl font-bold mb-6">Atención requerida</h2>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Abonados suspendidos</p>
+        <h3 class="text-2xl font-bold mt-2 text-red-700">{{ abonados_suspendidos }}</h3>
+        <a href="{% url 'servicios:lista' %}"
+           class="inline-block mt-3 text-sm text-blue-700 hover:underline">
+            Ver suspensiones
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Pendientes de reconexión</p>
+        <h3 class="text-2xl font-bold mt-2 text-blue-700">{{ pendientes_reconexion_total }}</h3>
+        <p class="text-xs text-gray-500 mt-3">
+            Suspendidos que ya están al día.
+        </p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Multas pendientes</p>
+        <h3 class="text-2xl font-bold mt-2 text-yellow-700">{{ multas_pendientes_total }}</h3>
+        <a href="{% url 'multas:reporte' %}?estado=PENDIENTE"
+           class="inline-block mt-3 text-sm text-blue-700 hover:underline">
+            Ver multas
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500">Lecturas pendientes</p>
+        <h3 class="text-2xl font-bold mt-2 text-yellow-700">{{ lecturas_pendientes }}</h3>
+        <a href="{% url 'lecturas:registro_masivo' %}"
+           class="inline-block mt-3 text-sm text-blue-700 hover:underline">
+            Registrar lecturas
+        </a>
     </div>
 </div>
 
@@ -74,7 +113,8 @@
     </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
     <div class="bg-white rounded-xl shadow p-5">
         <h3 class="text-lg font-semibold mb-4">Últimos pagos</h3>
 
@@ -111,6 +151,113 @@
                 </div>
             {% empty %}
                 <p class="text-gray-500 text-sm">No existen actividades registradas.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-xl shadow p-5">
+        <h3 class="text-lg font-semibold mb-4">Pendientes de reconexión</h3>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-100">
+                    <tr>
+                        <th class="p-3 text-left">Abonado</th>
+                        <th class="p-3 text-left">Cédula/RUC</th>
+                        <th class="p-3 text-left">Sector</th>
+                        <th class="p-3 text-center">Acción</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for abonado in pendientes_reconexion %}
+                    <tr class="border-b hover:bg-slate-50">
+                        <td class="p-3">{{ abonado }}</td>
+                        <td class="p-3">{{ abonado.cedula_ruc }}</td>
+                        <td class="p-3">{{ abonado.sector }}</td>
+                        <td class="p-3 text-center">
+                            <a href="{% url 'servicios:reconectar_por_abonado' abonado.id %}"
+                               class="px-3 py-1 bg-green-700 text-white rounded hover:bg-green-600">
+                                Reconectar
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="p-5 text-center text-gray-500">
+                            No hay reconexiones pendientes.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <h3 class="text-lg font-semibold mb-4">Multas pendientes</h3>
+
+        <div class="space-y-3">
+            {% for multa in multas_pendientes %}
+                <div class="border-b pb-3 text-sm">
+                    <p class="font-semibold">{{ multa.abonado }}</p>
+                    <p class="text-gray-600">
+                        {{ multa.get_tipo_display }} | ${{ multa.valor|floatformat:2 }} | {{ multa.fecha|date:"Y-m-d" }}
+                    </p>
+                    <p class="text-xs text-gray-400">{{ multa.motivo }}</p>
+                </div>
+            {% empty %}
+                <p class="text-gray-500 text-sm">No hay multas pendientes.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <h3 class="text-lg font-semibold mb-4">Anulaciones recientes</h3>
+
+        <div class="space-y-3">
+            {% for pago in pagos_anulados_recientes %}
+                <div class="border-b pb-3 text-sm">
+                    <p class="font-semibold">Pago anulado - {{ pago.factura.numero }}</p>
+                    <p class="text-gray-600">
+                        {{ pago.factura.abonado }} | ${{ pago.valor_pagado|floatformat:2 }}
+                    </p>
+                    <p class="text-xs text-gray-400">{{ pago.fecha_anulacion|date:"Y-m-d H:i" }}</p>
+                </div>
+            {% endfor %}
+
+            {% for factura in facturas_anuladas_recientes %}
+                <div class="border-b pb-3 text-sm">
+                    <p class="font-semibold">Factura anulada - {{ factura.numero }}</p>
+                    <p class="text-gray-600">
+                        {{ factura.abonado }} | {{ factura.periodo }}
+                    </p>
+                    <p class="text-xs text-gray-400">{{ factura.fecha_anulacion|date:"Y-m-d H:i" }}</p>
+                </div>
+            {% endfor %}
+
+            {% if not pagos_anulados_recientes and not facturas_anuladas_recientes %}
+                <p class="text-gray-500 text-sm">No hay anulaciones recientes.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-5">
+        <h3 class="text-lg font-semibold mb-4">Cambios de medidor recientes</h3>
+
+        <div class="space-y-3">
+            {% for cambio in cambios_medidor_recientes %}
+                <div class="border-b pb-3 text-sm">
+                    <p class="font-semibold">{{ cambio.abonado }}</p>
+                    <p class="text-gray-600">
+                        {{ cambio.medidor_anterior.numero }} → {{ cambio.medidor_nuevo.numero }}
+                    </p>
+                    <p class="text-xs text-gray-400">{{ cambio.fecha_cambio|date:"Y-m-d" }}</p>
+                </div>
+            {% empty %}
+                <p class="text-gray-500 text-sm">No hay cambios recientes.</p>
             {% endfor %}
         </div>
     </div>
