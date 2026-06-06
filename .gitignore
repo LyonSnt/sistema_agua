@@ -1,39 +1,61 @@
-# Python
+# Python cache
 __pycache__/
 *.py[cod]
-*.sqlite3
+*.pyo
 
-# Virtual env
+# Entornos virtuales
 venv/
-.env/
+.venv/
+env/
 
 # Variables sensibles
 .env
+.env.*
+!.env.example
 
-# VSCode
+# Django
+db.sqlite3
+media/
+staticfiles/
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# MyPy
+.mypy_cache/
+
+# Ruff
+.ruff_cache/
+
+# VS Code
 .vscode/
 
-# Archivos estáticos compilados
-staticfiles/
+# JetBrains
+.idea/
 
 # Logs
 *.log
+logs/
+
+# Backups
+backups/
+*.sql
+*.dump
+*.bak
 
 # Docker
 docker-data/
 
-# Media
-media/
-
-# Pytest
-.pytest_cache/
-
-# Mac/Linux
+# Sistema operativo
 .DS_Store
-
-# Windows
 Thumbs.db
 
-# Es para subir local a nube
-ARQUITECTURA_PROYECTO_AGUA.md
-ngrok-v3-stable-linux-amd64.tgz
+# Codex
+.codex/sessions/
+.codex/cache/
+
+# Agentes locales
+.agents/tmp/
+.agents/cache/
