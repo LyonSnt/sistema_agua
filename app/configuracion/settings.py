@@ -16,34 +16,60 @@ import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-env = environ.Env()
+env = environ.Env(
+    DEBUG=(bool, False),
+    SESSION_COOKIE_AGE=(int, 3600),
+    SECURE_SSL_REDIRECT=(bool, False),
+    SECURE_HSTS_SECONDS=(int, 0),
+    SECURE_HSTS_INCLUDE_SUBDOMAINS=(bool, False),
+    SECURE_HSTS_PRELOAD=(bool, False),
+    SESSION_COOKIE_SECURE=(bool, False),
+    CSRF_COOKIE_SECURE=(bool, False),
+    USE_X_FORWARDED_HOST=(bool, False),
+    SECURE_PROXY_SSL_HEADER_ENABLED=(bool, False),
+    ENABLE_DJANGO_EXTENSIONS=(bool, False),
+    AXES_FAILURE_LIMIT=(int, 3),
+    AXES_COOLOFF_TIME=(float, 0.25),
+)
 environ.Env.read_env(os.path.join(BASE_DIR.parent, '.env'))
+
+
+def lista_entorno(nombre, default=None):
+    return [
+        valor.strip()
+        for valor in env.list(nombre, default=default or [])
+        if valor.strip()
+    ]
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-#SECRET_KEY = 'django-insecure-2)y42fv=g!cdqp1yi@nri&au2@9a*l5238q1=&8(lw8t)h8dk)'
+SECRET_KEY = env("SECRET_KEY")
 
-SECRET_KEY = os.getenv("SECRET_KEY")
+DEBUG = env("DEBUG")
 
-DEBUG = os.getenv("DEBUG", "False") == "True"
-
-ALLOWED_HOSTS = os.getenv(
+ALLOWED_HOSTS = lista_entorno(
     "ALLOWED_HOSTS",
-    "localhost,127.0.0.1"
-).split(",")
+    default=["localhost", "127.0.0.1"],
+)
 
-CSRF_TRUSTED_ORIGINS = [
-    origin.strip()
-    for origin in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
-    if origin.strip()
-]
+CSRF_TRUSTED_ORIGINS = lista_entorno("CSRF_TRUSTED_ORIGINS")
 
-SESSION_COOKIE_AGE = int(os.getenv("SESSION_COOKIE_AGE", "3600"))
+SESSION_COOKIE_AGE = env("SESSION_COOKIE_AGE")
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_SAVE_EVERY_REQUEST = True
+
+SECURE_SSL_REDIRECT = env("SECURE_SSL_REDIRECT")
+SECURE_HSTS_SECONDS = env("SECURE_HSTS_SECONDS")
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env("SECURE_HSTS_INCLUDE_SUBDOMAINS")
+SECURE_HSTS_PRELOAD = env("SECURE_HSTS_PRELOAD")
+SESSION_COOKIE_SECURE = env("SESSION_COOKIE_SECURE")
+CSRF_COOKIE_SECURE = env("CSRF_COOKIE_SECURE")
+USE_X_FORWARDED_HOST = env("USE_X_FORWARDED_HOST")
+
+if env("SECURE_PROXY_SSL_HEADER_ENABLED"):
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Application definition
 
@@ -65,13 +91,14 @@ INSTALLED_APPS = [
     'pagos',
     'reportes',
     'auditoria',
-
-    'django_extensions',
     'configuracion_institucional',
     'multas',
     'servicios',
     "axes",
 ]
+
+if env("ENABLE_DJANGO_EXTENSIONS"):
+    INSTALLED_APPS.append("django_extensions")
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -190,14 +217,14 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
 
-# Máximo 5 intentos fallidos
-AXES_FAILURE_LIMIT = 3
+# Máximo de intentos fallidos
+AXES_FAILURE_LIMIT = env("AXES_FAILURE_LIMIT")
 
 # Bloqueo durante 15 minutos
-AXES_COOLOFF_TIME = 0.25
+AXES_COOLOFF_TIME = env("AXES_COOLOFF_TIME")
 
 # Bloqueo por usuario + IP
-AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = True
+AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
 
 # Si inicia sesión correctamente, reinicia el contador
 AXES_RESET_ON_SUCCESS = True

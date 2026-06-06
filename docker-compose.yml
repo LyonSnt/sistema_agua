@@ -7,10 +7,8 @@ services:
       sh -c "
       python manage.py collectstatic --noinput &&
       python manage.py migrate &&
-      python manage.py runserver 0.0.0.0:8015
+      gunicorn configuracion.wsgi:application --bind 0.0.0.0:8015
       "
-    volumes:
-      - ./app:/app
     ports:
       - "8015:8015"
     env_file:
@@ -23,13 +21,11 @@ services:
     container_name: sistema_agua_db
     restart: always
     environment:
-      POSTGRES_DB: sistema_agua
-      POSTGRES_USER: sistema_agua_user
-      POSTGRES_PASSWORD: sistema_agua_pass
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5445:5432"
 
 volumes:
   postgres_data:
