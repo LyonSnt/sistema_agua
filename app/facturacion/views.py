@@ -269,6 +269,14 @@ def factura_pdf(request, factura_id):
         f'inline; filename="factura_{factura.numero}.pdf"'
     )
 
+    registrar_auditoria(
+        request,
+        accion="EXPORTAR_REPORTE",
+        modulo="Facturación",
+        descripcion=f"Descargó PDF de la factura {factura.numero}",
+        objeto=factura,
+    )
+
     return response
 
 

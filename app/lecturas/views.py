@@ -289,6 +289,15 @@ def descargar_plantilla_lecturas(request):
     )
     response["Content-Disposition"] = f'attachment; filename="lecturas_{periodo.nombre}.xlsx"'
     wb.save(response)
+
+    registrar_auditoria(
+        request,
+        accion="EXPORTAR_REPORTE",
+        modulo="Lecturas",
+        descripcion=f"Descargó plantilla de lecturas del período {periodo}",
+        objeto=periodo,
+    )
+
     return response
 
 @rol_requerido("Administrador", "Supervisor", "Lecturista")

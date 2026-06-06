@@ -18,6 +18,7 @@ from django.db.models import Prefetch
 from django.template.loader import render_to_string
 from weasyprint import HTML
 from django.core.paginator import Paginator
+from auditoria.utils import registrar_auditoria
 
 
 def obtener_fecha_reporte(request, nombre_parametro="fecha"):
@@ -219,6 +220,14 @@ def cierre_diario_pdf(request):
     response["Content-Disposition"] = (
         f'inline; filename="cierre_diario_{fecha}.pdf"'
     )
+
+    registrar_auditoria(
+        request,
+        accion="EXPORTAR_REPORTE",
+        modulo="Reportes",
+        descripcion=f"Descargó PDF de cierre diario del {fecha}",
+    )
+
     return response
 
 @rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
@@ -457,6 +466,14 @@ def exportar_recaudacion_diaria_excel(request):
     )
 
     wb.save(response)
+
+    registrar_auditoria(
+        request,
+        accion="EXPORTAR_REPORTE",
+        modulo="Reportes",
+        descripcion=f"Exportó recaudación diaria del {fecha} a Excel",
+    )
+
     return response
 
 @rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
@@ -619,6 +636,13 @@ def recaudacion_mensual_pdf(request):
         f'inline; filename="recaudacion_mensual_{anio}_{mes}.pdf"'
     )
 
+    registrar_auditoria(
+        request,
+        accion="EXPORTAR_REPORTE",
+        modulo="Reportes",
+        descripcion=f"Descargó PDF de recaudación mensual {anio}-{mes}",
+    )
+
     return response
 
 @rol_requerido("Administrador", "Supervisor")
@@ -680,6 +704,14 @@ def exportar_recaudacion_mensual_excel(request):
     )
 
     wb.save(response)
+
+    registrar_auditoria(
+        request,
+        accion="EXPORTAR_REPORTE",
+        modulo="Reportes",
+        descripcion=f"Exportó recaudación mensual {anio}-{mes} a Excel",
+    )
+
     return response
 
 @rol_requerido("Administrador", "Supervisor", "Cajero", "Consulta")
@@ -814,6 +846,12 @@ def exportar_cartera_vencida_excel(request):
 
     wb.save(response)
 
-    return response
+    registrar_auditoria(
+        request,
+        accion="EXPORTAR_REPORTE",
+        modulo="Reportes",
+        descripcion="Exportó cartera vencida a Excel",
+    )
 
+    return response
 

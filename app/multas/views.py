@@ -181,6 +181,14 @@ def comprobante_multa_pdf(request, multa_id):
         f'inline; filename="comprobante_multa_{multa.id}.pdf"'
     )
 
+    registrar_auditoria(
+        request,
+        accion="EXPORTAR_REPORTE",
+        modulo="Multas",
+        descripcion=f"Descargó comprobante PDF de la multa {multa.id}",
+        objeto=multa,
+    )
+
     return response
 
 
@@ -302,4 +310,12 @@ def exportar_reporte_multas_excel(request):
     response["Content-Disposition"] = 'attachment; filename="reporte_multas.xlsx"'
 
     wb.save(response)
+
+    registrar_auditoria(
+        request,
+        accion="EXPORTAR_REPORTE",
+        modulo="Multas",
+        descripcion="Exportó reporte de multas a Excel",
+    )
+
     return response

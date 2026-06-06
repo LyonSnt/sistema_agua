@@ -2,6 +2,7 @@ from django.contrib.auth.models import Group
 from django.test import TestCase
 from django.urls import reverse
 
+from auditoria.models import Auditoria
 from usuarios.models import Usuario
 
 
@@ -92,6 +93,13 @@ class ParametrosReportesTests(TestCase):
         self.assertEqual(
             response["Content-Type"],
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        self.assertTrue(
+            Auditoria.objects.filter(
+                accion="EXPORTAR_REPORTE",
+                modulo="Reportes",
+                descripcion__icontains="Exportó recaudación diaria",
+            ).exists()
         )
 
     def test_recaudacion_mensual_con_periodo_invalido_no_genera_error(self):

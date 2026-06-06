@@ -5,6 +5,7 @@ from django.template.loader import render_to_string
 from weasyprint import HTML
 
 from auditoria.models import Auditoria
+from auditoria.utils import registrar_auditoria
 from configuracion_institucional.utils import obtener_configuracion
 from medidores.models import CambioMedidor
 from multas.models import Multa
@@ -173,8 +174,15 @@ def detalle_abonado_pdf(request, abonado_id):
         f'inline; filename="ficha_abonado_{contexto["abonado"].codigo}.pdf"'
     )
 
-    return response
+    registrar_auditoria(
+        request,
+        accion="EXPORTAR_REPORTE",
+        modulo="Abonados",
+        descripcion=f"Descargó ficha PDF del abonado {contexto['abonado']}",
+        objeto=contexto["abonado"],
+    )
 
+    return response
 
 
 

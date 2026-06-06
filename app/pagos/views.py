@@ -187,6 +187,17 @@ def comprobante_pago_pdf(request, pago_id):
         f'inline; filename="comprobante_pago_{pago.factura.numero}.pdf"'
     )
 
+    registrar_auditoria(
+        request,
+        accion="EXPORTAR_REPORTE",
+        modulo="Pagos",
+        descripcion=(
+            f"Descargó comprobante PDF del pago {pago.id} "
+            f"de la factura {pago.factura.numero}"
+        ),
+        objeto=pago,
+    )
+
     return response
 
 

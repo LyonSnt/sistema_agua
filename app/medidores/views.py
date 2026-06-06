@@ -181,6 +181,14 @@ def detalle_medidor_pdf(request, medidor_id):
         f'inline; filename="ficha_medidor_{medidor.numero}.pdf"'
     )
 
+    registrar_auditoria(
+        request,
+        accion="EXPORTAR_REPORTE",
+        modulo="Medidores",
+        descripcion=f"Descargó ficha PDF del medidor {medidor.numero}",
+        objeto=medidor,
+    )
+
     return response
 
 
@@ -333,5 +341,4 @@ def cambiar_medidor(request, medidor_id):
         "form": form,
         "medidor": medidor_anterior,
     })
-
 

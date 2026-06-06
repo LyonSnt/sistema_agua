@@ -106,3 +106,20 @@ class DetalleAbonadoTests(TestCase):
         self.assertContains(response, "Medidores del abonado")
         self.assertNotContains(response, "Actividad relacionada")
         self.assertNotContains(response, "Cambió medidor para")
+
+    def test_descarga_pdf_registra_auditoria(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(
+            reverse("abonados:detalle_pdf", args=[self.abonado.id])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/pdf")
+        self.assertTrue(
+            Auditoria.objects.filter(
+                accion="EXPORTAR_REPORTE",
+                modulo="Abonados",
+                objeto_id=str(self.abonado.id),
+            ).exists()
+        )

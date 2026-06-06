@@ -134,3 +134,18 @@ class AnularFacturaTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 405)
+
+    def test_descarga_pdf_registra_auditoria(self):
+        response = self.client.get(
+            reverse("facturacion:pdf", args=[self.factura.id])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/pdf")
+        self.assertTrue(
+            Auditoria.objects.filter(
+                accion="EXPORTAR_REPORTE",
+                modulo="Facturación",
+                objeto_id=str(self.factura.id),
+            ).exists()
+        )

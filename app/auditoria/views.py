@@ -9,6 +9,7 @@ from django.utils.dateparse import parse_date
 from usuarios.decoradores import rol_requerido
 
 from .models import Auditoria
+from .utils import registrar_auditoria
 
 
 def obtener_auditorias_filtradas(request):
@@ -115,4 +116,12 @@ def exportar_auditoria_excel(request):
     response["Content-Disposition"] = 'attachment; filename="auditoria.xlsx"'
 
     wb.save(response)
+
+    registrar_auditoria(
+        request,
+        accion="EXPORTAR_REPORTE",
+        modulo="Auditoría",
+        descripcion="Exportó registros de auditoría a Excel",
+    )
+
     return response

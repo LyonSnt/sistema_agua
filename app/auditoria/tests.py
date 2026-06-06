@@ -105,6 +105,13 @@ class AuditoriaListaTests(TestCase):
         self.assertEqual(ws.max_row, 2)
         self.assertEqual(ws["C2"].value, "Cambiar medidor")
         self.assertEqual(ws["F2"].value, "Cambió medidor MED001 por MED002")
+        self.assertTrue(
+            Auditoria.objects.filter(
+                accion="EXPORTAR_REPORTE",
+                modulo="Auditoría",
+                descripcion="Exportó registros de auditoría a Excel",
+            ).exists()
+        )
 
     def test_supervisor_no_puede_exportar_excel(self):
         self.client.force_login(self.supervisor)
