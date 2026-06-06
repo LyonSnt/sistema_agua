@@ -20,11 +20,17 @@
     class="px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600">
         Ver PDF
     </a>
-    {% if puede_gestionar_abonados %}
+    {% if puede_gestionar_medidores %}
     <a href="{% url 'medidores:editar' medidor.id %}"
     class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-500">
         Editar
     </a>
+    {% if medidor.estado != "RETIRADO" %}
+    <a href="{% url 'medidores:cambiar' medidor.id %}"
+    class="px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600">
+        Cambiar medidor
+    </a>
+    {% endif %}
     {% endif %}
 </div>
 
@@ -158,6 +164,48 @@
                 No existen lecturas registradas.
             </p>
         {% endif %}
+    </div>
+
+</div>
+
+<div class="bg-white rounded-xl shadow p-5 mt-6">
+
+    <h3 class="text-lg font-semibold mb-4">Historial de cambios de medidor</h3>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-100">
+                <tr>
+                    <th class="p-3 text-left">Fecha</th>
+                    <th class="p-3 text-left">Medidor anterior</th>
+                    <th class="p-3 text-left">Medidor nuevo</th>
+                    <th class="p-3 text-right">Lectura final</th>
+                    <th class="p-3 text-right">Lectura inicial</th>
+                    <th class="p-3 text-left">Motivo</th>
+                    <th class="p-3 text-left">Registrado por</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for cambio in cambios %}
+                <tr class="border-b hover:bg-slate-50">
+                    <td class="p-3">{{ cambio.fecha_cambio|date:"d/m/Y" }}</td>
+                    <td class="p-3">{{ cambio.medidor_anterior.numero }}</td>
+                    <td class="p-3">{{ cambio.medidor_nuevo.numero }}</td>
+                    <td class="p-3 text-right">{{ cambio.lectura_final_anterior }}</td>
+                    <td class="p-3 text-right">{{ cambio.lectura_inicial_nuevo }}</td>
+                    <td class="p-3">{{ cambio.motivo }}</td>
+                    <td class="p-3">{{ cambio.creado_por|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="p-5 text-center text-gray-500">
+                        No existen cambios registrados para este abonado.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 
 </div>

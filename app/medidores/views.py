@@ -1,9 +1,13 @@
+from datetime import date
+
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.shortcuts import get_object_or_404, render
+from django.views.decorators.http import require_http_methods
 
 from usuarios.decoradores import rol_requerido
 from facturacion.models import Factura
-from .models import Medidor
+from .models import CambioMedidor, Medidor
 
 from django.http import HttpResponse
 from django.template.loader import render_to_string
@@ -13,7 +17,7 @@ from configuracion_institucional.utils import obtener_configuracion
 from django.contrib import messages
 from django.shortcuts import redirect
 from auditoria.utils import registrar_auditoria
-from .forms import MedidorForm
+from .forms import CambioMedidorForm, MedidorForm
 
 
 @rol_requerido("Administrador", "Supervisor", "Cajero", "Lecturista", "Consulta")
@@ -85,6 +89,26 @@ def detalle_medidor(request, medidor_id):
         estado__in=["PENDIENTE", "PARCIAL"]
     ).count()
 
+    cambios = CambioMedidor.objects.select_related(
+        "medidor_anterior",
+        "medidor_nuevo",
+        "creado_por",
+    ).filter(
+        activo=True,
+        abonado=medidor.abonado,
+    ).filter(
+        medidor_anterior=medidor
+    ) | CambioMedidor.objects.select_related(
+        "medidor_anterior",
+        "medidor_nuevo",
+        "creado_por",
+    ).filter(
+        activo=True,
+        abonado=medidor.abonado,
+        medidor_nuevo=medidor,
+    )
+    cambios = cambios.order_by("-fecha_cambio", "-id")
+
     return render(request, "medidores/detalle_medidor.html", {
         "medidor": medidor,
         "lecturas": lecturas,
@@ -94,6 +118,7 @@ def detalle_medidor(request, medidor_id):
         "total_facturas": total_facturas,
         "consumo_acumulado": consumo_acumulado,
         "facturas_pendientes": facturas_pendientes,
+        "cambios": cambios,
     })
 
 
@@ -227,5 +252,86 @@ def editar_medidor(request, medidor_id):
     })
 
 
+@rol_requerido("Administrador", "Supervisor")
+@require_http_methods(["GET", "POST"])
+def cambiar_medidor(request, medidor_id):
+    medidor_anterior = get_object_or_404(
+        Medidor.objects.select_related("abonado"),
+        id=medidor_id,
+        activo=True,
+    )
+
+    if medidor_anterior.estado == "RETIRADO":
+        messages.error(
+            request,
+            "No se puede cambiar un medidor que ya fue retirado."
+        )
+        return redirect("medidores:detalle", medidor_id=medidor_anterior.id)
+
+    if request.method == "POST":
+        form = CambioMedidorForm(
+            request.POST,
+            medidor_anterior=medidor_anterior,
+        )
+
+        if form.is_valid():
+            with transaction.atomic():
+                medidor_nuevo = Medidor.objects.create(
+                    abonado=medidor_anterior.abonado,
+                    numero=form.cleaned_data["numero_nuevo"],
+                    marca=form.cleaned_data["marca_nuevo"],
+                    modelo=form.cleaned_data["modelo_nuevo"],
+                    lectura_inicial=form.cleaned_data["lectura_inicial_nuevo"],
+                    fecha_instalacion=form.cleaned_data["fecha_cambio"],
+                    estado="ACTIVO",
+                    creado_por=request.user,
+                    actualizado_por=request.user,
+                )
+
+                cambio = CambioMedidor.objects.create(
+                    abonado=medidor_anterior.abonado,
+                    medidor_anterior=medidor_anterior,
+                    medidor_nuevo=medidor_nuevo,
+                    fecha_cambio=form.cleaned_data["fecha_cambio"],
+                    lectura_final_anterior=form.cleaned_data["lectura_final_anterior"],
+                    lectura_inicial_nuevo=form.cleaned_data["lectura_inicial_nuevo"],
+                    motivo=form.cleaned_data["motivo"],
+                    creado_por=request.user,
+                    actualizado_por=request.user,
+                )
+
+                medidor_anterior.estado = "RETIRADO"
+                medidor_anterior.actualizado_por = request.user
+                medidor_anterior.save(update_fields=[
+                    "estado",
+                    "actualizado_por",
+                    "actualizado_en",
+                ])
+
+            registrar_auditoria(
+                request,
+                accion="CAMBIAR_MEDIDOR",
+                modulo="Medidores",
+                descripcion=(
+                    f"Cambió el medidor {medidor_anterior.numero} "
+                    f"por {medidor_nuevo.numero} para {medidor_anterior.abonado}"
+                ),
+                objeto=cambio,
+            )
+
+            messages.success(request, "Cambio de medidor registrado correctamente.")
+            return redirect("medidores:detalle", medidor_id=medidor_nuevo.id)
+
+        messages.error(request, "Revise los datos ingresados.")
+    else:
+        form = CambioMedidorForm(
+            initial={"fecha_cambio": date.today()},
+            medidor_anterior=medidor_anterior,
+        )
+
+    return render(request, "medidores/cambiar_medidor.html", {
+        "form": form,
+        "medidor": medidor_anterior,
+    })
 
 

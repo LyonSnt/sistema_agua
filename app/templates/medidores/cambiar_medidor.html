@@ -1,0 +1,65 @@
+{% extends "base/base.html" %}
+
+{% block titulo %}Cambiar medidor{% endblock %}
+{% block encabezado %}Cambiar medidor{% endblock %}
+
+{% block contenido %}
+
+<div class="bg-white rounded-xl shadow p-6 max-w-4xl">
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-sm">
+        <div>
+            <p class="text-gray-500">Abonado</p>
+            <p class="font-semibold">{{ medidor.abonado }}</p>
+        </div>
+
+        <div>
+            <p class="text-gray-500">Medidor actual</p>
+            <p class="font-semibold">{{ medidor.numero }}</p>
+        </div>
+
+        <div>
+            <p class="text-gray-500">Lectura inicial actual</p>
+            <p class="font-semibold">{{ medidor.lectura_inicial }}</p>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            {% for field in form %}
+                <div class="{% if field.name == 'motivo' %}md:col-span-2{% endif %}">
+                    <label class="block text-sm font-medium mb-1">
+                        {{ field.label }}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.errors %}
+                        <p class="text-sm text-red-600 mt-1">
+                            {{ field.errors.0 }}
+                        </p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+        </div>
+
+        <div class="flex gap-3 mt-6">
+            <button type="submit"
+                    class="px-5 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600">
+                Registrar cambio
+            </button>
+
+            <a href="{% url 'medidores:detalle' medidor.id %}"
+               class="px-5 py-2 bg-gray-200 rounded-lg">
+                Cancelar
+            </a>
+        </div>
+    </form>
+
+</div>
+
+{% endblock %}
