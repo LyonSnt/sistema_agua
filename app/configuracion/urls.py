@@ -33,4 +33,5 @@ urlpatterns = [
     path("multas/", include("multas.urls")),
     path("servicios/", include("servicios.urls")),
     path("medidores/", include("medidores.urls")),
+    path("auditoria/", include("auditoria.urls")),
 ]

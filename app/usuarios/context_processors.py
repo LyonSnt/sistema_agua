@@ -64,4 +64,5 @@ def roles_usuario(request):
 
         # Sistema
         "puede_administrar_sistema": es_admin,
+        "puede_ver_auditoria": es_admin,
     }

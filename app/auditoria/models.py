@@ -21,6 +21,10 @@ class Auditoria(models.Model):
         ("COBRAR_MULTA", "Cobrar multa"),
         ("ANULAR_MULTA", "Anular multa"),
         ("AGREGAR_RUBRO", "Agregar rubro"),
+        ("CREAR_MEDIDOR", "Crear medidor"),
+        ("EDITAR_MEDIDOR", "Editar medidor"),
+        ("CAMBIAR_MEDIDOR", "Cambiar medidor"),
+        ("EXPORTAR_REPORTE", "Exportar reporte"),
     )
 
     usuario = models.ForeignKey(

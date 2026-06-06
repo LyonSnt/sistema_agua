@@ -198,6 +198,13 @@
                     class="block px-4 py-2 rounded {% if '/admin/' in ruta and '/admin/medidores/' not in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
                         Administración
                     </a>
+
+                    {% if puede_ver_auditoria %}
+                    <a href="/auditoria/"
+                    class="block px-4 py-2 rounded {% if '/auditoria/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
+                        Auditoría
+                    </a>
+                    {% endif %}
                 </div>
                 {% endif %}
 

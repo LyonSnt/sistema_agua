@@ -6,6 +6,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from abonados.models import Abonado, Ruta, Sector
+from auditoria.models import Auditoria
 from usuarios.models import Usuario
 
 from .models import Multa
@@ -91,6 +92,13 @@ class CrearMultaTests(TestCase):
         self.assertEqual(multa.valor, Decimal("25.50"))
         self.assertEqual(multa.creado_por, self.usuario)
         self.assertEqual(multa.actualizado_por, self.usuario)
+        self.assertTrue(
+            Auditoria.objects.filter(
+                accion="CREAR_MULTA",
+                modulo="Multas",
+                objeto_id=str(multa.id),
+            ).exists()
+        )
 
     def test_put_crear_multa_no_esta_permitido(self):
         response = self.client.put(
@@ -183,6 +191,13 @@ class AnularMultaTests(TestCase):
         self.multa.refresh_from_db()
         self.assertEqual(self.multa.estado, "ANULADA")
         self.assertEqual(self.multa.motivo_anulacion, "Registro duplicado")
+        self.assertTrue(
+            Auditoria.objects.filter(
+                accion="ANULAR_MULTA",
+                modulo="Multas",
+                objeto_id=str(self.multa.id),
+            ).exists()
+        )
 
     def test_put_no_esta_permitido(self):
         response = self.client.put(
@@ -231,3 +246,21 @@ class CobrarMultaTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 405)
+
+    def test_post_cobrar_multa_registra_auditoria(self):
+        response = self.client.post(
+            reverse("multas:cobrar", args=[self.multa.id]),
+            {
+                "metodo_pago": "EFECTIVO",
+                "referencia": "",
+            },
+        )
+
+        self.assertRedirects(response, reverse("multas:lista"))
+        self.assertTrue(
+            Auditoria.objects.filter(
+                accion="COBRAR_MULTA",
+                modulo="Multas",
+                objeto_id=str(self.multa.id),
+            ).exists()
+        )

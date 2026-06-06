@@ -6,6 +6,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from abonados.models import Abonado, Ruta, Sector
+from auditoria.models import Auditoria
 from lecturas.models import Lectura, PeriodoFacturacion
 from medidores.models import Medidor
 from usuarios.models import Usuario
@@ -104,6 +105,13 @@ class AnularFacturaTests(TestCase):
         self.assertEqual(
             self.factura.motivo_anulacion,
             "Factura emitida por error",
+        )
+        self.assertTrue(
+            Auditoria.objects.filter(
+                accion="ANULAR_FACTURA",
+                modulo="Facturación",
+                objeto_id=str(self.factura.id),
+            ).exists()
         )
 
     def test_put_no_esta_permitido(self):

@@ -59,7 +59,7 @@ def crear_multa(request):
 
             registrar_auditoria(
                 request,
-                accion="CREAR",
+                accion="CREAR_MULTA",
                 modulo="Multas",
                 descripcion=f"Registró multa para {multa.abonado} por ${multa.valor}",
                 objeto=multa,
@@ -100,7 +100,7 @@ def cobrar_multa(request, multa_id):
 
         registrar_auditoria(
             request,
-            accion="PAGO",
+            accion="COBRAR_MULTA",
             modulo="Multas",
             descripcion=f"Cobró multa de ${multa.valor} a {multa.abonado}",
             objeto=multa,
@@ -141,7 +141,7 @@ def anular_multa(request, multa_id):
 
         registrar_auditoria(
             request,
-            accion="ANULAR_FACTURA",
+            accion="ANULAR_MULTA",
             modulo="Multas",
             descripcion=f"Anuló multa de ${multa.valor} a {multa.abonado}. Motivo: {motivo}",
             objeto=multa,

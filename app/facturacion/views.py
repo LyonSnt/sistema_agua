@@ -223,6 +223,17 @@ def anular_factura(request, factura_id):
         factura.actualizado_por = request.user
         factura.save()
 
+        registrar_auditoria(
+            request,
+            accion="ANULAR_FACTURA",
+            modulo="Facturación",
+            descripcion=(
+                f"Anuló la factura {factura.numero} "
+                f"del abonado {factura.abonado}. Motivo: {motivo}"
+            ),
+            objeto=factura,
+        )
+
         messages.success(request, "Factura anulada correctamente.")
         return redirect("facturacion:detalle", factura_id=factura.id)
 

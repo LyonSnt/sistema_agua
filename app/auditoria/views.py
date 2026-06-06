@@ -1,3 +1,68 @@
+from django.core.paginator import Paginator
 from django.shortcuts import render
+from django.utils.dateparse import parse_date
 
-# Create your views here.
+from usuarios.decoradores import rol_requerido
+
+from .models import Auditoria
+
+
+@rol_requerido("Administrador")
+def lista_auditoria(request):
+    accion = request.GET.get("accion", "")
+    modulo = request.GET.get("modulo", "")
+    usuario = request.GET.get("usuario", "")
+    busqueda = request.GET.get("q", "")
+    fecha = request.GET.get("fecha", "")
+
+    auditorias = Auditoria.objects.select_related("usuario").all()
+
+    if accion:
+        auditorias = auditorias.filter(accion=accion)
+
+    if modulo:
+        auditorias = auditorias.filter(modulo=modulo)
+
+    if usuario:
+        auditorias = auditorias.filter(usuario__username__icontains=usuario)
+
+    if busqueda:
+        auditorias = (
+            auditorias.filter(descripcion__icontains=busqueda)
+            | auditorias.filter(objeto_repr__icontains=busqueda)
+        )
+
+    fecha_parseada = parse_date(fecha) if fecha else None
+    if fecha_parseada:
+        auditorias = auditorias.filter(creado_en__date=fecha_parseada)
+
+    modulos = (
+        Auditoria.objects.exclude(modulo="")
+        .order_by("modulo")
+        .values_list("modulo", flat=True)
+        .distinct()
+    )
+
+    paginator = Paginator(auditorias, 20)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    filtros = {
+        "accion": accion,
+        "modulo": modulo,
+        "usuario": usuario,
+        "busqueda": busqueda,
+        "fecha": fecha,
+    }
+
+    querystring = request.GET.copy()
+    querystring.pop("page", None)
+
+    return render(request, "auditoria/lista.html", {
+        "auditorias": page_obj,
+        "page_obj": page_obj,
+        "acciones": Auditoria.ACCIONES,
+        "modulos": modulos,
+        "filtros": filtros,
+        "querystring": querystring.urlencode(),
+    })
