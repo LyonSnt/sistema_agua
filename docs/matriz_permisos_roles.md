@@ -14,6 +14,7 @@
 | --- | --- | --- | --- | --- | --- |
 | Panel principal | Si | Si | Si | Si | Si |
 | Ver abonados | Si | Si | Si | Si | Si |
+| Crear / editar abonados | Si | Si | No | No | No |
 | Ver ficha PDF de abonado | Si | Si | Si | Si | Si |
 | Ver medidores | Si | Si | Si | Si | Si |
 | Crear / editar medidores | Si | Si | No | No | No |
@@ -60,6 +61,7 @@
 - `pagos:cobrar`
 - `facturacion:generar`
 - `lecturas:registro_masivo`
+- `admin:index`
 
 ## Decisiones
 
@@ -68,10 +70,10 @@
 - Cajero puede cobrar y consultar operaciones de caja, pero no exportar reportes restringidos ni anular.
 - Lecturista queda limitado a lecturas, abonados/medidores y panel.
 - Consulta puede ver informacion general y reportes, pero no ejecutar acciones operativas.
+- El acceso a la administracion Django requiere rol Administrador y usuario `is_staff`.
 
 ## Pendientes recomendados
 
-- Revisar acceso a `/admin/` con usuarios reales de cada rol.
 - Evaluar si `Consulta` debe poder descargar PDFs de abonado, medidor y factura.
 - Evaluar si `Cajero` debe poder ver multas pero no crearlas.
 - Separar permisos finos de multas si se requiere: crear, cobrar, anular y consultar.

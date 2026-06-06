@@ -13,6 +13,7 @@ from multas.models import Multa
 from pagos.models import Pago
 from servicios.models import SuspensionServicio
 
+from .context_processors import roles_usuario
 from .models import Usuario
 
 
@@ -33,6 +34,7 @@ class MatrizPermisosRutasCriticasTests(TestCase):
             usuario = Usuario.objects.create_user(
                 username=rol.lower(),
                 password="clave-segura",
+                is_staff=rol == "Administrador",
             )
             usuario.groups.add(grupo)
             self.usuarios[rol] = usuario
@@ -210,7 +212,54 @@ class MatrizPermisosRutasCriticasTests(TestCase):
                 reverse("lecturas:registro_masivo"),
                 {"Administrador", "Supervisor", "Lecturista"},
             ),
+            (
+                "crear abonado",
+                reverse("abonados:crear"),
+                {"Administrador", "Supervisor"},
+            ),
+            (
+                "editar abonado",
+                reverse("abonados:editar", args=[self.abonado.id]),
+                {"Administrador", "Supervisor"},
+            ),
         ]
 
         for nombre, url, permitidos in casos:
             self.assert_acceso_por_roles(nombre, url, permitidos)
+
+    def test_solo_administrador_staff_accede_al_admin_django(self):
+        url = reverse("admin:index")
+        self.usuarios["Supervisor"].is_staff = True
+        self.usuarios["Supervisor"].save(update_fields=["is_staff"])
+
+        for rol in self.roles:
+            with self.subTest(rol=rol):
+                self.client.force_login(self.usuarios[rol])
+                response = self.client.get(url)
+
+                if rol == "Administrador":
+                    self.assertEqual(response.status_code, 200)
+                else:
+                    self.assertEqual(response.status_code, 302)
+                    self.assertTrue(
+                        response["Location"].startswith(reverse("admin:login"))
+                    )
+
+    def test_menu_admin_django_requiere_usuario_staff(self):
+        admin_no_staff = self.usuarios["Administrador"]
+        admin_no_staff.is_staff = False
+        supervisor_staff = self.usuarios["Supervisor"]
+        supervisor_staff.is_staff = True
+
+        request = type("Request", (), {"user": admin_no_staff})()
+        permisos = roles_usuario(request)
+
+        self.assertTrue(permisos["puede_ver_auditoria"])
+        self.assertTrue(permisos["puede_administrar_sistema"])
+        self.assertFalse(permisos["puede_entrar_admin_django"])
+
+        request.user = supervisor_staff
+        permisos = roles_usuario(request)
+
+        self.assertFalse(permisos["puede_ver_auditoria"])
+        self.assertFalse(permisos["puede_entrar_admin_django"])

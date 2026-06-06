@@ -19,6 +19,20 @@ from django.urls import path, include
 from usuarios.views import LoginAuditoriaView, LogoutAuditoriaView
 from django.shortcuts import redirect
 
+
+def usuario_puede_entrar_admin(request):
+    usuario = request.user
+
+    if not usuario.is_active or not usuario.is_staff:
+        return False
+
+    return usuario.is_superuser or usuario.groups.filter(
+        name="Administrador"
+    ).exists()
+
+
+admin.site.has_permission = usuario_puede_entrar_admin
+
 urlpatterns = [
     path("", lambda request: redirect("login")),
     path('admin/', admin.site.urls),

@@ -10,10 +10,10 @@
     <div class="flex justify-between items-center gap-3 mb-5">
         <h3 class="text-lg font-semibold">Listado de abonados</h3>
 
-        {% if puede_gestionar_medidores %}
-        <a href="{% url 'medidores:crear' %}"
+        {% if puede_gestionar_abonados %}
+        <a href="{% url 'abonados:crear' %}"
         class="shrink-0 inline-flex items-center justify-center px-3 py-2 text-sm bg-slate-900 text-white rounded-lg hover:bg-slate-700 whitespace-nowrap">
-            Nuevo medidor
+            Nuevo abonado
         </a>
         {% endif %}
     </div>
@@ -45,8 +45,8 @@
                     <th class="p-3 text-left">Estado</th>
                     <th class="p-3 text-center">Servicio</th>
                     <th class="p-3 text-left">Estado cuenta</th>
-                    <th class="p-3 text-left">Reconectar</th>
-                    <th class="p-3 text-left">Aciones</th>
+                    <th class="p-3 text-center">Reconectar</th>
+                    <th class="p-3 text-center">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -99,23 +99,35 @@
                     <td class="p-3 text-center">
                         {% if abonado.estado_servicio == "SUSPENDIDO" and abonado.estado_cuenta == "AL_DIA" %}
                             <a href="{% url 'servicios:reconectar_por_abonado' abonado.id %}"
-                            class="px-3 py-1 bg-green-700 text-white rounded hover:bg-green-600">
+                            class="inline-flex items-center justify-center w-24 px-3 py-1 text-sm bg-green-700 text-white rounded hover:bg-green-600">
                                 Reconectar
                             </a>
+                        {% else %}
+                            <span class="inline-flex items-center justify-center w-24 px-3 py-1 text-sm text-gray-400">
+                                -
+                            </span>
                         {% endif %}
                     </td>
                     <td class="p-3 text-center">
-                        {% if puede_ver_abonados %}
-                            <a href="{% url 'abonados:detalle' abonado.id %}"
-                            class="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-600">
-                                Ver
-                            </a>
-                        {% endif %}
+                        <div class="flex items-center justify-center gap-1">
+                            {% if puede_ver_abonados %}
+                                <a href="{% url 'abonados:detalle' abonado.id %}"
+                                class="px-3 py-1 text-sm bg-slate-700 text-white rounded hover:bg-slate-600">
+                                    Ver
+                                </a>
+                            {% endif %}
+                            {% if puede_gestionar_abonados %}
+                                <a href="{% url 'abonados:editar' abonado.id %}"
+                                class="px-3 py-1 text-sm bg-blue-700 text-white rounded hover:bg-blue-600">
+                                    Editar
+                                </a>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="p-5 text-center text-gray-500">
+                    <td colspan="11" class="p-5 text-center text-gray-500">
                         No existen abonados registrados.
                     </td>
                 </tr>

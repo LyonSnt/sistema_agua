@@ -1,6 +1,7 @@
 from django.core.paginator import Paginator
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from weasyprint import HTML
 
@@ -12,6 +13,7 @@ from multas.models import Multa
 from pagos.models import Pago
 from usuarios.decoradores import rol_requerido
 
+from .forms import AbonadoForm
 from .models import Abonado
 
 
@@ -44,6 +46,70 @@ def lista_abonados(request):
     }
 
     return render(request, "abonados/lista_abonados.html", contexto)
+
+
+@rol_requerido("Administrador", "Supervisor")
+def crear_abonado(request):
+    if request.method == "POST":
+        form = AbonadoForm(request.POST)
+
+        if form.is_valid():
+            abonado = form.save(commit=False)
+            abonado.creado_por = request.user
+            abonado.actualizado_por = request.user
+            abonado.save()
+
+            registrar_auditoria(
+                request,
+                accion="CREAR",
+                modulo="Abonados",
+                descripcion=f"Creó el abonado {abonado}",
+                objeto=abonado,
+            )
+
+            messages.success(request, "Abonado creado correctamente.")
+            return redirect("abonados:detalle", abonado_id=abonado.id)
+    else:
+        form = AbonadoForm()
+
+    return render(request, "abonados/form_abonado.html", {
+        "form": form,
+        "titulo": "Crear abonado",
+        "boton": "Guardar abonado",
+    })
+
+
+@rol_requerido("Administrador", "Supervisor")
+def editar_abonado(request, abonado_id):
+    abonado = get_object_or_404(Abonado, id=abonado_id)
+
+    if request.method == "POST":
+        form = AbonadoForm(request.POST, instance=abonado)
+
+        if form.is_valid():
+            abonado = form.save(commit=False)
+            abonado.actualizado_por = request.user
+            abonado.save()
+
+            registrar_auditoria(
+                request,
+                accion="ACTUALIZAR",
+                modulo="Abonados",
+                descripcion=f"Actualizó el abonado {abonado}",
+                objeto=abonado,
+            )
+
+            messages.success(request, "Abonado actualizado correctamente.")
+            return redirect("abonados:detalle", abonado_id=abonado.id)
+    else:
+        form = AbonadoForm(instance=abonado)
+
+    return render(request, "abonados/form_abonado.html", {
+        "form": form,
+        "abonado": abonado,
+        "titulo": "Editar abonado",
+        "boton": "Guardar cambios",
+    })
 
 
 def obtener_contexto_ficha_abonado(abonado_id):
@@ -183,7 +249,6 @@ def detalle_abonado_pdf(request, abonado_id):
     )
 
     return response
-
 
 
 

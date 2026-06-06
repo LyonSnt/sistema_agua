@@ -60,5 +60,6 @@ Thumbs.db
 .agents/tmp/
 .agents/cache/
 
+# Documentacion
 docs/tmp/
 docs/*.pdf

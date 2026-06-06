@@ -40,9 +40,9 @@
 
         <table class="w-full text-sm">
 
-            <thead>
+            <thead class="bg-slate-100 text-slate-700">
 
-                <tr class="bg-slate-100">
+                <tr>
 
                     <th class="p-3 text-left">Número</th>
                     <th class="p-3 text-left">Abonado</th>
@@ -136,10 +136,14 @@
                             </a>
 
                             {% if medidor.estado != "RETIRADO" %}
-                            <a href="{% url 'medidores:cambiar' medidor.id %}"
-                            class="px-3 py-1 text-sm bg-blue-700 text-white rounded hover:bg-blue-600">
-                                Cambiar
-                            </a>
+                                <a href="{% url 'medidores:cambiar' medidor.id %}"
+                                class="inline-flex items-center justify-center w-24 px-3 py-1 text-sm bg-blue-700 text-white rounded hover:bg-blue-600">
+                                    Cambiar
+                                </a>
+                            {% else %}
+                                <span class="inline-flex items-center justify-center w-24 px-3 py-1 text-sm text-gray-400">
+                                    -
+                                </span>
                             {% endif %}
                             {% endif %}
 

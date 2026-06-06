@@ -194,10 +194,12 @@
                         Sistema
                     </p>
 
-                    <a href="/admin/"
-                    class="block px-4 py-2 rounded {% if '/admin/' in ruta and '/admin/medidores/' not in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
-                        Administración
-                    </a>
+                    {% if puede_entrar_admin_django %}
+                        <a href="/admin/"
+                        class="block px-4 py-2 rounded {% if '/admin/' in ruta and '/admin/medidores/' not in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
+                            Administración
+                        </a>
+                    {% endif %}
 
                     {% if puede_ver_auditoria %}
                     <a href="/auditoria/"

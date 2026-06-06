@@ -11,6 +11,11 @@ def roles_usuario(request):
     es_lecturista = "Lecturista" in grupos
     es_supervisor = "Supervisor" in grupos
     es_consulta = "Consulta" in grupos
+    puede_entrar_admin_django = (
+        request.user.is_active
+        and request.user.is_staff
+        and es_admin
+    )
 
     return {
         "es_admin": es_admin,
@@ -63,6 +68,7 @@ def roles_usuario(request):
         "puede_exportar_multas": es_admin or es_supervisor,
 
         # Sistema
-        "puede_administrar_sistema": es_admin,
+        "puede_administrar_sistema": es_admin or puede_entrar_admin_django,
+        "puede_entrar_admin_django": puede_entrar_admin_django,
         "puede_ver_auditoria": es_admin,
     }

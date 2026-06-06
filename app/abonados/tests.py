@@ -25,18 +25,24 @@ class DetalleAbonadoTests(TestCase):
 
     def setUp(self):
         self.admin = self.crear_usuario("Administrador", "admin-abonado")
+        self.supervisor = self.crear_usuario("Supervisor", "supervisor-abonado")
         self.consulta = self.crear_usuario("Consulta", "consulta-abonado")
 
-        sector = Sector.objects.create(nombre="Sector A")
-        ruta = Ruta.objects.create(sector=sector, nombre="Ruta A")
+        self.sector = Sector.objects.create(nombre="Sector A")
+        self.ruta = Ruta.objects.create(sector=self.sector, nombre="Ruta A")
+        self.otro_sector = Sector.objects.create(nombre="Sector B")
+        self.otra_ruta = Ruta.objects.create(
+            sector=self.otro_sector,
+            nombre="Ruta B",
+        )
         self.abonado = Abonado.objects.create(
             codigo="AB001",
             cedula_ruc="0101010101",
             nombres="Ana",
             apellidos="Agua",
             direccion="Calle 1",
-            sector=sector,
-            ruta=ruta,
+            sector=self.sector,
+            ruta=self.ruta,
         )
 
         self.medidor_anterior = Medidor.objects.create(
@@ -123,3 +129,98 @@ class DetalleAbonadoTests(TestCase):
                 objeto_id=str(self.abonado.id),
             ).exists()
         )
+
+    def datos_abonado(self, **overrides):
+        datos = {
+            "codigo": "AB002",
+            "cedula_ruc": "0202020202",
+            "nombres": "Bruno",
+            "apellidos": "Barrera",
+            "telefono": "0999999999",
+            "correo": "bruno@example.com",
+            "direccion": "Calle 2",
+            "referencia": "Casa azul",
+            "sector": self.sector.id,
+            "ruta": self.ruta.id,
+            "estado_servicio": "ACTIVO",
+            "activo": "on",
+        }
+        datos.update(overrides)
+        return datos
+
+    def test_supervisor_puede_crear_abonado(self):
+        self.client.force_login(self.supervisor)
+
+        response = self.client.post(
+            reverse("abonados:crear"),
+            self.datos_abonado(),
+        )
+
+        abonado = Abonado.objects.get(codigo="AB002")
+        self.assertRedirects(
+            response,
+            reverse("abonados:detalle", args=[abonado.id]),
+        )
+        self.assertEqual(abonado.creado_por, self.supervisor)
+        self.assertEqual(abonado.actualizado_por, self.supervisor)
+        self.assertTrue(
+            Auditoria.objects.filter(
+                accion="CREAR",
+                modulo="Abonados",
+                objeto_id=str(abonado.id),
+            ).exists()
+        )
+
+    def test_consulta_no_puede_crear_abonado(self):
+        self.client.force_login(self.consulta)
+
+        response = self.client.get(reverse("abonados:crear"))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], reverse("panel:inicio"))
+
+    def test_admin_puede_editar_abonado(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse("abonados:editar", args=[self.abonado.id]),
+            self.datos_abonado(
+                codigo=self.abonado.codigo,
+                cedula_ruc=self.abonado.cedula_ruc,
+                nombres="Ana Maria",
+                apellidos=self.abonado.apellidos,
+            ),
+        )
+
+        self.abonado.refresh_from_db()
+        self.assertRedirects(
+            response,
+            reverse("abonados:detalle", args=[self.abonado.id]),
+        )
+        self.assertEqual(self.abonado.nombres, "Ana Maria")
+        self.assertEqual(self.abonado.actualizado_por, self.admin)
+        self.assertTrue(
+            Auditoria.objects.filter(
+                accion="ACTUALIZAR",
+                modulo="Abonados",
+                objeto_id=str(self.abonado.id),
+            ).exists()
+        )
+
+    def test_no_permite_ruta_de_otro_sector(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse("abonados:crear"),
+            self.datos_abonado(
+                sector=self.sector.id,
+                ruta=self.otra_ruta.id,
+            ),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            "La ruta seleccionada no pertenece al sector indicado.",
+        )
+        self.assertFalse(Abonado.objects.filter(codigo="AB002").exists())

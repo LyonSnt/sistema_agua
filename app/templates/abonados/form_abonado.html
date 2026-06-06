@@ -1,0 +1,65 @@
+{% extends "base/base.html" %}
+
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block encabezado %}{{ titulo }}{% endblock %}
+
+{% block contenido %}
+
+<div class="bg-white rounded-xl shadow p-6 max-w-4xl">
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            {% for field in form %}
+                <div class="{% if field.name == 'direccion' or field.name == 'referencia' %}md:col-span-2{% endif %}">
+                    <label class="block text-sm font-medium mb-1">
+                        {{ field.label }}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.help_text %}
+                        <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+                    {% endif %}
+
+                    {% if field.errors %}
+                        <p class="text-sm text-red-600 mt-1">
+                            {{ field.errors.0 }}
+                        </p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+        </div>
+
+        {% if form.non_field_errors %}
+            <div class="mt-4 text-sm text-red-600">
+                {{ form.non_field_errors.0 }}
+            </div>
+        {% endif %}
+
+        <div class="flex gap-3 mt-6">
+            <button type="submit"
+                    class="px-5 py-2 bg-green-700 text-white rounded-lg hover:bg-green-600">
+                {{ boton }}
+            </button>
+
+            {% if abonado %}
+                <a href="{% url 'abonados:detalle' abonado.id %}"
+                   class="px-5 py-2 bg-gray-200 rounded-lg">
+                    Cancelar
+                </a>
+            {% else %}
+                <a href="{% url 'abonados:lista' %}"
+                   class="px-5 py-2 bg-gray-200 rounded-lg">
+                    Cancelar
+                </a>
+            {% endif %}
+        </div>
+    </form>
+
+</div>
+
+{% endblock %}
