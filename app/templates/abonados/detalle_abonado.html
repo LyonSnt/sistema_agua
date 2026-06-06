@@ -217,6 +217,53 @@
         </div>
 
         <div class="bg-white rounded-xl shadow p-5">
+            <h3 class="text-lg font-semibold mb-4">Medidores del abonado</h3>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-100">
+                        <tr>
+                            <th class="p-3 text-left">Número</th>
+                            <th class="p-3 text-left">Marca</th>
+                            <th class="p-3 text-left">Modelo</th>
+                            <th class="p-3 text-right">Lectura inicial</th>
+                            <th class="p-3 text-center">Estado</th>
+                            <th class="p-3 text-center">Acción</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for item in medidores %}
+                        <tr class="border-b hover:bg-slate-50">
+                            <td class="p-3 font-semibold">{{ item.numero }}</td>
+                            <td class="p-3">{{ item.marca|default:"-" }}</td>
+                            <td class="p-3">{{ item.modelo|default:"-" }}</td>
+                            <td class="p-3 text-right">{{ item.lectura_inicial }}</td>
+                            <td class="p-3 text-center">
+                                <span class="px-2 py-1 text-xs bg-gray-100 rounded">
+                                    {{ item.get_estado_display }}
+                                </span>
+                            </td>
+                            <td class="p-3 text-center">
+                                <a href="{% url 'medidores:detalle' item.id %}"
+                                   class="px-3 py-1 bg-slate-700 text-white rounded">
+                                    Ver
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="p-5 text-center text-gray-500">
+                                No existen medidores registrados.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow p-5">
 
             <h3 class="text-lg font-semibold mb-4">
                 Resumen financiero
@@ -261,6 +308,96 @@
 
             </div>
 
+        </div>
+
+        <div class="bg-white rounded-xl shadow p-5 mt-6">
+            <h3 class="text-lg font-semibold mb-4">Historial de cambios de medidor</h3>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-100">
+                        <tr>
+                            <th class="p-3 text-left">Fecha</th>
+                            <th class="p-3 text-left">Anterior</th>
+                            <th class="p-3 text-left">Nuevo</th>
+                            <th class="p-3 text-right">Lectura final</th>
+                            <th class="p-3 text-right">Lectura inicial</th>
+                            <th class="p-3 text-left">Motivo</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for cambio in cambios_medidor %}
+                        <tr class="border-b hover:bg-slate-50">
+                            <td class="p-3">{{ cambio.fecha_cambio|date:"d/m/Y" }}</td>
+                            <td class="p-3">{{ cambio.medidor_anterior.numero }}</td>
+                            <td class="p-3">{{ cambio.medidor_nuevo.numero }}</td>
+                            <td class="p-3 text-right">{{ cambio.lectura_final_anterior }}</td>
+                            <td class="p-3 text-right">{{ cambio.lectura_inicial_nuevo }}</td>
+                            <td class="p-3">{{ cambio.motivo }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="p-5 text-center text-gray-500">
+                                No registra cambios de medidor.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow p-5 mt-6">
+            <h3 class="text-lg font-semibold mb-4">Multas del abonado</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-sm">
+                <div>
+                    <p class="text-gray-500">Total multas</p>
+                    <p class="text-xl font-bold">${{ total_multas|floatformat:2 }}</p>
+                </div>
+
+                <div>
+                    <p class="text-gray-500">Pendientes</p>
+                    <p class="text-xl font-bold text-red-700">{{ multas_pendientes }}</p>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-100">
+                        <tr>
+                            <th class="p-3 text-left">Fecha</th>
+                            <th class="p-3 text-left">Tipo</th>
+                            <th class="p-3 text-left">Motivo</th>
+                            <th class="p-3 text-right">Valor</th>
+                            <th class="p-3 text-center">Estado</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for multa in multas %}
+                        <tr class="border-b hover:bg-slate-50">
+                            <td class="p-3">{{ multa.fecha|date:"d/m/Y" }}</td>
+                            <td class="p-3">{{ multa.get_tipo_display }}</td>
+                            <td class="p-3">{{ multa.motivo }}</td>
+                            <td class="p-3 text-right">${{ multa.valor|floatformat:2 }}</td>
+                            <td class="p-3 text-center">
+                                <span class="px-2 py-1 text-xs bg-gray-100 rounded">
+                                    {{ multa.get_estado_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="p-5 text-center text-gray-500">
+                                No registra multas.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div class="bg-white rounded-xl shadow p-5">
@@ -451,6 +588,50 @@
             </div>
 
         </div>
+
+        {% if puede_ver_auditoria %}
+        <div class="bg-white rounded-xl shadow p-5 mt-6">
+
+            <h3 class="text-lg font-semibold mb-4">
+                Actividad relacionada
+            </h3>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-slate-100">
+                            <th class="p-3 text-left">Fecha</th>
+                            <th class="p-3 text-left">Usuario</th>
+                            <th class="p-3 text-left">Acción</th>
+                            <th class="p-3 text-left">Módulo</th>
+                            <th class="p-3 text-left">Descripción</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for auditoria in auditorias %}
+                        <tr class="border-b align-top">
+                            <td class="p-3 whitespace-nowrap">
+                                {{ auditoria.creado_en|date:"d/m/Y H:i" }}
+                            </td>
+                            <td class="p-3">{{ auditoria.usuario|default:"-" }}</td>
+                            <td class="p-3">{{ auditoria.get_accion_display }}</td>
+                            <td class="p-3">{{ auditoria.modulo }}</td>
+                            <td class="p-3">{{ auditoria.descripcion }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="p-3 text-center text-gray-500">
+                                No registra actividad relacionada.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+        {% endif %}
 
     </div>
 </div>

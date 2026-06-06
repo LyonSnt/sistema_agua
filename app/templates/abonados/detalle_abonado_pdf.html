@@ -208,6 +208,68 @@
     {% endif %}
 </table>
 
+<h3>Medidores del abonado</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Número</th>
+            <th>Marca</th>
+            <th>Modelo</th>
+            <th class="text-right">Lectura inicial</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for item in medidores %}
+        <tr>
+            <td>{{ item.numero }}</td>
+            <td>{{ item.marca|default:"-" }}</td>
+            <td>{{ item.modelo|default:"-" }}</td>
+            <td class="text-right">{{ item.lectura_inicial }}</td>
+            <td>{{ item.get_estado_display }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No existen medidores registrados.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>Historial de cambios de medidor</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Anterior</th>
+            <th>Nuevo</th>
+            <th class="text-right">Lectura final</th>
+            <th class="text-right">Lectura inicial</th>
+            <th>Motivo</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for cambio in cambios_medidor %}
+        <tr>
+            <td>{{ cambio.fecha_cambio|date:"d/m/Y" }}</td>
+            <td>{{ cambio.medidor_anterior.numero }}</td>
+            <td>{{ cambio.medidor_nuevo.numero }}</td>
+            <td class="text-right">{{ cambio.lectura_final_anterior }}</td>
+            <td class="text-right">{{ cambio.lectura_inicial_nuevo }}</td>
+            <td>{{ cambio.motivo }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">No registra cambios de medidor.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
 <h3>Facturas del abonado</h3>
 
 <table>
@@ -235,6 +297,36 @@
         {% empty %}
         <tr>
             <td colspan="6">No existen facturas registradas.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>Multas del abonado</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Motivo</th>
+            <th class="text-right">Valor</th>
+            <th>Estado</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for multa in multas %}
+        <tr>
+            <td>{{ multa.fecha|date:"d/m/Y" }}</td>
+            <td>{{ multa.get_tipo_display }}</td>
+            <td>{{ multa.motivo }}</td>
+            <td class="text-right">${{ multa.valor|floatformat:2 }}</td>
+            <td>{{ multa.get_estado_display }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No registra multas.</td>
         </tr>
         {% endfor %}
     </tbody>
