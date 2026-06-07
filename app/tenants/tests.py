@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from django.conf import settings
 from django.contrib.auth.models import Group
+from django.contrib.admin.sites import AdminSite
 from django.core.management import call_command
 from django.db import router
 from django.http import Http404, HttpResponse, HttpResponseRedirect
@@ -12,6 +13,7 @@ from django.test import RequestFactory, TestCase, override_settings
 from usuarios.models import Usuario
 
 from .context import activar_tenant_db, limpiar_tenant_db, obtener_tenant_db_alias
+from .admin import TenantAdmin
 from .database import alias_para_tenant
 from .management.commands.provisionar_tenant import Command as ProvisionarTenantCommand
 from .middleware import TenantPathMiddleware
@@ -48,6 +50,39 @@ class TenantModelTests(TestCase):
         )
 
         self.assertEqual(tenant.slug, "pesillo")
+
+
+class TenantAdminTests(TestCase):
+    databases = {"master"}
+
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.admin = TenantAdmin(Tenant, AdminSite())
+
+    def test_oculta_tenants_en_admin_de_un_tenant(self):
+        request = self.factory.get("/rumipamba/admin/tenants/tenant/")
+        request.tenant = object()
+
+        self.assertFalse(self.admin.has_module_permission(request))
+        self.assertFalse(self.admin.has_view_permission(request))
+        self.assertFalse(self.admin.has_add_permission(request))
+        self.assertFalse(self.admin.has_change_permission(request))
+        self.assertFalse(self.admin.has_delete_permission(request))
+
+    def test_permite_tenants_fuera_de_ruta_tenant(self):
+        request = self.factory.get("/admin/tenants/tenant/")
+        request.tenant = None
+        request.user = type(
+            "User",
+            (),
+            {
+                "has_module_perms": lambda self, app_label: True,
+                "has_perm": lambda self, perm: True,
+            },
+        )()
+
+        self.assertTrue(self.admin.has_module_permission(request))
+        self.assertTrue(self.admin.has_view_permission(request))
 
 
 class TenantCommandTests(TestCase):
