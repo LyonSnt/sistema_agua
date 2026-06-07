@@ -25,13 +25,15 @@ Sistema web de facturacion de agua potable construido con Django. La aplicacion 
 
 ## Flujo de ejecucion
 
-1. El usuario ingresa por `/login/`.
-2. Django autentica con el modelo `usuarios.Usuario`.
-3. Los roles se asignan mediante grupos de Django: Administrador, Supervisor, Cajero, Lecturista y Consulta.
-4. Las vistas usan `rol_requerido` para restringir acceso directo por URL.
-5. El menu y las acciones visibles se controlan con `usuarios.context_processors.roles_usuario`.
-6. Las operaciones criticas registran auditoria cuando corresponde.
-7. Las respuestas son plantillas HTML, archivos PDF o exportaciones Excel, segun el caso.
+1. El usuario puede ingresar sin prefijo por `/login/` o con prefijo tenant por `/{junta}/login/`.
+2. Sin prefijo, el sistema trabaja sobre `default`, que se conserva como base legacy/de pruebas.
+3. Con prefijo tenant, `TenantPathMiddleware` resuelve la junta y las apps operativas trabajan sobre la base de esa junta.
+4. Django autentica con el modelo `usuarios.Usuario` en la base correspondiente.
+5. Los roles se asignan mediante grupos de Django: Administrador, Supervisor, Cajero, Lecturista y Consulta.
+6. Las vistas usan `rol_requerido` para restringir acceso directo por URL.
+7. El menu y las acciones visibles se controlan con `usuarios.context_processors.roles_usuario`.
+8. Las operaciones criticas registran auditoria cuando corresponde.
+9. Las respuestas son plantillas HTML, archivos PDF o exportaciones Excel, segun el caso.
 
 ## Datos y persistencia
 
@@ -91,6 +93,11 @@ Tenants validados actualmente:
 - `rumipamba`
 
 El administrador inicial de cada tenant se crea como superusuario dentro de su propia base operativa para permitir la configuracion inicial desde Django Admin.
+
+Uso de rutas:
+
+- `/login/` y `/admin/`: base `default`, con `tenants` aislado en `master`; se usan para pruebas/legacy o administracion global controlada.
+- `/{junta}/login/` y `/{junta}/admin/`: base propia de la junta; se usan para operacion y configuracion real de esa junta.
 
 ## Despliegue
 

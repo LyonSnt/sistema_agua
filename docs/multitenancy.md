@@ -97,6 +97,27 @@ Contrato preparado en `.env.example`:
 
 Las plantillas usan el tag builtin `tenant_url`, registrado en `settings.py`, como reemplazo de `{% url %}`. El tag genera la URL normal cuando no hay tenant y antepone `request.tenant_path_prefix` cuando la navegacion viene desde una ruta tenant.
 
+## Rutas con y sin tenant
+
+El sistema conserva dos modos de entrada:
+
+| URL | Base usada | Uso recomendado |
+| --- | --- | --- |
+| `/login/` | `default` / `sistema_agua` | Pruebas, datos legacy o validaciones generales. |
+| `/admin/` | `default` y `master` para `tenants` | Administracion legacy/global. Usar con cuidado. |
+| `/carabuela/login/` | `sistema_agua_carabuela` | Operacion real de Carabuela. |
+| `/carabuela/admin/` | `sistema_agua_carabuela` | Configuracion propia de Carabuela. |
+| `/rumipamba/login/` | `sistema_agua_rumipamba` | Operacion real de Rumipamba. |
+| `/rumipamba/admin/` | `sistema_agua_rumipamba` | Configuracion propia de Rumipamba. |
+
+Reglas practicas:
+
+- Para trabajo real de una junta, usar siempre URLs con prefijo tenant.
+- `/login/` sin prefijo trabaja sobre `default`; no representa a una junta real.
+- Los datos creados en `default` no aparecen en Carabuela ni Rumipamba.
+- Los datos creados en Rumipamba no aparecen en Carabuela ni en `default`.
+- La app `tenants` no se muestra dentro del admin tenant; una junta no debe ver ni editar el registro global de otras juntas.
+
 ## Comandos iniciales
 
 Registrar una junta en master:
