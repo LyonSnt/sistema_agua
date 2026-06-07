@@ -3,8 +3,9 @@
 ## Alta prioridad
 
 - [ ] Reconstruir o redeplegar la imagen Docker para incorporar los cambios locales de codigo al contenedor definitivo.
+- [ ] Crear datos tenant de prueba y validar flujo contra bases tenant reales.
+- [ ] Definir estrategia de migracion de datos actuales desde `default` hacia la primera base tenant.
 - [ ] Revisar en navegador el CRUD de abonados: listado, creacion, edicion, ficha y permisos visibles.
-- [ ] Definir si `estado_servicio` puede editarse manualmente desde el formulario de abonado o solo mediante suspension/reconexion.
 - [ ] Implementar desactivar/reactivar abonado sin borrado fisico.
 - [ ] Activar flags de produccion cuando exista HTTPS real:
   - `SECURE_SSL_REDIRECT=True`
@@ -34,6 +35,7 @@
 - [ ] Revisar rendimiento de la ficha integral del abonado si crece el historial.
 - [ ] Validar en ambiente real que el menu Sistema se comporta correctamente para Administrador con y sin `is_staff`.
 - [ ] Decidir si se unifica el color de accion `Editar` entre abonados y medidores.
+- [ ] Adaptar scripts de backup/restore para base master y bases tenant.
 
 ## Baja prioridad
 
@@ -66,3 +68,18 @@
 - [x] Actualizacion de matriz de permisos con "Crear / editar abonados".
 - [x] Alineacion de acciones del listado de abonados con cartera pendiente.
 - [x] Alineacion de acciones del listado de medidores con cartera pendiente.
+- [x] Decision de no editar `estado_servicio` ni `activo` desde el formulario general de abonado.
+- [x] Fase 1 Docker multi-entorno: `docker-compose.yml`, `docker-compose.dev.yml`, `docker-compose.prod.yml` y contrato `.env.example`.
+- [x] Documento `docs/multitenancy.md` con estrategia multi-tenant por base de datos.
+- [x] Fase 2 inicial: `settings.py` preparado con base `master` y contrato de tenants sin activar routing dinamico.
+- [x] App `tenants` con modelo master de juntas de agua, admin, migracion inicial y tests.
+- [x] Router `TenantMasterRouter` para aislar la app `tenants` en la base `master`.
+- [x] Comandos iniciales `crear_tenant` y `listar_tenants`.
+- [x] Comando `crear_base_tenant` para crear la base fisica PostgreSQL de un tenant.
+- [x] Comandos de migracion tenant `migrate_tenant` y `migrate_tenants`.
+- [x] Middleware pasivo de deteccion por ruta: `/carabuela/`, `/esperanza/`, `/pesillo/`.
+- [x] Seleccion dinamica de base para apps operativas segun contexto tenant por request.
+- [x] Router operativo `TenantOperationalRouter` para usar alias tenant activo.
+- [x] Middleware tenant reordenado antes de sesiones para login/autenticacion por tenant.
+- [x] Redirects tenant-aware para conservar prefijo en login, logout, permisos y vistas.
+- [x] Tag builtin `tenant_url` aplicado en plantillas para conservar prefijo tenant en enlaces internos.

@@ -10,7 +10,7 @@
     <div class="flex justify-between items-center gap-3 mb-5">
         <h3 class="text-lg font-semibold">Registro de acciones</h3>
 
-        <a href="{% url 'auditoria:exportar_excel' %}{% if querystring %}?{{ querystring }}{% endif %}"
+        <a href="{% tenant_url 'auditoria:exportar_excel' %}{% if querystring %}?{{ querystring }}{% endif %}"
            class="shrink-0 inline-flex items-center justify-center px-3 py-2 text-sm bg-green-700 text-white rounded-lg hover:bg-green-600 whitespace-nowrap">
             Exportar Excel
         </a>
@@ -65,7 +65,7 @@
                 Filtrar
             </button>
 
-            <a href="{% url 'auditoria:lista' %}"
+            <a href="{% tenant_url 'auditoria:lista' %}"
                class="px-4 py-2 text-sm bg-gray-200 rounded-lg hover:bg-gray-300">
                 Limpiar
             </a>

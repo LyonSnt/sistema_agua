@@ -17,7 +17,7 @@
             Consultar
         </button>
         {% if puede_exportar_reportes %}
-            <a href="{% url 'reportes:cierre_diario_pdf' %}?fecha={{ fecha|date:'Y-m-d' }}"
+            <a href="{% tenant_url 'reportes:cierre_diario_pdf' %}?fecha={{ fecha|date:'Y-m-d' }}"
             target="_blank"
             class="px-4 py-2 bg-blue-700 text-white rounded-lg">
                 Ver PDF

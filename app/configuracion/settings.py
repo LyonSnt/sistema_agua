@@ -19,6 +19,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env(
     DEBUG=(bool, False),
     SESSION_COOKIE_AGE=(int, 3600),
+    SESSION_COOKIE_NAME=(str, "sistema_agua_sessionid"),
+    CSRF_COOKIE_NAME=(str, "sistema_agua_csrftoken"),
     SECURE_SSL_REDIRECT=(bool, False),
     SECURE_HSTS_SECONDS=(int, 0),
     SECURE_HSTS_INCLUDE_SUBDOMAINS=(bool, False),
@@ -30,6 +32,11 @@ env = environ.Env(
     ENABLE_DJANGO_EXTENSIONS=(bool, False),
     AXES_FAILURE_LIMIT=(int, 3),
     AXES_COOLOFF_TIME=(float, 0.25),
+    MASTER_DB_NAME=(str, ""),
+    TENANT_DEFAULT=(str, "carabuela"),
+    TENANT_DB_PREFIX=(str, "sistema_agua_"),
+    TENANT_ADMIN_DB_NAME=(str, "postgres"),
+    TENANT_ROUTE_MODE=(str, "path"),
 )
 environ.Env.read_env(os.path.join(BASE_DIR.parent, '.env'))
 
@@ -56,7 +63,19 @@ ALLOWED_HOSTS = lista_entorno(
 
 CSRF_TRUSTED_ORIGINS = lista_entorno("CSRF_TRUSTED_ORIGINS")
 
+MASTER_DB_NAME = env("MASTER_DB_NAME") or env("DB_NAME")
+TENANT_DEFAULT = env("TENANT_DEFAULT")
+TENANT_SLUGS = lista_entorno(
+    "TENANT_SLUGS",
+    default=["carabuela", "esperanza", "pesillo"],
+)
+TENANT_DB_PREFIX = env("TENANT_DB_PREFIX")
+TENANT_ADMIN_DB_NAME = env("TENANT_ADMIN_DB_NAME")
+TENANT_ROUTE_MODE = env("TENANT_ROUTE_MODE")
+
 SESSION_COOKIE_AGE = env("SESSION_COOKIE_AGE")
+SESSION_COOKIE_NAME = env("SESSION_COOKIE_NAME")
+CSRF_COOKIE_NAME = env("CSRF_COOKIE_NAME")
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_SAVE_EVERY_REQUEST = True
 
@@ -81,6 +100,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'nucleo',
+    'tenants',
     'usuarios',
     'panel',
     'abonados',
@@ -102,6 +122,7 @@ if env("ENABLE_DJANGO_EXTENSIONS"):
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'tenants.middleware.TenantPathMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -125,6 +146,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'usuarios.context_processors.roles_usuario',
+            ],
+            'builtins': [
+                'tenants.templatetags.tenant_urls',
             ],
         },
     },
@@ -151,8 +175,25 @@ DATABASES = {
         'PASSWORD': env('DB_PASSWORD'),
         'HOST': env('DB_HOST'),
         'PORT': env('DB_PORT'),
+    },
+    'master': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': MASTER_DB_NAME,
+        'USER': env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD'),
+        'HOST': env('DB_HOST'),
+        'PORT': env('DB_PORT'),
+        'TEST': {
+            'NAME': f'test_master_{MASTER_DB_NAME}',
+            'DEPENDENCIES': [],
+        },
     }
 }
+
+DATABASE_ROUTERS = [
+    "tenants.db_router.TenantMasterRouter",
+    "tenants.db_router.TenantOperationalRouter",
+]
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

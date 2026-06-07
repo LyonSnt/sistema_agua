@@ -49,21 +49,21 @@
                         <div class="flex items-center justify-center gap-1">
 
                             {% if puede_cobrar %}
-                            <a href="{% url 'pagos:cobrar' factura.id %}"
+                            <a href="{% tenant_url 'pagos:cobrar' factura.id %}"
                             class="px-3 py-1 text-sm bg-green-700 text-white rounded hover:bg-green-600">
                                 Cobrar
                             </a>
                             {% endif %}
 
                             {% if puede_ver_facturas %}
-                            <a href="{% url 'facturacion:detalle' factura.id %}"
+                            <a href="{% tenant_url 'facturacion:detalle' factura.id %}"
                             class="px-3 py-1 text-sm bg-slate-700 text-white rounded hover:bg-slate-600">
                                 Ver
                             </a>
                             {% endif %}
 
                             {% if puede_agregar_rubro_factura %}
-                            <a href="{% url 'facturacion:agregar_rubro' factura.id %}"
+                            <a href="{% tenant_url 'facturacion:agregar_rubro' factura.id %}"
                             class="px-3 py-1 text-sm bg-amber-600 text-white rounded hover:bg-amber-500">
                                 Rubro
                             </a>

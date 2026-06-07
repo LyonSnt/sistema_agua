@@ -1,0 +1,15 @@
+services:
+  web:
+    command: >
+      sh -c "
+      python manage.py migrate &&
+      python manage.py runserver 0.0.0.0:8015
+      "
+    volumes:
+      - ./app:/app
+    ports:
+      - "${APP_PORT:-8015}:8015"
+
+  db:
+    ports:
+      - "${DB_PUBLIC_PORT:-5432}:5432"

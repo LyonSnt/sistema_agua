@@ -17,8 +17,6 @@ class AbonadoForm(forms.ModelForm):
             "referencia",
             "sector",
             "ruta",
-            "estado_servicio",
-            "activo",
         ]
 
         widgets = {
@@ -32,8 +30,6 @@ class AbonadoForm(forms.ModelForm):
             "referencia": forms.Textarea(attrs={"class": "w-full px-4 py-2 border rounded-lg", "rows": 3}),
             "sector": forms.Select(attrs={"class": "w-full px-4 py-2 border rounded-lg"}),
             "ruta": forms.Select(attrs={"class": "w-full px-4 py-2 border rounded-lg"}),
-            "estado_servicio": forms.Select(attrs={"class": "w-full px-4 py-2 border rounded-lg"}),
-            "activo": forms.CheckboxInput(attrs={"class": "h-4 w-4 rounded border-gray-300"}),
         }
 
     def __init__(self, *args, **kwargs):

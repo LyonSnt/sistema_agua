@@ -11,7 +11,7 @@
         <h3 class="text-lg font-semibold">Listado de medidores</h3>
 
         {% if puede_gestionar_medidores %}
-            <a href="{% url 'medidores:crear' %}"
+            <a href="{% tenant_url 'medidores:crear' %}"
             class="shrink-0 inline-flex items-center justify-center px-3 py-2 text-sm bg-slate-900 text-white rounded-lg hover:bg-slate-800 whitespace-nowrap">
                 Nuevo medidor
             </a>
@@ -124,19 +124,19 @@
                     <td class="p-3 text-center">
                         <div class="flex items-center justify-center gap-1">
 
-                            <a href="{% url 'medidores:detalle' medidor.id %}"
+                            <a href="{% tenant_url 'medidores:detalle' medidor.id %}"
                             class="px-3 py-1 text-sm bg-slate-700 text-white rounded hover:bg-slate-600">
                                 Ver
                             </a>
 
                             {% if puede_gestionar_medidores %}
-                            <a href="{% url 'medidores:editar' medidor.id %}"
+                            <a href="{% tenant_url 'medidores:editar' medidor.id %}"
                             class="px-3 py-1 text-sm bg-yellow-600 text-white rounded hover:bg-yellow-500">
                                 Editar
                             </a>
 
                             {% if medidor.estado != "RETIRADO" %}
-                                <a href="{% url 'medidores:cambiar' medidor.id %}"
+                                <a href="{% tenant_url 'medidores:cambiar' medidor.id %}"
                                 class="inline-flex items-center justify-center w-24 px-3 py-1 text-sm bg-blue-700 text-white rounded hover:bg-blue-600">
                                     Cambiar
                                 </a>

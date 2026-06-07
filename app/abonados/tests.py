@@ -224,3 +224,12 @@ class DetalleAbonadoTests(TestCase):
             "La ruta seleccionada no pertenece al sector indicado.",
         )
         self.assertFalse(Abonado.objects.filter(codigo="AB002").exists())
+
+    def test_formulario_no_expone_estado_servicio_ni_activo(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse("abonados:crear"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'name="estado_servicio"')
+        self.assertNotContains(response, 'name="activo"')

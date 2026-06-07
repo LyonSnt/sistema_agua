@@ -109,7 +109,7 @@
                         <div class="flex items-center justify-center gap-1">
 
                             {% if puede_ver_facturas %}
-                            <a href="{% url 'facturacion:detalle' factura.id %}"
+                            <a href="{% tenant_url 'facturacion:detalle' factura.id %}"
                             class="px-3 py-1 text-sm bg-slate-700 text-white rounded hover:bg-slate-600">
                                 Ver
                             </a>
@@ -119,14 +119,14 @@
                                 {% with pago=factura.pagos_validos.0 %}
 
                                     {% if puede_ver_comprobante %}
-                                    <a href="{% url 'pagos:comprobante' pago.id %}"
+                                    <a href="{% tenant_url 'pagos:comprobante' pago.id %}"
                                     class="px-3 py-1 text-sm bg-green-700 text-white rounded hover:bg-green-600">
                                         Comprobante
                                     </a>
                                     {% endif %}
 
                                     {% if puede_anular_pago %}
-                                    <a href="{% url 'pagos:anular' pago.id %}"
+                                    <a href="{% tenant_url 'pagos:anular' pago.id %}"
                                     class="px-3 py-1 text-sm bg-red-700 text-white rounded hover:bg-red-600">
                                         Anular
                                     </a>

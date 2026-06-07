@@ -37,7 +37,7 @@
                 Anular factura
             </button>
 
-            <a href="{% url 'facturacion:detalle' factura.id %}"
+            <a href="{% tenant_url 'facturacion:detalle' factura.id %}"
                class="px-5 py-2 bg-gray-200 rounded-lg">
                 Cancelar
             </a>

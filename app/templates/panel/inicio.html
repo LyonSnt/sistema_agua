@@ -41,7 +41,7 @@
     <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Abonados suspendidos</p>
         <h3 class="text-2xl font-bold mt-2 text-red-700">{{ abonados_suspendidos }}</h3>
-        <a href="{% url 'servicios:lista' %}"
+        <a href="{% tenant_url 'servicios:lista' %}"
            class="inline-block mt-3 text-sm text-blue-700 hover:underline">
             Ver suspensiones
         </a>
@@ -58,7 +58,7 @@
     <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Multas pendientes</p>
         <h3 class="text-2xl font-bold mt-2 text-yellow-700">{{ multas_pendientes_total }}</h3>
-        <a href="{% url 'multas:reporte' %}?estado=PENDIENTE"
+        <a href="{% tenant_url 'multas:reporte' %}?estado=PENDIENTE"
            class="inline-block mt-3 text-sm text-blue-700 hover:underline">
             Ver multas
         </a>
@@ -67,7 +67,7 @@
     <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Lecturas pendientes</p>
         <h3 class="text-2xl font-bold mt-2 text-yellow-700">{{ lecturas_pendientes }}</h3>
-        <a href="{% url 'lecturas:registro_masivo' %}"
+        <a href="{% tenant_url 'lecturas:registro_masivo' %}"
            class="inline-block mt-3 text-sm text-blue-700 hover:underline">
             Registrar lecturas
         </a>
@@ -178,7 +178,7 @@
                         <td class="p-3">{{ abonado.cedula_ruc }}</td>
                         <td class="p-3">{{ abonado.sector }}</td>
                         <td class="p-3 text-center">
-                            <a href="{% url 'servicios:reconectar_por_abonado' abonado.id %}"
+                            <a href="{% tenant_url 'servicios:reconectar_por_abonado' abonado.id %}"
                                class="px-3 py-1 bg-green-700 text-white rounded hover:bg-green-600">
                                 Reconectar
                             </a>

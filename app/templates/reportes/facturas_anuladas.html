@@ -54,7 +54,7 @@
                     <td class="p-3">{{ factura.motivo_anulacion }}</td> 
                     <td class="p-3 text-center">
                         {% if puede_ver_facturas %}
-                        <a href="{% url 'facturacion:detalle' factura.id %}"
+                        <a href="{% tenant_url 'facturacion:detalle' factura.id %}"
                         class="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-600">
                             Ver
                         </a>

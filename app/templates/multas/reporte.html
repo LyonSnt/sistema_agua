@@ -47,7 +47,7 @@
             Consultar
         </button>
         {% if puede_exportar_multas %}
-            <a href="{% url 'multas:reporte_excel' %}?estado={{ estado }}&tipo={{ tipo }}&fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}"
+            <a href="{% tenant_url 'multas:reporte_excel' %}?estado={{ estado }}&tipo={{ tipo }}&fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}"
             class="px-4 py-2 bg-green-700 text-white rounded-lg">
                 Exportar Excel
             </a>

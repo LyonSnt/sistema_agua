@@ -23,12 +23,12 @@
             Consultar
         </button>
         {% if puede_exportar_reportes %}
-            <a href="{% url 'reportes:recaudacion_mensual_excel' %}?anio={{ anio }}&mes={{ mes }}"
+            <a href="{% tenant_url 'reportes:recaudacion_mensual_excel' %}?anio={{ anio }}&mes={{ mes }}"
             class="px-4 py-2 bg-green-700 text-white rounded-lg">
                 Exportar Excel
             </a>
 
-            <a href="{% url 'reportes:recaudacion_mensual_pdf' %}?anio={{ anio }}&mes={{ mes }}"
+            <a href="{% tenant_url 'reportes:recaudacion_mensual_pdf' %}?anio={{ anio }}&mes={{ mes }}"
             target="_blank"
             class="px-4 py-2 bg-blue-700 text-white rounded-lg">
                 Ver PDF

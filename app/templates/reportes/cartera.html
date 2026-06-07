@@ -80,14 +80,14 @@
                         <div class="flex items-center justify-center gap-1">
 
                             {% if puede_ver_facturas %}
-                            <a href="{% url 'facturacion:detalle' factura.id %}"
+                            <a href="{% tenant_url 'facturacion:detalle' factura.id %}"
                             class="px-3 py-1 text-sm bg-slate-700 text-white rounded hover:bg-slate-600">
                                 Ver
                             </a>
                             {% endif %}
 
                             {% if puede_cobrar %}
-                            <a href="{% url 'pagos:cobrar' factura.id %}"
+                            <a href="{% tenant_url 'pagos:cobrar' factura.id %}"
                             class="px-3 py-1 text-sm bg-green-700 text-white rounded hover:bg-green-600">
                                 Cobrar
                             </a>
@@ -99,7 +99,7 @@
                                         -
                                     </span>
                                 {% else %}
-                                    <a href="{% url 'servicios:suspender' %}?abonado={{ factura.abonado.id }}"
+                                    <a href="{% tenant_url 'servicios:suspender' %}?abonado={{ factura.abonado.id }}"
                                     class="inline-flex items-center justify-center w-24 px-3 py-1 text-sm bg-red-700 text-white rounded hover:bg-red-600">
                                         Suspender
                                     </a>

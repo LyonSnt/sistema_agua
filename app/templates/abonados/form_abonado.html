@@ -47,12 +47,12 @@
             </button>
 
             {% if abonado %}
-                <a href="{% url 'abonados:detalle' abonado.id %}"
+                <a href="{% tenant_url 'abonados:detalle' abonado.id %}"
                    class="px-5 py-2 bg-gray-200 rounded-lg">
                     Cancelar
                 </a>
             {% else %}
-                <a href="{% url 'abonados:lista' %}"
+                <a href="{% tenant_url 'abonados:lista' %}"
                    class="px-5 py-2 bg-gray-200 rounded-lg">
                     Cancelar
                 </a>

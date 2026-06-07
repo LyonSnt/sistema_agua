@@ -18,7 +18,7 @@
         </button>
         {% if puede_exportar_reportes %}
             <a id="btnExportarExcel"
-            href="{% url 'reportes:recaudacion_diaria_excel' %}?fecha={{ fecha }}"
+            href="{% tenant_url 'reportes:recaudacion_diaria_excel' %}?fecha={{ fecha }}"
             class="px-4 py-2 bg-green-700 text-white rounded-lg">
                 Exportar Excel
             </a>

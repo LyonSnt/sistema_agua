@@ -2,30 +2,30 @@ services:
   web:
     build: .
     container_name: sistema_agua_web
-    restart: unless-stopped
-    command: >
-      sh -c "
-      python manage.py collectstatic --noinput &&
-      python manage.py migrate &&
-      gunicorn configuracion.wsgi:application --bind 0.0.0.0:8015
-      "
-    ports:
-      - "8015:8015"
     env_file:
-      - .env
+      - ${ENV_FILE:-.env}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    restart: unless-stopped
 
   db:
     image: postgres:16
     container_name: sistema_agua_db
-    restart: always
+    env_file:
+      - ${ENV_FILE:-.env}
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${DB_USER} -d $${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
 volumes:
   postgres_data:

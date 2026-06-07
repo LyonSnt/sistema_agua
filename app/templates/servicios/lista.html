@@ -9,7 +9,7 @@
     <div class="flex justify-between items-center mb-5">
         <h3 class="text-lg font-semibold">Historial de suspensiones</h3>
 {% comment %} 
-        <a href="{% url 'servicios:suspender' %}"
+        <a href="{% tenant_url 'servicios:suspender' %}"
            class="px-4 py-2 bg-red-700 text-white rounded-lg">
             Suspender servicio
         </a> {% endcomment %}
@@ -88,7 +88,7 @@
                     <td class="p-3 text-center">
                         {% if item.estado == "SUSPENDIDO" %}
                             {% if puede_reconectar %}
-                                <a href="{% url 'servicios:reconectar' item.id %}"
+                                <a href="{% tenant_url 'servicios:reconectar' item.id %}"
                                 class="px-3 py-1 bg-green-700 text-white rounded">
                                     Reconectar
                                 </a>

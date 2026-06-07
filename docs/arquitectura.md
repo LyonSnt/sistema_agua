@@ -21,6 +21,7 @@ Sistema web de facturacion de agua potable construido con Django. La aplicacion 
 - `auditoria`: registro y consulta de acciones criticas.
 - `configuracion_institucional`: datos institucionales usados en comprobantes y reportes.
 - `nucleo`: app de soporte para comandos y estructura base.
+- `tenants`: registro maestro de juntas de agua para preparacion multi-tenant por base de datos.
 
 ## Flujo de ejecucion
 
@@ -42,20 +43,74 @@ Sistema web de facturacion de agua potable construido con Django. La aplicacion 
   - `scripts/restore_db.sh`
 - Los backups se guardan en `backups/`, directorio ignorado por git.
 
+## Preparacion multi-tenant por base de datos
+
+La fase actual prepara el contrato de configuracion para multi-tenant, agrega una base `master` para registrar juntas de agua y activa seleccion dinamica de base para las apps operativas cuando la request viene con prefijo tenant. Las rutas legacy sin prefijo siguen trabajando contra `default` durante la transicion. El objetivo es mantener un solo contenedor Django y un solo PostgreSQL, con una base master y una base por junta de agua.
+
+Convencion propuesta:
+
+- Base master: `sistema_agua_master`.
+- Base por tenant:
+  - `sistema_agua_carabuela`
+  - `sistema_agua_esperanza`
+  - `sistema_agua_pesillo`
+- Deteccion inicial por ruta:
+  - `/carabuela/`
+  - `/esperanza/`
+  - `/pesillo/`
+
+Variables preparadas en `.env.example`:
+
+- `MASTER_DB_NAME`
+- `TENANT_DEFAULT`
+- `TENANT_SLUGS`
+- `TENANT_DB_PREFIX`
+- `TENANT_ADMIN_DB_NAME`
+- `TENANT_ROUTE_MODE`
+
+Implementado actualmente:
+
+- App `tenants` con modelo `Tenant`.
+- Router `TenantMasterRouter` para enviar `tenants` a la base `master`.
+- Contexto local de request para registrar el alias de base tenant activo.
+- Router `TenantOperationalRouter` para enviar apps operativas al alias tenant activo.
+- Middleware `TenantPathMiddleware` para detectar tenant por prefijo de ruta, activar contexto tenant y reescribir `request.path_info`.
+- Prefijo automatico de redirects relativos durante requests tenant.
+- Tag builtin `tenant_url` para que las plantillas generen enlaces internos conservando el prefijo tenant.
+- Comandos `crear_tenant`, `crear_base_tenant`, `listar_tenants`, `migrate_tenant` y `migrate_tenants`.
+
 ## Despliegue
 
-El despliegue actual esta definido con Docker Compose:
+El despliegue esta definido con Docker Compose por capas:
+
+- `docker-compose.yml`: base comun.
+- `docker-compose.dev.yml`: desarrollo local.
+- `docker-compose.prod.yml`: VPS/produccion.
 
 - Servicio `web`:
   - Construye la imagen desde `Dockerfile`.
-  - Ejecuta `collectstatic`, `migrate` y luego `gunicorn`.
-  - Expone el puerto `8015`.
+  - En desarrollo ejecuta `migrate` y `runserver`.
+  - En produccion ejecuta `collectstatic`, `migrate` y `gunicorn`.
+  - Expone el puerto configurado con `APP_PORT`.
   - Lee variables desde `.env`.
   - Corre como usuario no privilegiado `appuser`.
 - Servicio `db`:
   - Usa imagen `postgres:16`.
-  - No expone puerto al host por defecto.
+  - En desarrollo puede exponer `DB_PUBLIC_PORT`.
+  - En produccion no expone puerto al host por defecto.
   - Usa volumen persistente `postgres_data`.
+
+Comando de desarrollo:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
+
+Comando de produccion:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
 
 ## Archivos estaticos y plantillas
 

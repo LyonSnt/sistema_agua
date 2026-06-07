@@ -25,22 +25,22 @@
     <p><strong>Saldo pendiente:</strong> ${{ factura.saldo_pendiente|floatformat:2 }}</p>
 
     <div class="flex flex-wrap gap-3 mt-6">
-        <a href="{% url 'pagos:comprobante_imprimir' pago.id %}"
+        <a href="{% tenant_url 'pagos:comprobante_imprimir' pago.id %}"
         target="_blank"
         class="px-5 py-2 bg-blue-700 text-white rounded-lg">
             Imprimir comprobante
         </a>
 
-        <a href="{% url 'facturacion:detalle' factura.id %}"
+        <a href="{% tenant_url 'facturacion:detalle' factura.id %}"
            class="px-5 py-2 bg-slate-800 text-white rounded-lg">
             Ver factura
         </a>
 
-        <a href="{% url 'facturacion:pendientes' %}"
+        <a href="{% tenant_url 'facturacion:pendientes' %}"
            class="px-5 py-2 bg-gray-200 rounded-lg">
             Volver a pendientes
         </a>
-        <a href="{% url 'pagos:ticket_pago' pago.id %}"
+        <a href="{% tenant_url 'pagos:ticket_pago' pago.id %}"
         target="_blank"
         class="px-5 py-2 bg-green-700 text-white rounded-lg">
             Imprimir ticket

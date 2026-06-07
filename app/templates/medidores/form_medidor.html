@@ -37,12 +37,12 @@
             </button>
 
             {% if medidor %}
-                <a href="{% url 'medidores:detalle' medidor.id %}"
+                <a href="{% tenant_url 'medidores:detalle' medidor.id %}"
                    class="px-5 py-2 bg-gray-200 rounded-lg">
                     Cancelar
                 </a>
             {% else %}
-                <a href="{% url 'medidores:lista' %}"
+                <a href="{% tenant_url 'medidores:lista' %}"
                    class="px-5 py-2 bg-gray-200 rounded-lg">
                     Cancelar
                 </a>

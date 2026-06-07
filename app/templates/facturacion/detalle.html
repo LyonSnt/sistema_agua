@@ -14,25 +14,25 @@
     </button>
 
     {% if factura.estado != "ANULADA" and puede_anular_factura %}
-        <a href="{% url 'facturacion:anular' factura.id %}"
+        <a href="{% tenant_url 'facturacion:anular' factura.id %}"
         class="px-4 py-2 text-sm bg-red-700 text-white rounded-lg hover:bg-red-600">
             Anular factura
         </a>
     {% endif %}
 
-    <a href="{% url 'facturacion:pendientes' %}"
+    <a href="{% tenant_url 'facturacion:pendientes' %}"
        class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600">
         Volver
     </a>
 
-    <a href="{% url 'facturacion:pdf' factura.id %}"
+    <a href="{% tenant_url 'facturacion:pdf' factura.id %}"
        target="_blank"
        class="px-4 py-2 text-sm bg-blue-700 text-white rounded-lg hover:bg-blue-600">
         Ver PDF
     </a>
 
     {% if factura.estado == "PENDIENTE" and puede_agregar_rubro_factura %}
-    <a href="{% url 'facturacion:agregar_rubro' factura.id %}"
+    <a href="{% tenant_url 'facturacion:agregar_rubro' factura.id %}"
        class="px-4 py-2 text-sm bg-amber-600 text-white rounded-lg hover:bg-amber-500">
         Agregar rubro
     </a>
@@ -221,13 +221,13 @@
                         <td class="p-3 text-center">
                             {% if not pago.anulado %}
                                 <div class="flex gap-1 justify-center">
-                                    <a href="{% url 'pagos:comprobante_pdf' pago.id %}"
+                                    <a href="{% tenant_url 'pagos:comprobante_pdf' pago.id %}"
                                     target="_blank"
                                     class="px-2 py-1 bg-blue-700 text-white rounded text-xs">
                                         Ver
                                     </a>
 
-                                    <a href="{% url 'pagos:anular' pago.id %}"
+                                    <a href="{% tenant_url 'pagos:anular' pago.id %}"
                                     class="px-2 py-1 bg-red-700 text-white rounded text-xs">
                                         Anular
                                     </a>
