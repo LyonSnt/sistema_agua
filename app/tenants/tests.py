@@ -9,9 +9,11 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.template import Context, Template
 from django.template.loader import render_to_string
 from django.test import RequestFactory, TestCase, override_settings
+from usuarios.models import Usuario
 
 from .context import activar_tenant_db, limpiar_tenant_db, obtener_tenant_db_alias
 from .database import alias_para_tenant
+from .management.commands.provisionar_tenant import Command as ProvisionarTenantCommand
 from .middleware import TenantPathMiddleware
 from .models import Tenant
 
@@ -49,7 +51,7 @@ class TenantModelTests(TestCase):
 
 
 class TenantCommandTests(TestCase):
-    databases = {"master"}
+    databases = {"default", "master"}
 
     def test_crear_tenant_registra_en_master(self):
         salida = StringIO()
@@ -234,6 +236,27 @@ class TenantCommandTests(TestCase):
         )
 
         self.assertIn("agregue 'san-pablo' a TENANT_SLUGS", salida.getvalue())
+
+    def test_provisionar_tenant_crea_admin_con_permiso_admin_django(self):
+        grupo = Group.objects.using("default").create(name="Administrador")
+        comando = ProvisionarTenantCommand()
+        comando.stdout = StringIO()
+
+        comando._crear_admin(
+            "default",
+            "admin_rumipamba",
+            "ClaveSegura123",
+            "admin@rumipamba.local",
+            {"reset_admin_password": False},
+        )
+
+        usuario = Usuario.objects.using("default").get(username="admin_rumipamba")
+
+        self.assertTrue(usuario.is_staff)
+        self.assertTrue(usuario.is_superuser)
+        self.assertTrue(usuario.is_active)
+        self.assertTrue(usuario.check_password("ClaveSegura123"))
+        self.assertTrue(usuario.groups.filter(id=grupo.id).exists())
 
 
 class TenantRouterTests(TestCase):

@@ -155,6 +155,7 @@ class Command(BaseCommand):
             defaults={
                 "email": email,
                 "is_staff": True,
+                "is_superuser": True,
                 "is_active": True,
             },
         )
@@ -164,6 +165,7 @@ class Command(BaseCommand):
 
         usuario.email = email or usuario.email
         usuario.is_staff = True
+        usuario.is_superuser = True
         usuario.is_active = True
         usuario.save(using=alias)
         usuario.groups.add(admin_group)
