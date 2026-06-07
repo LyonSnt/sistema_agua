@@ -2,10 +2,21 @@
 
 ## Alta prioridad
 
-- [ ] Reconstruir o redeplegar la imagen Docker para incorporar los cambios locales de codigo al contenedor definitivo.
-- [ ] Crear datos tenant de prueba y validar flujo contra bases tenant reales.
-- [ ] Definir estrategia de migracion de datos actuales desde `default` hacia la primera base tenant.
-- [ ] Revisar en navegador el CRUD de abonados: listado, creacion, edicion, ficha y permisos visibles.
+- [ ] Configurar Rumipamba desde `/rumipamba/admin/`:
+  - configuracion institucional
+  - sectores
+  - rutas
+  - tarifa vigente
+  - rubros necesarios
+  - periodo inicial
+- [ ] Probar ciclo operativo minimo en Rumipamba con 1 abonado y 1 medidor:
+  - crear abonado
+  - crear medidor
+  - registrar lectura
+  - generar factura
+  - cobrar pago
+  - revisar comprobante y reportes
+- [ ] Reconstruir o redeplegar la imagen Docker para incorporar los cambios confirmados al contenedor definitivo.
 - [ ] Implementar desactivar/reactivar abonado sin borrado fisico.
 - [ ] Activar flags de produccion cuando exista HTTPS real:
   - `SECURE_SSL_REDIRECT=True`
@@ -14,7 +25,6 @@
   - `SECURE_HSTS_SECONDS` con un valor definido para produccion.
 - [ ] Probar restauracion de backups en una base temporal, no sobre la base viva.
 - [ ] Definir politica de rotacion y retencion de backups.
-- [ ] Auditar usuarios existentes con `is_staff=True` y confirmar que solo Administradores o superusuarios puedan entrar a `/admin/`.
 - [ ] Revisar permisos del menu y permisos por URL cada vez que se agregue una vista nueva.
 
 ## Media prioridad
@@ -83,3 +93,12 @@
 - [x] Middleware tenant reordenado antes de sesiones para login/autenticacion por tenant.
 - [x] Redirects tenant-aware para conservar prefijo en login, logout, permisos y vistas.
 - [x] Tag builtin `tenant_url` aplicado en plantillas para conservar prefijo tenant en enlaces internos.
+- [x] Validacion con bases fisicas reales para Carabuela.
+- [x] CRUD de abonados validado en `/carabuela/`: listado, creacion, ficha y edicion.
+- [x] Decision de mantener `default` como base legacy/de pruebas sin migrar datos por ahora.
+- [x] Cookies propias `sistema_agua_sessionid` y `sistema_agua_csrftoken` para evitar choques con otros proyectos en `localhost`.
+- [x] Comando unico `provisionar_tenant` para crear una junta con base, migraciones, roles y admin inicial.
+- [x] Tenant Rumipamba creado y validado con base `sistema_agua_rumipamba`.
+- [x] Aislamiento de datos validado entre Rumipamba, Carabuela y `default`.
+- [x] Admin inicial del tenant creado con permisos completos dentro de su junta.
+- [x] App `tenants` oculta y bloqueada dentro del admin de cada junta.

@@ -43,9 +43,9 @@ Sistema web de facturacion de agua potable construido con Django. La aplicacion 
   - `scripts/restore_db.sh`
 - Los backups se guardan en `backups/`, directorio ignorado por git.
 
-## Preparacion multi-tenant por base de datos
+## Multi-tenant por base de datos
 
-La fase actual prepara el contrato de configuracion para multi-tenant, agrega una base `master` para registrar juntas de agua y activa seleccion dinamica de base para las apps operativas cuando la request viene con prefijo tenant. Las rutas legacy sin prefijo siguen trabajando contra `default` durante la transicion. El objetivo es mantener un solo contenedor Django y un solo PostgreSQL, con una base master y una base por junta de agua.
+La fase actual agrega una base `master` para registrar juntas de agua y activa seleccion dinamica de base para las apps operativas cuando la request viene con prefijo tenant. Las rutas legacy sin prefijo siguen trabajando contra `default`, que se conserva como base legacy/de pruebas. El objetivo es mantener un solo contenedor Django y un solo PostgreSQL, con una base master y una base por junta de agua.
 
 Convencion propuesta:
 
@@ -54,6 +54,7 @@ Convencion propuesta:
   - `sistema_agua_carabuela`
   - `sistema_agua_esperanza`
   - `sistema_agua_pesillo`
+  - `sistema_agua_rumipamba`
 - Deteccion inicial por ruta:
   - `/carabuela/`
   - `/esperanza/`
@@ -78,6 +79,18 @@ Implementado actualmente:
 - Prefijo automatico de redirects relativos durante requests tenant.
 - Tag builtin `tenant_url` para que las plantillas generen enlaces internos conservando el prefijo tenant.
 - Comandos `crear_tenant`, `crear_base_tenant`, `listar_tenants`, `migrate_tenant` y `migrate_tenants`.
+- Comando `provisionar_tenant` para crear una junta en un solo flujo: registro en master, base fisica, migraciones, roles y administrador inicial.
+- Cookies con nombres propios para evitar choque con otros proyectos locales:
+  - `sistema_agua_sessionid`
+  - `sistema_agua_csrftoken`
+- Ocultamiento de la app `tenants` dentro del admin de cada junta, para que un tenant no vea ni edite el registro global de otros tenants.
+
+Tenants validados actualmente:
+
+- `carabuela`
+- `rumipamba`
+
+El administrador inicial de cada tenant se crea como superusuario dentro de su propia base operativa para permitir la configuracion inicial desde Django Admin.
 
 ## Despliegue
 

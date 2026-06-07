@@ -23,6 +23,13 @@ Las rutas sin prefijo tenant siguen funcionando sobre `default` para mantener co
 
 La navegacion tenant-prefijada tambien queda cubierta para redirects y plantillas. Los redirects relativos generados durante una request tenant se devuelven con el prefijo correspondiente, y las plantillas usan el tag `tenant_url` para generar enlaces internos conservando el prefijo.
 
+Tambien se valido el flujo contra bases fisicas reales. Actualmente existen tenants operativos de prueba/validacion para `carabuela` y `rumipamba`, con bases separadas y datos aislados. La base `default` se conserva como base legacy/de pruebas y no se migrara por ahora.
+
+Para evitar choque de sesiones con otros proyectos locales sobre `localhost`, la configuracion usa nombres propios de cookies:
+
+- `SESSION_COOKIE_NAME=sistema_agua_sessionid`
+- `CSRF_COOKIE_NAME=sistema_agua_csrftoken`
+
 ## Base master
 
 La base master debe guardar solo informacion global necesaria para resolver tenants.
@@ -41,6 +48,7 @@ Ejemplo:
 | `carabuela` | Junta Carabuela | `sistema_agua_carabuela` |
 | `esperanza` | Junta Esperanza | `sistema_agua_esperanza` |
 | `pesillo` | Junta Pesillo | `sistema_agua_pesillo` |
+| `rumipamba` | Junta de Agua Rumipamba | `sistema_agua_rumipamba` |
 
 ## Bases tenant
 
@@ -142,11 +150,20 @@ Este comando realiza los pasos tecnicos principales:
 - crea la base fisica PostgreSQL;
 - ejecuta migraciones en la base tenant;
 - crea roles base;
-- crea o actualiza el usuario Administrador inicial.
+- crea o actualiza el usuario Administrador inicial con acceso completo al admin de su junta.
 
 Si el slug no esta en `TENANT_SLUGS`, el comando termina pero muestra una
 advertencia. Para acceder por URL se debe agregar el slug en `.env` y recrear
 el contenedor web.
+
+Ejemplo con Docker:
+
+```bash
+docker exec -it sistema_agua_web python manage.py provisionar_tenant rumipamba "Junta de Agua Rumipamba" \
+  --admin-user admin_rumipamba \
+  --admin-password "ClaveSegura123" \
+  --admin-email admin@rumipamba.local
+```
 
 `crear_base_tenant` se conecta a la base administrativa definida por `TENANT_ADMIN_DB_NAME`, por defecto `postgres`. El usuario PostgreSQL configurado en `DB_USER` debe tener permisos para crear bases.
 
@@ -173,12 +190,14 @@ Flujo actual:
 
 - Usuarios por tenant al inicio.
   - Justificacion: simplifica permisos y aislamiento operativo.
-- Superadmin global queda para una fase posterior.
+- El administrador inicial de cada tenant se crea como superusuario dentro de su base tenant para poder configurar su junta desde Django Admin.
+- La app `tenants` se oculta y bloquea dentro del admin tenant. La lista global de tenants solo debe gestionarse fuera de una ruta tenant.
 - No se mezclan datos de juntas en una misma base.
+- `default` se conserva como base legacy/de pruebas; no se migrara por ahora.
 
 ## Fases pendientes
 
-1. Crear datos tenant de prueba y validar bases fisicas reales de extremo a extremo.
-2. Definir estrategia de migracion de datos actuales desde `default` hacia la primera base tenant.
+1. Completar configuracion operativa de Rumipamba desde `/rumipamba/admin/`.
+2. Probar ciclo operativo minimo de Rumipamba con abonado, medidor, lectura, factura y pago.
 3. Adaptar backups por master y por tenant.
-4. Probar `/carabuela/`, `/esperanza/`, `/pesillo/` en navegador.
+4. Probar restauracion de backups en bases temporales.
