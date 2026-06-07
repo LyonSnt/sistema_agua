@@ -127,6 +127,27 @@ Ejecutar migraciones para todos los tenants activos:
 python manage.py migrate_tenants
 ```
 
+Crear y preparar una junta nueva con un solo comando:
+
+```bash
+python manage.py provisionar_tenant san-pablo "Junta San Pablo" \
+  --admin-user admin_san_pablo \
+  --admin-password "ClaveSegura123" \
+  --admin-email admin@sanpablo.local
+```
+
+Este comando realiza los pasos tecnicos principales:
+
+- registra el tenant en `master`;
+- crea la base fisica PostgreSQL;
+- ejecuta migraciones en la base tenant;
+- crea roles base;
+- crea o actualiza el usuario Administrador inicial.
+
+Si el slug no esta en `TENANT_SLUGS`, el comando termina pero muestra una
+advertencia. Para acceder por URL se debe agregar el slug en `.env` y recrear
+el contenedor web.
+
 `crear_base_tenant` se conecta a la base administrativa definida por `TENANT_ADMIN_DB_NAME`, por defecto `postgres`. El usuario PostgreSQL configurado en `DB_USER` debe tener permisos para crear bases.
 
 ## Resolucion por ruta

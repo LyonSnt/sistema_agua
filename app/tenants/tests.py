@@ -172,6 +172,69 @@ class TenantCommandTests(TestCase):
         migrate_tenant_mock.assert_called_once()
         self.assertEqual(migrate_tenant_mock.call_args.args[:2], ("migrate_tenant", "carabuela"))
 
+    @override_settings(TENANT_SLUGS=["carabuela"])
+    @patch("tenants.management.commands.provisionar_tenant.Command._crear_admin")
+    @patch("tenants.management.commands.provisionar_tenant.Command._crear_roles")
+    @patch("tenants.management.commands.provisionar_tenant.Command._migrar_tenant")
+    @patch("tenants.management.commands.provisionar_tenant.crear_base_datos_tenant")
+    def test_provisionar_tenant_prepara_junta_completa(
+        self,
+        crear_base_mock,
+        migrar_mock,
+        crear_roles_mock,
+        crear_admin_mock,
+    ):
+        crear_base_mock.return_value = True
+        migrar_mock.return_value = "tenant_carabuela"
+        salida = StringIO()
+
+        call_command(
+            "provisionar_tenant",
+            "carabuela",
+            "Junta Carabuela",
+            "--admin-user",
+            "admin_carabuela",
+            "--admin-password",
+            "ClaveSegura123",
+            stdout=salida,
+        )
+
+        tenant = Tenant.objects.using("master").get(slug="carabuela")
+        crear_base_mock.assert_called_once_with("sistema_agua_carabuela")
+        migrar_mock.assert_called_once_with(tenant, 1)
+        crear_roles_mock.assert_called_once_with("tenant_carabuela")
+        crear_admin_mock.assert_called_once()
+        self.assertIn("Tenant provisionado: carabuela", salida.getvalue())
+
+    @override_settings(TENANT_SLUGS=["carabuela"])
+    @patch("tenants.management.commands.provisionar_tenant.Command._crear_admin")
+    @patch("tenants.management.commands.provisionar_tenant.Command._crear_roles")
+    @patch("tenants.management.commands.provisionar_tenant.Command._migrar_tenant")
+    @patch("tenants.management.commands.provisionar_tenant.crear_base_datos_tenant")
+    def test_provisionar_tenant_advierte_si_slug_no_esta_en_env(
+        self,
+        crear_base_mock,
+        migrar_mock,
+        crear_roles_mock,
+        crear_admin_mock,
+    ):
+        crear_base_mock.return_value = True
+        migrar_mock.return_value = "tenant_san_pablo"
+        salida = StringIO()
+
+        call_command(
+            "provisionar_tenant",
+            "san-pablo",
+            "Junta San Pablo",
+            "--admin-user",
+            "admin_san_pablo",
+            "--admin-password",
+            "ClaveSegura123",
+            stdout=salida,
+        )
+
+        self.assertIn("agregue 'san-pablo' a TENANT_SLUGS", salida.getvalue())
+
 
 class TenantRouterTests(TestCase):
     databases = {"master"}
