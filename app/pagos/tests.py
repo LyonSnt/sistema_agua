@@ -1,5 +1,6 @@
 from datetime import date
 from decimal import Decimal
+from unittest.mock import patch
 
 from django.contrib.auth.models import Group
 from django.test import TestCase
@@ -122,6 +123,20 @@ class CobrarFacturaTests(TestCase):
         self.assertEqual(self.factura.saldo_pendiente, Decimal("60.00"))
         self.assertEqual(self.factura.estado, "PARCIAL")
 
+    def test_error_en_auditoria_revierte_pago_y_factura(self):
+        with patch(
+            "pagos.views.registrar_auditoria",
+            side_effect=RuntimeError("fallo auditoria"),
+        ):
+            with self.assertRaises(RuntimeError):
+                self.post_pago("40.00")
+
+        self.assertEqual(Pago.objects.count(), 0)
+        self.factura.refresh_from_db()
+        self.assertEqual(self.factura.total_pagado, Decimal("0.00"))
+        self.assertEqual(self.factura.saldo_pendiente, Decimal("100.00"))
+        self.assertEqual(self.factura.estado, "PENDIENTE")
+
     def test_put_cobrar_factura_no_esta_permitido(self):
         response = self.client.put(
             reverse("pagos:cobrar", args=[self.factura.id]),
@@ -224,6 +239,25 @@ class AnularPagoTests(TestCase):
         self.pago.refresh_from_db()
         self.assertTrue(self.pago.anulado)
         self.assertEqual(self.pago.motivo_anulacion, "Pago duplicado")
+
+    def test_error_en_auditoria_revierte_anulacion_pago(self):
+        with patch(
+            "pagos.views.registrar_auditoria",
+            side_effect=RuntimeError("fallo auditoria"),
+        ):
+            with self.assertRaises(RuntimeError):
+                self.client.post(
+                    reverse("pagos:anular", args=[self.pago.id]),
+                    {"motivo": "Pago duplicado"},
+                )
+
+        self.pago.refresh_from_db()
+        self.factura.refresh_from_db()
+        self.assertFalse(self.pago.anulado)
+        self.assertEqual(self.pago.motivo_anulacion, "")
+        self.assertEqual(self.factura.total_pagado, Decimal("50.00"))
+        self.assertEqual(self.factura.saldo_pendiente, Decimal("0.00"))
+        self.assertEqual(self.factura.estado, "PAGADA")
 
     def test_put_no_esta_permitido(self):
         response = self.client.put(

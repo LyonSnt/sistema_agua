@@ -1,5 +1,6 @@
 from datetime import date
 from decimal import Decimal
+from unittest.mock import patch
 
 from django.contrib.auth.models import Group
 from django.test import TestCase
@@ -199,6 +200,29 @@ class AnularMultaTests(TestCase):
             ).exists()
         )
 
+    def test_error_en_auditoria_revierte_anulacion_multa(self):
+        with patch(
+            "multas.views.registrar_auditoria",
+            side_effect=RuntimeError("fallo auditoria"),
+        ):
+            with self.assertRaises(RuntimeError):
+                self.client.post(
+                    reverse("multas:anular", args=[self.multa.id]),
+                    {"motivo": "Registro duplicado"},
+                )
+
+        self.multa.refresh_from_db()
+        self.assertEqual(self.multa.estado, "PENDIENTE")
+        self.assertIsNone(self.multa.fecha_anulacion)
+        self.assertEqual(self.multa.motivo_anulacion, "")
+        self.assertFalse(
+            Auditoria.objects.filter(
+                accion="ANULAR_MULTA",
+                modulo="Multas",
+                objeto_id=str(self.multa.id),
+            ).exists()
+        )
+
     def test_put_no_esta_permitido(self):
         response = self.client.put(
             reverse("multas:anular", args=[self.multa.id]),
@@ -258,6 +282,32 @@ class CobrarMultaTests(TestCase):
 
         self.assertRedirects(response, reverse("multas:lista"))
         self.assertTrue(
+            Auditoria.objects.filter(
+                accion="COBRAR_MULTA",
+                modulo="Multas",
+                objeto_id=str(self.multa.id),
+            ).exists()
+        )
+
+    def test_error_en_auditoria_revierte_cobro_multa(self):
+        with patch(
+            "multas.views.registrar_auditoria",
+            side_effect=RuntimeError("fallo auditoria"),
+        ):
+            with self.assertRaises(RuntimeError):
+                self.client.post(
+                    reverse("multas:cobrar", args=[self.multa.id]),
+                    {
+                        "metodo_pago": "EFECTIVO",
+                        "referencia": "",
+                    },
+                )
+
+        self.multa.refresh_from_db()
+        self.assertEqual(self.multa.estado, "PENDIENTE")
+        self.assertIsNone(self.multa.fecha_pago)
+        self.assertEqual(self.multa.metodo_pago, "")
+        self.assertFalse(
             Auditoria.objects.filter(
                 accion="COBRAR_MULTA",
                 modulo="Multas",

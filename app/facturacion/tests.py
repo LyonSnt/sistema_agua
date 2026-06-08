@@ -1,5 +1,6 @@
 from datetime import date
 from decimal import Decimal
+from unittest.mock import patch
 
 from django.contrib.auth.models import Group
 from django.test import TestCase
@@ -107,6 +108,29 @@ class AnularFacturaTests(TestCase):
             "Factura emitida por error",
         )
         self.assertTrue(
+            Auditoria.objects.filter(
+                accion="ANULAR_FACTURA",
+                modulo="Facturación",
+                objeto_id=str(self.factura.id),
+            ).exists()
+        )
+
+    def test_error_en_auditoria_revierte_anulacion_factura(self):
+        with patch(
+            "facturacion.views.registrar_auditoria",
+            side_effect=RuntimeError("fallo auditoria"),
+        ):
+            with self.assertRaises(RuntimeError):
+                self.client.post(
+                    reverse("facturacion:anular", args=[self.factura.id]),
+                    {"motivo": "Factura emitida por error"},
+                )
+
+        self.factura.refresh_from_db()
+        self.assertEqual(self.factura.estado, "PENDIENTE")
+        self.assertIsNone(self.factura.fecha_anulacion)
+        self.assertEqual(self.factura.motivo_anulacion, "")
+        self.assertFalse(
             Auditoria.objects.filter(
                 accion="ANULAR_FACTURA",
                 modulo="Facturación",

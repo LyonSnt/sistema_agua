@@ -14,6 +14,7 @@ from weasyprint import HTML
 from openpyxl import Workbook
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_http_methods
+from django.db import transaction
 
 
 @rol_requerido("Administrador", "Supervisor", "Cajero")
@@ -91,20 +92,28 @@ def cobrar_multa(request, multa_id):
     )
 
     if request.method == "POST":
-        multa.estado = "PAGADA"
-        multa.fecha_pago = timezone.now()
-        multa.metodo_pago = request.POST.get("metodo_pago")
-        multa.referencia = request.POST.get("referencia", "")
-        multa.actualizado_por = request.user
-        multa.save()
+        with transaction.atomic():
+            multa = get_object_or_404(
+                Multa.objects.select_for_update(),
+                id=multa_id,
+                activo=True,
+                estado="PENDIENTE",
+            )
 
-        registrar_auditoria(
-            request,
-            accion="COBRAR_MULTA",
-            modulo="Multas",
-            descripcion=f"Cobró multa de ${multa.valor} a {multa.abonado}",
-            objeto=multa,
-        )
+            multa.estado = "PAGADA"
+            multa.fecha_pago = timezone.now()
+            multa.metodo_pago = request.POST.get("metodo_pago")
+            multa.referencia = request.POST.get("referencia", "")
+            multa.actualizado_por = request.user
+            multa.save()
+
+            registrar_auditoria(
+                request,
+                accion="COBRAR_MULTA",
+                modulo="Multas",
+                descripcion=f"Cobró multa de ${multa.valor} a {multa.abonado}",
+                objeto=multa,
+            )
 
         messages.success(request, "Multa cobrada correctamente.")
         return redirect("multas:lista")
@@ -133,19 +142,30 @@ def anular_multa(request, multa_id):
             messages.error(request, "Debe ingresar el motivo de anulación.")
             return redirect("multas:anular", multa_id=multa.id)
 
-        multa.estado = "ANULADA"
-        multa.fecha_anulacion = timezone.now()
-        multa.motivo_anulacion = motivo
-        multa.actualizado_por = request.user
-        multa.save()
+        with transaction.atomic():
+            multa = get_object_or_404(
+                Multa.objects.select_for_update(),
+                id=multa_id,
+                activo=True,
+            )
 
-        registrar_auditoria(
-            request,
-            accion="ANULAR_MULTA",
-            modulo="Multas",
-            descripcion=f"Anuló multa de ${multa.valor} a {multa.abonado}. Motivo: {motivo}",
-            objeto=multa,
-        )
+            if multa.estado == "ANULADA":
+                messages.error(request, "La multa ya se encuentra anulada.")
+                return redirect("multas:lista")
+
+            multa.estado = "ANULADA"
+            multa.fecha_anulacion = timezone.now()
+            multa.motivo_anulacion = motivo
+            multa.actualizado_por = request.user
+            multa.save()
+
+            registrar_auditoria(
+                request,
+                accion="ANULAR_MULTA",
+                modulo="Multas",
+                descripcion=f"Anuló multa de ${multa.valor} a {multa.abonado}. Motivo: {motivo}",
+                objeto=multa,
+            )
 
         messages.success(request, "Multa anulada correctamente.")
         return redirect("multas:lista")

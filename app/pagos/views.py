@@ -2,6 +2,7 @@ from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -49,15 +50,31 @@ def cobrar_factura(request, factura_id):
             })
 
         try:
-            pago = Pago.objects.create(
-                factura=factura,
-                metodo_pago=metodo_pago,
-                valor_pagado=valor_pagado,
-                referencia=referencia,
-                observacion=observacion,
-                creado_por=request.user,
-                actualizado_por=request.user,
-            )
+            with transaction.atomic():
+                factura = get_object_or_404(
+                    Factura.objects.select_for_update(),
+                    id=factura_id,
+                    estado__in=["PENDIENTE", "PARCIAL"],
+                    activo=True,
+                )
+
+                pago = Pago.objects.create(
+                    factura=factura,
+                    metodo_pago=metodo_pago,
+                    valor_pagado=valor_pagado,
+                    referencia=referencia,
+                    observacion=observacion,
+                    creado_por=request.user,
+                    actualizado_por=request.user,
+                )
+
+                registrar_auditoria(
+                    request,
+                    accion="PAGO",
+                    modulo="Pagos",
+                    descripcion=f"Registró pago de ${pago.valor_pagado} para la factura {pago.factura.numero}",
+                    objeto=pago,
+                )
         except ValidationError as exc:
             for error in exc.messages:
                 messages.error(request, error)
@@ -65,14 +82,6 @@ def cobrar_factura(request, factura_id):
             return render(request, "pagos/cobrar.html", {
                 "factura": factura,
             })
-
-        registrar_auditoria(
-            request,
-            accion="PAGO",
-            modulo="Pagos",
-            descripcion=f"Registró pago de ${pago.valor_pagado} para la factura {pago.factura.numero}",
-            objeto=pago,
-        )
 
         messages.success(request, "Pago registrado correctamente.")
         return redirect("pagos:pago_exitoso", pago_id=pago.id)
@@ -121,26 +130,38 @@ def anular_pago(request, pago_id):
                 pago_id=pago.id
             )
 
-        pago.anulado = True
-        pago.fecha_anulacion = timezone.now()
-        pago.motivo_anulacion = motivo
-        pago.actualizado_por = request.user
+        with transaction.atomic():
+            pago = get_object_or_404(
+                Pago.objects.select_for_update().select_related("factura"),
+                id=pago_id,
+                activo=True,
+                anulado=False,
+            )
+            factura = Factura.objects.select_for_update().get(
+                id=pago.factura_id
+            )
+            pago.factura = factura
 
-        pago.save()
+            pago.anulado = True
+            pago.fecha_anulacion = timezone.now()
+            pago.motivo_anulacion = motivo
+            pago.actualizado_por = request.user
 
-        pago.factura.actualizar_estado_pago()
-        
-        registrar_auditoria(
-            request,
-            accion="ANULAR_PAGO",
-            modulo="Pagos",
-            descripcion=(
-                f"Anuló el pago de ${pago.valor_pagado} "
-                f"de la factura {pago.factura.numero}. "
-                f"Motivo: {pago.motivo_anulacion}"
-            ),
-            objeto=pago,
-        )
+            pago.save()
+
+            pago.factura.actualizar_estado_pago()
+
+            registrar_auditoria(
+                request,
+                accion="ANULAR_PAGO",
+                modulo="Pagos",
+                descripcion=(
+                    f"Anuló el pago de ${pago.valor_pagado} "
+                    f"de la factura {pago.factura.numero}. "
+                    f"Motivo: {pago.motivo_anulacion}"
+                ),
+                objeto=pago,
+            )
 
         messages.success(
             request,

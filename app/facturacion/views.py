@@ -15,6 +15,7 @@ from configuracion_institucional.utils import obtener_configuracion
 from tarifas.models import Rubro
 from decimal import Decimal
 from django.db.models import Sum
+from django.db import transaction
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_http_methods
 
@@ -217,22 +218,45 @@ def anular_factura(request, factura_id):
             messages.error(request, "Debe ingresar el motivo de anulación.")
             return redirect("facturacion:anular", factura_id=factura.id)
 
-        factura.estado = "ANULADA"
-        factura.fecha_anulacion = timezone.now()
-        factura.motivo_anulacion = motivo
-        factura.actualizado_por = request.user
-        factura.save()
+        with transaction.atomic():
+            factura = get_object_or_404(
+                Factura.objects.select_for_update(),
+                id=factura_id,
+                activo=True,
+            )
 
-        registrar_auditoria(
-            request,
-            accion="ANULAR_FACTURA",
-            modulo="Facturación",
-            descripcion=(
-                f"Anuló la factura {factura.numero} "
-                f"del abonado {factura.abonado}. Motivo: {motivo}"
-            ),
-            objeto=factura,
-        )
+            pagos_activos = factura.pagos.filter(
+                activo=True,
+                anulado=False
+            ).exists()
+
+            if pagos_activos:
+                messages.error(
+                    request,
+                    "No se puede anular la factura porque tiene pagos activos. Primero debe anular los pagos."
+                )
+                return redirect("facturacion:detalle", factura_id=factura.id)
+
+            if factura.estado == "ANULADA":
+                messages.error(request, "La factura ya se encuentra anulada.")
+                return redirect("facturacion:detalle", factura_id=factura.id)
+
+            factura.estado = "ANULADA"
+            factura.fecha_anulacion = timezone.now()
+            factura.motivo_anulacion = motivo
+            factura.actualizado_por = request.user
+            factura.save()
+
+            registrar_auditoria(
+                request,
+                accion="ANULAR_FACTURA",
+                modulo="Facturación",
+                descripcion=(
+                    f"Anuló la factura {factura.numero} "
+                    f"del abonado {factura.abonado}. Motivo: {motivo}"
+                ),
+                objeto=factura,
+            )
 
         messages.success(request, "Factura anulada correctamente.")
         return redirect("facturacion:detalle", factura_id=factura.id)

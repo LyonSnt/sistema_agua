@@ -18,6 +18,11 @@
   - revisar comprobante y reportes
 - [ ] Reconstruir o redeplegar la imagen Docker para incorporar los cambios confirmados al contenedor definitivo.
 - [ ] Implementar desactivar/reactivar abonado sin borrado fisico.
+- [ ] Agregar reporte o comando de consistencia operativa:
+  - facturas con pagos activos pero saldo desactualizado;
+  - pagos activos sobre facturas anuladas;
+  - facturas pagadas con saldo pendiente distinto de cero;
+  - lecturas registradas sin factura en periodos ya facturados.
 - [ ] Activar flags de produccion cuando exista HTTPS real:
   - `SECURE_SSL_REDIRECT=True`
   - `SESSION_COOKIE_SECURE=True`
@@ -109,3 +114,8 @@
 - [x] Admin inicial del tenant creado con permisos completos dentro de su junta.
 - [x] App `tenants` oculta y bloqueada dentro del admin de cada junta.
 - [x] Configuracion de Nginx en VPS para exponer la app por IP publica sin abrir Gunicorn directamente.
+- [x] Endurecimiento transaccional de cobros y anulaciones criticas:
+  - cobro de facturas;
+  - anulacion de pagos;
+  - anulacion de facturas;
+  - cobro y anulacion de multas.
