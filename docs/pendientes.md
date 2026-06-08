@@ -18,11 +18,6 @@
   - revisar comprobante y reportes
 - [ ] Reconstruir o redeplegar la imagen Docker para incorporar los cambios confirmados al contenedor definitivo.
 - [ ] Implementar desactivar/reactivar abonado sin borrado fisico.
-- [ ] Agregar reporte o comando de consistencia operativa:
-  - facturas con pagos activos pero saldo desactualizado;
-  - pagos activos sobre facturas anuladas;
-  - facturas pagadas con saldo pendiente distinto de cero;
-  - lecturas registradas sin factura en periodos ya facturados.
 - [ ] Activar flags de produccion cuando exista HTTPS real:
   - `SECURE_SSL_REDIRECT=True`
   - `SESSION_COOKIE_SECURE=True`
@@ -119,3 +114,9 @@
   - anulacion de pagos;
   - anulacion de facturas;
   - cobro y anulacion de multas.
+- [x] Comando de consistencia operativa `verificar_consistencia`:
+  - facturas con pagos activos pero saldo desactualizado;
+  - pagos activos sobre facturas anuladas;
+  - facturas pagadas con saldo pendiente distinto de cero;
+  - pagos mayores al total de factura;
+  - lecturas registradas sin factura.

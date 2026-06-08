@@ -32,6 +32,7 @@ env = environ.Env(
     ENABLE_DJANGO_EXTENSIONS=(bool, False),
     AXES_FAILURE_LIMIT=(int, 3),
     AXES_COOLOFF_TIME=(float, 0.25),
+    TIME_ZONE=(str, "America/Guayaquil"),
     MASTER_DB_NAME=(str, ""),
     TENANT_DEFAULT=(str, "carabuela"),
     TENANT_DB_PREFIX=(str, "sistema_agua_"),
@@ -219,7 +220,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = env("TIME_ZONE")
 
 USE_I18N = True
 
