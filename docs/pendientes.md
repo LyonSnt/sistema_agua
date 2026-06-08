@@ -23,6 +23,12 @@
   - `SESSION_COOKIE_SECURE=True`
   - `CSRF_COOKIE_SECURE=True`
   - `SECURE_HSTS_SECONDS` con un valor definido para produccion.
+- [ ] Cuando exista dominio real, actualizar despliegue publico:
+  - cambiar `server_name` de Nginx de IP publica a dominio;
+  - actualizar `ALLOWED_HOSTS` con el dominio;
+  - actualizar `CSRF_TRUSTED_ORIGINS` con `https://dominio`;
+  - instalar certificado TLS con Certbot o proveedor equivalente;
+  - activar flags HTTPS de produccion despues de validar el certificado.
 - [ ] Probar restauracion de backups en una base temporal, no sobre la base viva.
 - [ ] Definir politica de rotacion y retencion de backups.
 - [ ] Revisar permisos del menu y permisos por URL cada vez que se agregue una vista nueva.
@@ -102,3 +108,4 @@
 - [x] Aislamiento de datos validado entre Rumipamba, Carabuela y `default`.
 - [x] Admin inicial del tenant creado con permisos completos dentro de su junta.
 - [x] App `tenants` oculta y bloqueada dentro del admin de cada junta.
+- [x] Configuracion de Nginx en VPS para exponer la app por IP publica sin abrir Gunicorn directamente.

@@ -111,7 +111,7 @@ El despliegue esta definido con Docker Compose por capas:
   - Construye la imagen desde `Dockerfile`.
   - En desarrollo ejecuta `migrate` y `runserver`.
   - En produccion ejecuta `collectstatic`, `migrate` y `gunicorn`.
-  - Expone el puerto configurado con `APP_PORT`.
+  - En produccion expone el puerto configurado con `APP_PORT` solo en `127.0.0.1`.
   - Lee variables desde `.env`.
   - Corre como usuario no privilegiado `appuser`.
 - Servicio `db`:
@@ -131,6 +131,53 @@ Comando de produccion:
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
+
+En VPS, el servicio Django/Gunicorn no se publica directamente a internet.
+`docker-compose.prod.yml` mantiene la app escuchando solo en el host local del
+servidor:
+
+```yaml
+ports:
+  - "127.0.0.1:${APP_PORT:-8015}:8015"
+```
+
+La entrada publica recomendada es Nginx en la misma VPS, escuchando en el
+puerto `80` y reenviando internamente hacia `127.0.0.1:8015`:
+
+```nginx
+server {
+    listen 80;
+    server_name 178.105.190.153;
+
+    client_max_body_size 20M;
+
+    location / {
+        proxy_pass http://127.0.0.1:8015;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_redirect off;
+    }
+}
+```
+
+Con esta configuracion:
+
+- `http://127.0.0.1:8015/login/` valida Django/Gunicorn desde la VPS.
+- `http://178.105.190.153/login/` valida el flujo publico por Nginx.
+- El puerto `8015` no necesita abrirse publicamente.
+
+El `.env` de produccion debe permitir la IP publica o dominio usado por Nginx:
+
+```env
+ALLOWED_HOSTS=localhost,127.0.0.1,178.105.190.153
+CSRF_TRUSTED_ORIGINS=http://178.105.190.153
+```
+
+Cuando exista dominio, se debe reemplazar la IP en `server_name`,
+`ALLOWED_HOSTS` y `CSRF_TRUSTED_ORIGINS` por el dominio real.
 
 ## Archivos estaticos y plantillas
 
