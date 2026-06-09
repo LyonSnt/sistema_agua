@@ -10,14 +10,17 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.template import Context, Template
 from django.template.loader import render_to_string
 from django.test import RequestFactory, TestCase, override_settings
+from django.urls import resolve
 from usuarios.models import Usuario
+from usuarios.context_processors import roles_usuario
 
 from .context import activar_tenant_db, limpiar_tenant_db, obtener_tenant_db_alias
-from .admin import TenantAdmin
+from .admin import TenantAdmin, TenantAdminPasswordResetForm
 from .database import alias_para_tenant
 from .management.commands.provisionar_tenant import Command as ProvisionarTenantCommand
 from .middleware import TenantPathMiddleware
 from .models import Tenant
+from .modules import TENANT_MODULE_KEYS
 
 
 class TenantModelTests(TestCase):
@@ -51,9 +54,26 @@ class TenantModelTests(TestCase):
 
         self.assertEqual(tenant.slug, "pesillo")
 
+    def test_tenant_nuevo_habilita_todos_los_modulos_por_defecto(self):
+        tenant = Tenant.objects.create(
+            slug="rumipamba",
+            nombre="Junta Rumipamba",
+        )
+
+        self.assertEqual(tenant.modulos_habilitados, list(TENANT_MODULE_KEYS))
+
+    def test_descarta_modulos_desconocidos(self):
+        tenant = Tenant.objects.create(
+            slug="rumipamba",
+            nombre="Junta Rumipamba",
+            modulos_habilitados=["panel", "multas", "desconocido"],
+        )
+
+        self.assertEqual(tenant.modulos_habilitados, ["panel", "multas"])
+
 
 class TenantAdminTests(TestCase):
-    databases = {"master"}
+    databases = {"default", "master"}
 
     def setUp(self):
         self.factory = RequestFactory()
@@ -83,6 +103,68 @@ class TenantAdminTests(TestCase):
 
         self.assertTrue(self.admin.has_module_permission(request))
         self.assertTrue(self.admin.has_view_permission(request))
+
+    def test_form_reset_admin_valida_confirmacion(self):
+        form = TenantAdminPasswordResetForm(
+            {
+                "username": "admin_rumipamba",
+                "password": "ClaveSegura123",
+                "password_confirm": "OtraClave123",
+            }
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("Las claves no coinciden.", form.errors["__all__"])
+
+    @patch("tenants.admin.configurar_base_tenant")
+    def test_reset_admin_password_actualiza_usuario_en_base_tenant(self, configurar_mock):
+        configurar_mock.return_value = "default"
+        tenant = Tenant.objects.using("master").create(
+            slug="rumipamba",
+            nombre="Junta Rumipamba",
+            db_name="sistema_agua_rumipamba",
+        )
+        usuario = Usuario.objects.db_manager("default").create_user(
+            username="admin_rumipamba",
+            password="ClaveAnterior123",
+            is_staff=False,
+            is_superuser=False,
+        )
+        usuario.save(using="default")
+        request = self.factory.post(
+            f"/admin/tenants/tenant/{tenant.pk}/reset-admin-password/",
+            {
+                "username": "admin_rumipamba",
+                "password": "ClaveNueva123",
+                "password_confirm": "ClaveNueva123",
+            },
+        )
+        request.tenant = None
+        request.user = type(
+            "User",
+            (),
+            {
+                "is_active": True,
+                "is_staff": True,
+                "is_superuser": True,
+                "has_perm": lambda self, perm: True,
+                "has_module_perms": lambda self, app_label: True,
+            },
+        )()
+        request._messages = type(
+            "Messages",
+            (),
+            {"add": lambda self, level, message, extra_tags="", fail_silently=False: None},
+        )()
+
+        response = self.admin.reset_admin_password_view(request, str(tenant.pk))
+        usuario = Usuario.objects.using("default").get(username="admin_rumipamba")
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(usuario.check_password("ClaveNueva123"))
+        self.assertTrue(usuario.is_staff)
+        self.assertTrue(usuario.is_superuser)
+        self.assertTrue(usuario.is_active)
 
 
 class TenantCommandTests(TestCase):
@@ -445,6 +527,7 @@ class TenantPathMiddlewareTests(TestCase):
             "base/base.html",
             {
                 "request": request,
+                "puede_ver_panel": True,
                 "puede_ver_abonados": True,
                 "puede_ver_medidores": False,
                 "puede_generar_lecturas": False,
@@ -464,6 +547,102 @@ class TenantPathMiddlewareTests(TestCase):
         self.assertIn('href="/carabuela/panel/"', html)
         self.assertIn('href="/carabuela/abonados/"', html)
         self.assertIn('action="/carabuela/logout/"', html)
+
+    @override_settings(TENANT_SLUGS=["rumipamba"], TENANT_ROUTE_MODE="path")
+    def test_bloquea_url_de_modulo_no_habilitado(self):
+        tenant = Tenant.objects.using("master").create(
+            slug="rumipamba",
+            nombre="Junta Rumipamba",
+            db_name="sistema_agua_rumipamba",
+            modulos_habilitados=["panel", "abonados"],
+        )
+        request = self.factory.get("/rumipamba/multas/")
+        request.tenant = tenant
+        request.path_info = "/multas/"
+        request.resolver_match = resolve("/multas/")
+        middleware = TenantPathMiddleware(lambda req: HttpResponse("ok"))
+
+        response = middleware.process_view(request, None, (), {})
+
+        self.assertEqual(response.status_code, 403)
+
+    @override_settings(TENANT_SLUGS=["rumipamba"], TENANT_ROUTE_MODE="path")
+    def test_permite_url_de_modulo_habilitado(self):
+        tenant = Tenant.objects.using("master").create(
+            slug="rumipamba",
+            nombre="Junta Rumipamba",
+            db_name="sistema_agua_rumipamba",
+            modulos_habilitados=["panel", "abonados"],
+        )
+        request = self.factory.get("/rumipamba/abonados/")
+        request.tenant = tenant
+        request.path_info = "/abonados/"
+        request.resolver_match = resolve("/abonados/")
+        middleware = TenantPathMiddleware(lambda req: HttpResponse("ok"))
+
+        response = middleware.process_view(request, None, (), {})
+
+        self.assertIsNone(response)
+
+
+class TenantModuleContextTests(TestCase):
+    databases = {"default", "master"}
+
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.grupo = Group.objects.create(name="Administrador")
+        self.usuario = Usuario.objects.create_user(
+            username="admin_rumipamba",
+            password="ClaveSegura123",
+            is_staff=True,
+        )
+        self.usuario.groups.add(self.grupo)
+
+    def test_context_processor_oculta_permisos_de_modulo_no_habilitado(self):
+        tenant = Tenant.objects.using("master").create(
+            slug="rumipamba",
+            nombre="Junta Rumipamba",
+            modulos_habilitados=["panel", "abonados", "admin"],
+        )
+        request = self.factory.get("/rumipamba/panel/")
+        request.user = self.usuario
+        request.tenant = tenant
+
+        contexto = roles_usuario(request)
+
+        self.assertTrue(contexto["puede_ver_panel"])
+        self.assertTrue(contexto["puede_ver_abonados"])
+        self.assertFalse(contexto["puede_ver_multas"])
+        self.assertFalse(contexto["puede_ver_suspensiones"])
+
+    def test_menu_no_muestra_modulo_no_habilitado(self):
+        request = self.factory.get("/rumipamba/panel/")
+        request.tenant_path_prefix = "/rumipamba"
+
+        html = render_to_string(
+            "base/base.html",
+            {
+                "request": request,
+                "puede_ver_panel": True,
+                "puede_ver_abonados": True,
+                "puede_ver_medidores": False,
+                "puede_generar_lecturas": False,
+                "puede_importar_lecturas": False,
+                "puede_registrar_lecturas": False,
+                "puede_generar_facturacion": False,
+                "puede_ver_facturas": False,
+                "puede_ver_reportes": False,
+                "puede_ver_cartera": False,
+                "puede_ver_suspensiones": False,
+                "puede_ver_multas": False,
+                "puede_ver_reporte_multas": False,
+                "puede_administrar_sistema": False,
+            },
+        )
+
+        self.assertIn('href="/rumipamba/abonados/"', html)
+        self.assertNotIn('href="/rumipamba/multas/"', html)
+        self.assertNotIn('href="/rumipamba/servicios/"', html)
 
     def test_tenant_url_prefija_enlaces_de_plantillas(self):
         request = self.factory.get("/carabuela/abonados/")

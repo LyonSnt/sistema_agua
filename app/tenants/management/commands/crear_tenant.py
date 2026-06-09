@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.db import IntegrityError
 
+from tenants.modules import parsear_modulos
 from tenants.models import Tenant
 
 
@@ -16,11 +17,18 @@ class Command(BaseCommand):
             default="",
             help="Nombre de base de datos. Si se omite, se usa TENANT_DB_PREFIX + slug.",
         )
+        parser.add_argument(
+            "--modules",
+            dest="modules",
+            default="",
+            help="Lista separada por comas de modulos habilitados. Si se omite, se habilitan todos.",
+        )
 
     def handle(self, *args, **options):
         slug = options["slug"].strip().lower()
         nombre = options["nombre"].strip()
         db_name = options["db_name"].strip()
+        modules = options["modules"].strip()
 
         if not slug:
             raise CommandError("El slug no puede estar vacio.")
@@ -29,10 +37,16 @@ class Command(BaseCommand):
             raise CommandError("El nombre no puede estar vacio.")
 
         try:
+            modulos_habilitados = parsear_modulos(modules)
+        except ValueError as exc:
+            raise CommandError(str(exc)) from exc
+
+        try:
             tenant = Tenant.objects.using("master").create(
                 slug=slug,
                 nombre=nombre,
                 db_name=db_name,
+                modulos_habilitados=modulos_habilitados,
             )
         except IntegrityError as exc:
             raise CommandError(

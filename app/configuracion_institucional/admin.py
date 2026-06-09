@@ -4,4 +4,4 @@ from .models import ConfiguracionInstitucional
 
 @admin.register(ConfiguracionInstitucional)
 class ConfiguracionInstitucionalAdmin(admin.ModelAdmin):
-    list_display = ("nombre", "ruc", "telefono", "correo")
+    list_display = ("nombre", "nombre_corto", "ruc", "telefono", "correo")

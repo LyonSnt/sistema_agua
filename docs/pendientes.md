@@ -9,7 +9,8 @@
   - tarifa vigente
   - rubros necesarios
   - periodo inicial
-- [ ] Probar ciclo operativo minimo en Rumipamba con 1 abonado y 1 medidor:
+- [ ] Definir modulos activos reales de Rumipamba en el admin global de tenants.
+- [x] Probar ciclo operativo minimo en Rumipamba con 1 abonado y 1 medidor:
   - crear abonado
   - crear medidor
   - registrar lectura
@@ -29,7 +30,7 @@
   - actualizar `CSRF_TRUSTED_ORIGINS` con `https://dominio`;
   - instalar certificado TLS con Certbot o proveedor equivalente;
   - activar flags HTTPS de produccion despues de validar el certificado.
-- [ ] Probar restauracion de backups en una base temporal, no sobre la base viva.
+- [x] Probar restauracion de backups en una base temporal, no sobre la base viva.
 - [ ] Definir politica de rotacion y retencion de backups.
 - [ ] Revisar permisos del menu y permisos por URL cada vez que se agregue una vista nueva.
 
@@ -51,7 +52,7 @@
 - [ ] Revisar rendimiento de la ficha integral del abonado si crece el historial.
 - [ ] Validar en ambiente real que el menu Sistema se comporta correctamente para Administrador con y sin `is_staff`.
 - [ ] Decidir si se unifica el color de accion `Editar` entre abonados y medidores.
-- [ ] Adaptar scripts de backup/restore para base master y bases tenant.
+- [x] Adaptar scripts de backup/restore para base master y bases tenant.
 
 ## Baja prioridad
 
@@ -120,3 +121,8 @@
   - facturas pagadas con saldo pendiente distinto de cero;
   - pagos mayores al total de factura;
   - lecturas registradas sin factura.
+- [x] Configuracion de modulos/pestanas por tenant:
+  - campo `modulos_habilitados` en `master`;
+  - menu y panel condicionados por modulo;
+  - bloqueo 403 para acceso directo a modulos deshabilitados;
+  - soporte `--modules` en `crear_tenant` y `provisionar_tenant`.

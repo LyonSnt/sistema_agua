@@ -2,19 +2,22 @@ from datetime import date
 from decimal import Decimal
 
 from django.contrib.auth.models import Group
-from django.test import TestCase
+from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from abonados.models import Abonado, Ruta, Sector
+from configuracion_institucional.models import ConfiguracionInstitucional
 from facturacion.models import Factura
 from lecturas.models import Lectura, PeriodoFacturacion
 from medidores.models import Medidor
 from multas.models import Multa
 from pagos.models import Pago
 from servicios.models import SuspensionServicio
+from tenants.models import Tenant
 
 from .context_processors import roles_usuario
 from .models import Usuario
+from .views import contexto_login_institucion
 
 
 class MatrizPermisosRutasCriticasTests(TestCase):
@@ -263,3 +266,62 @@ class MatrizPermisosRutasCriticasTests(TestCase):
 
         self.assertFalse(permisos["puede_ver_auditoria"])
         self.assertFalse(permisos["puede_entrar_admin_django"])
+
+
+class LoginInstitucionTests(TestCase):
+    databases = {"default", "master"}
+
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def test_login_tenant_usa_nombre_corto_del_tenant(self):
+        ConfiguracionInstitucional.objects.create(
+            nombre="Junta Administradora de Agua Potable",
+            nombre_corto="Rumipamba",
+        )
+        request = self.factory.get("/rumipamba/login/")
+        request.tenant = Tenant(
+            slug="rumipamba",
+            nombre="Rumipamba",
+        )
+
+        contexto = contexto_login_institucion(request)
+
+        self.assertEqual(contexto["institucion_nombre"], "Rumipamba")
+        self.assertEqual(
+            contexto["institucion_nombre_completo"],
+            "Junta Administradora de Agua Potable",
+        )
+        self.assertEqual(
+            contexto["institucion_nombre_display"],
+            "Junta Administradora de Agua Potable Rumipamba",
+        )
+
+    def test_login_tenant_construye_nombre_completo_si_no_hay_configuracion(self):
+        request = self.factory.get("/rumipamba/login/")
+        request.tenant = Tenant(
+            slug="rumipamba",
+            nombre="Rumipamba",
+        )
+
+        contexto = contexto_login_institucion(request)
+
+        self.assertEqual(contexto["institucion_nombre"], "Rumipamba")
+        self.assertEqual(
+            contexto["institucion_nombre_completo"],
+            "Junta administradora de agua potable",
+        )
+
+    def test_login_legacy_usa_configuracion_si_no_hay_tenant(self):
+        ConfiguracionInstitucional.objects.create(
+            nombre="Junta Administradora de Agua Potable General"
+        )
+        request = self.factory.get("/login/")
+        request.tenant = None
+
+        contexto = contexto_login_institucion(request)
+
+        self.assertEqual(
+            contexto["institucion_nombre"],
+            "Junta Administradora de Agua Potable General",
+        )

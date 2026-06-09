@@ -24,20 +24,25 @@
         <h3 class="text-2xl font-bold mt-2">${{ alcantarillado_hoy|floatformat:2 }}</h3>
     </div>
 
+    {% if modulo_multas %}
     <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Multas hoy</p>
         <h3 class="text-2xl font-bold mt-2">${{ multas_hoy|floatformat:2 }}</h3>
     </div>
+    {% endif %}
 
+    {% if modulo_pagos %}
     <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Pagos hoy</p>
         <h3 class="text-2xl font-bold mt-2">{{ pagos_hoy }}</h3>
     </div>
+    {% endif %}
 </div>
 
 <h2 class="text-xl font-bold mb-6">Atención requerida</h2>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    {% if modulo_servicios %}
     <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Abonados suspendidos</p>
         <h3 class="text-2xl font-bold mt-2 text-red-700">{{ abonados_suspendidos }}</h3>
@@ -46,7 +51,9 @@
             Ver suspensiones
         </a>
     </div>
+    {% endif %}
 
+    {% if modulo_servicios %}
     <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Pendientes de reconexión</p>
         <h3 class="text-2xl font-bold mt-2 text-blue-700">{{ pendientes_reconexion_total }}</h3>
@@ -54,7 +61,9 @@
             Suspendidos que ya están al día.
         </p>
     </div>
+    {% endif %}
 
+    {% if modulo_multas %}
     <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Multas pendientes</p>
         <h3 class="text-2xl font-bold mt-2 text-yellow-700">{{ multas_pendientes_total }}</h3>
@@ -63,7 +72,9 @@
             Ver multas
         </a>
     </div>
+    {% endif %}
 
+    {% if modulo_lecturas %}
     <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Lecturas pendientes</p>
         <h3 class="text-2xl font-bold mt-2 text-yellow-700">{{ lecturas_pendientes }}</h3>
@@ -72,49 +83,65 @@
             Registrar lecturas
         </a>
     </div>
+    {% endif %}
 </div>
 
 <h2 class="text-xl font-bold mb-6">Estado general</h2>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    {% if modulo_abonados %}
     <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Abonados activos</p>
         <h3 class="text-2xl font-bold mt-2">{{ total_abonados }}</h3>
     </div>
+    {% endif %}
 
+    {% if modulo_medidores %}
     <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Medidores activos</p>
         <h3 class="text-2xl font-bold mt-2">{{ total_medidores }}</h3>
     </div>
+    {% endif %}
 
+    {% if modulo_facturacion %}
     <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Facturas pendientes</p>
         <h3 class="text-2xl font-bold mt-2 text-red-700">{{ facturas_pendientes }}</h3>
     </div>
+    {% endif %}
 
+    {% if modulo_reportes %}
     <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Cartera pendiente</p>
         <h3 class="text-2xl font-bold mt-2 text-red-700">${{ cartera_pendiente|floatformat:2 }}</h3>
     </div>
+    {% endif %}
 
+    {% if modulo_reportes %}
     <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Recaudado este mes</p>
         <h3 class="text-2xl font-bold mt-2 text-green-700">${{ recaudado_mes|floatformat:2 }}</h3>
     </div>
+    {% endif %}
 
+    {% if modulo_lecturas %}
     <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Lecturas pendientes</p>
         <h3 class="text-2xl font-bold mt-2 text-yellow-700">{{ lecturas_pendientes }}</h3>
     </div>
+    {% endif %}
 
+    {% if modulo_abonados %}
     <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500">Abonados morosos</p>
         <h3 class="text-2xl font-bold mt-2 text-red-700">{{ abonados_morosos }}</h3>
     </div>
+    {% endif %}
 </div>
 
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    {% if modulo_pagos %}
     <div class="bg-white rounded-xl shadow p-5">
         <h3 class="text-lg font-semibold mb-4">Últimos pagos</h3>
 
@@ -136,7 +163,9 @@
             {% endfor %}
         </div>
     </div>
+    {% endif %}
 
+    {% if modulo_auditoria %}
     <div class="bg-white rounded-xl shadow p-5">
         <h3 class="text-lg font-semibold mb-4">Últimas actividades</h3>
 
@@ -154,9 +183,11 @@
             {% endfor %}
         </div>
     </div>
+    {% endif %}
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    {% if modulo_servicios %}
     <div class="bg-white rounded-xl shadow p-5">
         <h3 class="text-lg font-semibold mb-4">Pendientes de reconexión</h3>
 
@@ -195,7 +226,9 @@
             </table>
         </div>
     </div>
+    {% endif %}
 
+    {% if modulo_multas %}
     <div class="bg-white rounded-xl shadow p-5">
         <h3 class="text-lg font-semibold mb-4">Multas pendientes</h3>
 
@@ -213,7 +246,9 @@
             {% endfor %}
         </div>
     </div>
+    {% endif %}
 
+    {% if modulo_pagos or modulo_facturacion %}
     <div class="bg-white rounded-xl shadow p-5">
         <h3 class="text-lg font-semibold mb-4">Anulaciones recientes</h3>
 
@@ -243,7 +278,9 @@
             {% endif %}
         </div>
     </div>
+    {% endif %}
 
+    {% if modulo_medidores %}
     <div class="bg-white rounded-xl shadow p-5">
         <h3 class="text-lg font-semibold mb-4">Cambios de medidor recientes</h3>
 
@@ -261,6 +298,7 @@
             {% endfor %}
         </div>
     </div>
+    {% endif %}
 </div>
 
 {% endblock %}

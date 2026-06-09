@@ -37,18 +37,19 @@ La base master debe guardar solo informacion global necesaria para resolver tena
 Modelo inicial:
 
 - `slug`: identificador usado en URL.
-- `nombre`: nombre visible de la junta.
+- `nombre`: nombre corto visible de la junta, por ejemplo `Rumipamba`.
 - `db_name`: nombre de la base de datos del tenant.
 - `activo`: permite habilitar o bloquear una junta.
+- `modulos_habilitados`: lista de modulos/pestanas activas para esa junta.
 
 Ejemplo:
 
 | slug | nombre | db_name |
 | --- | --- | --- |
-| `carabuela` | Junta Carabuela | `sistema_agua_carabuela` |
-| `esperanza` | Junta Esperanza | `sistema_agua_esperanza` |
-| `pesillo` | Junta Pesillo | `sistema_agua_pesillo` |
-| `rumipamba` | Junta de Agua Rumipamba | `sistema_agua_rumipamba` |
+| `carabuela` | Carabuela | `sistema_agua_carabuela` |
+| `esperanza` | Esperanza | `sistema_agua_esperanza` |
+| `pesillo` | Pesillo | `sistema_agua_pesillo` |
+| `rumipamba` | Rumipamba | `sistema_agua_rumipamba` |
 
 ## Bases tenant
 
@@ -97,6 +98,34 @@ Contrato preparado en `.env.example`:
 
 Las plantillas usan el tag builtin `tenant_url`, registrado en `settings.py`, como reemplazo de `{% url %}`. El tag genera la URL normal cuando no hay tenant y antepone `request.tenant_path_prefix` cuando la navegacion viene desde una ruta tenant.
 
+## Modulos por tenant
+
+La base `master` define que modulos tiene habilitados cada junta mediante
+`Tenant.modulos_habilitados`. Esto permite que una junta use todo el sistema y
+otra use solo algunas pestanas sin duplicar codigo ni mezclar datos.
+
+Modulos actuales:
+
+- `panel`
+- `abonados`
+- `medidores`
+- `lecturas`
+- `facturacion`
+- `pagos`
+- `reportes`
+- `multas`
+- `servicios`
+- `auditoria`
+- `admin`
+
+Reglas:
+
+- Si no se define una lista, el tenant queda con todos los modulos habilitados.
+- El menu y el panel ocultan accesos a modulos deshabilitados.
+- El middleware bloquea el acceso directo por URL a modulos deshabilitados con HTTP 403.
+- Los permisos por rol siguen aplicando dentro de cada modulo habilitado.
+- Las rutas sin tenant siguen funcionando con todos los modulos para mantener el modo legacy/de pruebas.
+
 ## Rutas con y sin tenant
 
 El sistema conserva dos modos de entrada:
@@ -117,6 +146,21 @@ Reglas practicas:
 - Los datos creados en `default` no aparecen en Carabuela ni Rumipamba.
 - Los datos creados en Rumipamba no aparecen en Carabuela ni en `default`.
 - La app `tenants` no se muestra dentro del admin tenant; una junta no debe ver ni editar el registro global de otras juntas.
+- Desde el admin global `/admin/`, la ficha de cada tenant permite resetear la
+  clave de un usuario administrador dentro de la base de esa junta. Esta accion
+  no esta disponible desde `/{junta}/admin/`.
+- En el login tenant se muestra `Tenant.nombre` como nombre corto. El nombre
+  legal/base se mantiene en `ConfiguracionInstitucional.nombre` dentro de cada
+  base tenant. `ConfiguracionInstitucional.nombre_corto` permite mostrar el
+  nombre propio de la junta sin repetirlo en la linea institucional.
+- Convencion recomendada para cada tenant:
+  - `Tenant.nombre`: nombre corto de respaldo, por ejemplo `Rumipamba`.
+  - `ConfiguracionInstitucional.nombre`: nombre institucional base, por ejemplo
+    `Junta Administradora de Agua Potable`.
+  - `ConfiguracionInstitucional.nombre_corto`: nombre propio de la junta, por
+    ejemplo `Rumipamba`.
+  - Login izquierdo: `Sistema de Facturacion` + `nombre nombre_corto`.
+  - Login derecho: `nombre` + `nombre_corto` en lineas separadas.
 
 ## Comandos iniciales
 
@@ -165,6 +209,15 @@ python manage.py provisionar_tenant san-pablo "Junta San Pablo" \
   --admin-email admin@sanpablo.local
 ```
 
+Crear una junta con solo algunos modulos:
+
+```bash
+python manage.py provisionar_tenant rumipamba "Rumipamba" \
+  --admin-user admin_rumipamba \
+  --admin-password "ClaveSegura123" \
+  --modules panel,abonados,medidores,lecturas,facturacion,pagos,reportes,admin
+```
+
 Este comando realiza los pasos tecnicos principales:
 
 - registra el tenant en `master`;
@@ -172,6 +225,7 @@ Este comando realiza los pasos tecnicos principales:
 - ejecuta migraciones en la base tenant;
 - crea roles base;
 - crea o actualiza el usuario Administrador inicial con acceso completo al admin de su junta.
+- guarda los modulos habilitados si se usa `--modules`; si se omite, habilita todos.
 
 Si el slug no esta en `TENANT_SLUGS`, el comando termina pero muestra una
 advertencia. Para acceder por URL se debe agregar el slug en `.env` y recrear
@@ -180,7 +234,7 @@ el contenedor web.
 Ejemplo con Docker:
 
 ```bash
-docker exec -it sistema_agua_web python manage.py provisionar_tenant rumipamba "Junta de Agua Rumipamba" \
+docker exec -it sistema_agua_web python manage.py provisionar_tenant rumipamba "Rumipamba" \
   --admin-user admin_rumipamba \
   --admin-password "ClaveSegura123" \
   --admin-email admin@rumipamba.local
@@ -220,5 +274,5 @@ Flujo actual:
 
 1. Completar configuracion operativa de Rumipamba desde `/rumipamba/admin/`.
 2. Probar ciclo operativo minimo de Rumipamba con abonado, medidor, lectura, factura y pago.
-3. Adaptar backups por master y por tenant.
+3. Definir politica de retencion/rotacion para backups multi-tenant.
 4. Probar restauracion de backups en bases temporales.

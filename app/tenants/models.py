@@ -2,6 +2,8 @@ from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
 
+from .modules import modulos_por_defecto, normalizar_modulos
+
 
 class Tenant(models.Model):
     creado_en = models.DateTimeField(auto_now_add=True)
@@ -19,6 +21,7 @@ class Tenant(models.Model):
     )
     nombre = models.CharField(max_length=150)
     db_name = models.CharField(max_length=100, unique=True, blank=True)
+    modulos_habilitados = models.JSONField(default=modulos_por_defecto)
 
     class Meta:
         verbose_name = "Tenant"
@@ -27,6 +30,7 @@ class Tenant(models.Model):
 
     def save(self, *args, **kwargs):
         self.slug = self.slug.strip().lower()
+        self.modulos_habilitados = normalizar_modulos(self.modulos_habilitados)
 
         if not self.db_name:
             self.db_name = self.construir_db_name(self.slug)

@@ -41,18 +41,36 @@ Contrato futuro:
 
 ## Backups de base de datos
 
-Crear un backup de PostgreSQL:
+Crear un backup de la base configurada en `DB_NAME`:
 
 ```bash
 bash scripts/backup_db.sh
 ```
 
-Los archivos se guardan en `backups/` y no se suben a git.
+Crear un backup de una base especifica:
+
+```bash
+bash scripts/backup_db.sh sistema_agua_rumipamba tenant_rumipamba
+```
+
+Crear backups de `master`, `default` y todos los tenants activos:
+
+```bash
+bash scripts/backup_all.sh
+```
+
+Los archivos se guardan en `backups/YYYYMMDD/` y no se suben a git.
 
 Restaurar un backup:
 
 ```bash
 bash scripts/restore_db.sh backups/nombre_del_backup.dump
+```
+
+Restaurar en una base temporal:
+
+```bash
+bash scripts/restore_db.sh backups/nombre_del_backup.dump sistema_agua_restore_test
 ```
 
 La restauración pide escribir `RESTAURAR` antes de reemplazar la base de datos.

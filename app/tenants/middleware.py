@@ -2,10 +2,12 @@ from urllib.parse import urlparse
 
 from django.conf import settings
 from django.http import Http404
+from django.http import HttpResponseForbidden
 from django.http import HttpResponseRedirect
 
 from tenants.context import activar_tenant_db, limpiar_tenant_db
 from tenants.database import configurar_base_tenant
+from tenants.modules import tenant_tiene_modulo
 from tenants.models import Tenant
 
 
@@ -127,3 +129,33 @@ class TenantPathMiddleware:
             return False
 
         return True
+
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        tenant = getattr(request, "tenant", None)
+
+        if not tenant:
+            return None
+
+        modulo = self._modulo_desde_request(request)
+
+        if not modulo or tenant_tiene_modulo(tenant, modulo):
+            return None
+
+        return HttpResponseForbidden("Modulo no habilitado para esta junta.")
+
+    def _modulo_desde_request(self, request):
+        resolver_match = getattr(request, "resolver_match", None)
+
+        if resolver_match:
+            if resolver_match.app_name:
+                return resolver_match.app_name
+
+            if resolver_match.namespace:
+                return resolver_match.namespace
+
+        segmentos = [segmento for segmento in request.path_info.split("/") if segmento]
+
+        if not segmentos:
+            return ""
+
+        return segmentos[0]

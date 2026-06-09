@@ -2,6 +2,7 @@ from django.db import models
 
 class ConfiguracionInstitucional(models.Model):
     nombre = models.CharField(max_length=200)
+    nombre_corto = models.CharField(max_length=100, blank=True)
     ruc = models.CharField(max_length=20, blank=True)
     direccion = models.CharField(max_length=250, blank=True)
     telefono = models.CharField(max_length=50, blank=True)

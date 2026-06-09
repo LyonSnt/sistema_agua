@@ -81,8 +81,14 @@ La vista de auditoria esta restringida al rol Administrador.
 ### Backups
 
 - Se agregaron scripts de backup y restauracion de PostgreSQL.
+- `backup_all.sh` respalda `master`, `default` y todos los tenants activos.
 - Los backups locales se guardan fuera de git.
 - La restauracion pide confirmacion explicita antes de reemplazar datos.
+- Para automatizar en VPS se recomienda cron, por ejemplo:
+
+```bash
+0 2 * * * cd /ruta/sistema_agua && bash scripts/backup_all.sh
+```
 
 ## Riesgos residuales
 

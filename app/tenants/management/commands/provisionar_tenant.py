@@ -5,6 +5,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import IntegrityError
 
 from tenants.database import configurar_base_tenant, crear_base_datos_tenant
+from tenants.modules import parsear_modulos
 from tenants.models import Tenant
 from usuarios.models import Usuario
 
@@ -52,6 +53,12 @@ class Command(BaseCommand):
             action="store_true",
             help="Actualiza la clave si el usuario administrador ya existe.",
         )
+        parser.add_argument(
+            "--modules",
+            dest="modules",
+            default="",
+            help="Lista separada por comas de modulos habilitados. Si se omite, se habilitan todos.",
+        )
 
     def handle(self, *args, **options):
         slug = options["slug"].strip().lower()
@@ -60,6 +67,7 @@ class Command(BaseCommand):
         admin_user = options["admin_user"].strip()
         admin_password = options["admin_password"]
         admin_email = options["admin_email"].strip()
+        modules = options["modules"].strip()
 
         if not slug:
             raise CommandError("El slug no puede estar vacio.")
@@ -70,7 +78,17 @@ class Command(BaseCommand):
         if not admin_user:
             raise CommandError("El usuario administrador no puede estar vacio.")
 
-        tenant = self._obtener_o_crear_tenant(slug, nombre, db_name)
+        try:
+            modulos_habilitados = parsear_modulos(modules)
+        except ValueError as exc:
+            raise CommandError(str(exc)) from exc
+
+        tenant = self._obtener_o_crear_tenant(
+            slug,
+            nombre,
+            db_name,
+            modulos_habilitados,
+        )
         self._advertir_si_slug_no_esta_en_env(slug)
         self._crear_base_fisica(tenant)
         alias = self._migrar_tenant(tenant, options["verbosity"])
@@ -83,13 +101,14 @@ class Command(BaseCommand):
             )
         )
 
-    def _obtener_o_crear_tenant(self, slug, nombre, db_name):
+    def _obtener_o_crear_tenant(self, slug, nombre, db_name, modulos_habilitados):
         try:
             tenant, creado = Tenant.objects.using("master").get_or_create(
                 slug=slug,
                 defaults={
                     "nombre": nombre,
                     "db_name": db_name,
+                    "modulos_habilitados": modulos_habilitados,
                 },
             )
         except IntegrityError as exc:

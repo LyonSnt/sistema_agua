@@ -28,12 +28,14 @@ Sistema web de facturacion de agua potable construido con Django. La aplicacion 
 1. El usuario puede ingresar sin prefijo por `/login/` o con prefijo tenant por `/{junta}/login/`.
 2. Sin prefijo, el sistema trabaja sobre `default`, que se conserva como base legacy/de pruebas.
 3. Con prefijo tenant, `TenantPathMiddleware` resuelve la junta y las apps operativas trabajan sobre la base de esa junta.
-4. Django autentica con el modelo `usuarios.Usuario` en la base correspondiente.
-5. Los roles se asignan mediante grupos de Django: Administrador, Supervisor, Cajero, Lecturista y Consulta.
-6. Las vistas usan `rol_requerido` para restringir acceso directo por URL.
-7. El menu y las acciones visibles se controlan con `usuarios.context_processors.roles_usuario`.
-8. Las operaciones criticas registran auditoria cuando corresponde.
-9. Las respuestas son plantillas HTML, archivos PDF o exportaciones Excel, segun el caso.
+4. El middleware valida que el modulo solicitado este habilitado para la junta.
+5. El login muestra la identidad institucional de la base activa: combina `ConfiguracionInstitucional.nombre` y `nombre_corto`; si aun no existe, usa el tenant como respaldo.
+6. Django autentica con el modelo `usuarios.Usuario` en la base correspondiente.
+7. Los roles se asignan mediante grupos de Django: Administrador, Supervisor, Cajero, Lecturista y Consulta.
+8. Las vistas usan `rol_requerido` para restringir acceso directo por URL.
+9. El menu y las acciones visibles se controlan con `usuarios.context_processors.roles_usuario`.
+10. Las operaciones criticas registran auditoria cuando corresponde.
+11. Las respuestas son plantillas HTML, archivos PDF o exportaciones Excel, segun el caso.
 
 ## Datos y persistencia
 
@@ -42,8 +44,9 @@ Sistema web de facturacion de agua potable construido con Django. La aplicacion 
 - Volumen Docker persistente: `postgres_data`.
 - Backups locales mediante scripts:
   - `scripts/backup_db.sh`
+  - `scripts/backup_all.sh`
   - `scripts/restore_db.sh`
-- Los backups se guardan en `backups/`, directorio ignorado por git.
+- Los backups se guardan en `backups/YYYYMMDD/`, directorio ignorado por git.
 
 ## Multi-tenant por base de datos
 
@@ -74,12 +77,14 @@ Variables preparadas en `.env.example`:
 Implementado actualmente:
 
 - App `tenants` con modelo `Tenant`.
+- Configuracion de modulos por tenant en `master` mediante `Tenant.modulos_habilitados`.
 - Router `TenantMasterRouter` para enviar `tenants` a la base `master`.
 - Contexto local de request para registrar el alias de base tenant activo.
 - Router `TenantOperationalRouter` para enviar apps operativas al alias tenant activo.
 - Middleware `TenantPathMiddleware` para detectar tenant por prefijo de ruta, activar contexto tenant y reescribir `request.path_info`.
 - Prefijo automatico de redirects relativos durante requests tenant.
 - Tag builtin `tenant_url` para que las plantillas generen enlaces internos conservando el prefijo tenant.
+- Bloqueo HTTP 403 para URLs de modulos deshabilitados en una junta.
 - Comandos `crear_tenant`, `crear_base_tenant`, `listar_tenants`, `migrate_tenant` y `migrate_tenants`.
 - Comando `provisionar_tenant` para crear una junta en un solo flujo: registro en master, base fisica, migraciones, roles y administrador inicial.
 - Cookies con nombres propios para evitar choque con otros proyectos locales:
@@ -93,6 +98,11 @@ Tenants validados actualmente:
 - `rumipamba`
 
 El administrador inicial de cada tenant se crea como superusuario dentro de su propia base operativa para permitir la configuracion inicial desde Django Admin.
+
+Los modulos actuales configurables por junta son `panel`, `abonados`,
+`medidores`, `lecturas`, `facturacion`, `pagos`, `reportes`, `multas`,
+`servicios`, `auditoria` y `admin`. Si una junta no define lista de modulos,
+queda con todos habilitados.
 
 Uso de rutas:
 
