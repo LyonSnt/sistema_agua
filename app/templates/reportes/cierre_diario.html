@@ -13,13 +13,13 @@
                    class="px-4 py-2 border rounded-lg">
         </div>
 
-        <button class="px-4 py-2 bg-slate-800 text-white rounded-lg">
+        <button class="px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700">
             Consultar
         </button>
         {% if puede_exportar_reportes %}
             <a href="{% tenant_url 'reportes:cierre_diario_pdf' %}?fecha={{ fecha|date:'Y-m-d' }}"
             target="_blank"
-            class="px-4 py-2 bg-blue-700 text-white rounded-lg">
+            class="px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600">
                 Ver PDF
             </a>
         {% endif %}
