@@ -32,6 +32,8 @@
   - activar flags HTTPS de produccion despues de validar el certificado.
 - [x] Probar restauracion de backups en una base temporal, no sobre la base viva.
 - [ ] Definir politica de rotacion y retencion de backups.
+- [x] Persistir `/app/media` en Docker para conservar logos institucionales.
+- [x] Incluir archivos subidos en `scripts/backup_all.sh`.
 - [x] Centralizar menu lateral en `nucleo/menu.py` para no modificar `base.html` al agregar opciones.
 - [x] Estabilizar layout para que tablas anchas no achiquen el menu lateral.
 - [ ] Revisar permisos del menu y permisos por URL cada vez que se agregue una vista nueva.

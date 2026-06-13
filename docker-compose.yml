@@ -4,6 +4,8 @@ services:
     container_name: sistema_agua_web
     env_file:
       - ${ENV_FILE:-.env}
+    volumes:
+      - media_data:/app/media
     depends_on:
       db:
         condition: service_healthy
@@ -29,3 +31,4 @@ services:
 
 volumes:
   postgres_data:
+  media_data:

@@ -7,6 +7,7 @@ services:
       "
     volumes:
       - ./app:/app
+      - ./app/media:/app/media
     ports:
       - "${APP_PORT:-8015}:8015"
 

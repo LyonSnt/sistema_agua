@@ -92,11 +92,17 @@ Patron recomendado para tablas nuevas:
 
 - Base de datos principal: PostgreSQL.
 - Configuracion de conexion mediante variables de entorno: `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`.
-- Volumen Docker persistente: `postgres_data`.
+- Volumen Docker persistente para PostgreSQL: `postgres_data`.
+- Volumen Docker persistente para archivos subidos: `media_data`, montado en
+  `/app/media`.
+- Los logos institucionales se guardan como archivos en `/app/media/logos/`.
+  La base de datos guarda solo la ruta, por ejemplo `logos/a.png`.
 - Backups locales mediante scripts:
   - `scripts/backup_db.sh`
   - `scripts/backup_all.sh`
   - `scripts/restore_db.sh`
+- `scripts/backup_all.sh` respalda bases y archivos subidos. El respaldo de
+  media se genera como `media_YYYYMMDD_HHMMSS.tar.gz`.
 - Los backups se guardan en `backups/YYYYMMDD/`, directorio ignorado por git.
 
 ## Multi-tenant por base de datos
@@ -178,6 +184,8 @@ El despliegue esta definido con Docker Compose por capas:
   - En produccion expone el puerto configurado con `APP_PORT` solo en `127.0.0.1`.
   - Lee variables desde `.env`.
   - Corre como usuario no privilegiado `appuser`.
+  - Usa el volumen persistente `media_data` en `/app/media` para conservar
+    logos institucionales y otros archivos subidos entre reconstrucciones.
 - Servicio `db`:
   - Usa imagen `postgres:16`.
   - En desarrollo puede exponer `DB_PUBLIC_PORT`.
@@ -249,6 +257,10 @@ Cuando exista dominio, se debe reemplazar la IP en `server_name`,
 - Estaticos: `app/static/`.
 - Recoleccion de estaticos: `STATIC_ROOT = app/staticfiles`.
 - WhiteNoise esta configurado en middleware para servir archivos estaticos desde la aplicacion.
+- Archivos subidos: `MEDIA_ROOT = app/media`, con `MEDIA_URL = /media/`.
+- Los logos institucionales se sirven por `/media/logos/...`. En produccion se
+  recomienda que Nginx sirva esa ruta directamente cuando se estabilice el
+  dominio/certificado.
 
 ## Pruebas
 

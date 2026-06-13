@@ -25,6 +25,7 @@ leer_env() {
 DB_NAME="${DB_NAME:-$(leer_env DB_NAME)}"
 DB_USER="${DB_USER:-$(leer_env DB_USER)}"
 MASTER_DB_NAME="${MASTER_DB_NAME:-$(leer_env MASTER_DB_NAME)}"
+MEDIA_DIR="${MEDIA_DIR:-${ROOT_DIR}/app/media}"
 
 : "${DB_NAME:?Falta DB_NAME en .env}"
 : "${DB_USER:?Falta DB_USER en .env}"
@@ -36,6 +37,14 @@ RUN_DIR="${BACKUP_ROOT}/$(date +%Y%m%d)"
 mkdir -p "${RUN_DIR}"
 
 echo "Generando backups en: ${RUN_DIR}"
+
+if [[ -d "${MEDIA_DIR}" ]]; then
+    MEDIA_BACKUP="${RUN_DIR}/media_${TIMESTAMP}.tar.gz"
+    tar -czf "${MEDIA_BACKUP}" -C "${MEDIA_DIR}" .
+    echo "Backup de media creado: ${MEDIA_BACKUP}"
+else
+    echo "No existe ${MEDIA_DIR}; se omite backup de media."
+fi
 
 BACKUP_DIR="${RUN_DIR}" BACKUP_TIMESTAMP="${TIMESTAMP}" \
     bash "${ROOT_DIR}/scripts/backup_db.sh" "${MASTER_DB_NAME}" "master"
