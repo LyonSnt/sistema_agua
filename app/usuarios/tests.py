@@ -261,12 +261,14 @@ class MatrizPermisosRutasCriticasTests(TestCase):
         self.assertTrue(permisos["puede_ver_auditoria"])
         self.assertTrue(permisos["puede_administrar_sistema"])
         self.assertFalse(permisos["puede_entrar_admin_django"])
+        self.assertEqual(permisos["usuario_rol_display"], "Administrador")
 
         request.user = supervisor_staff
         permisos = roles_usuario(request)
 
         self.assertFalse(permisos["puede_ver_auditoria"])
         self.assertFalse(permisos["puede_entrar_admin_django"])
+        self.assertEqual(permisos["usuario_rol_display"], "Supervisor")
 
 
 class LoginInstitucionTests(TestCase):

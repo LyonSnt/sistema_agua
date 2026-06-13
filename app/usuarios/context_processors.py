@@ -14,6 +14,16 @@ def roles_usuario(request):
     es_lecturista = "Lecturista" in grupos
     es_supervisor = "Supervisor" in grupos
     es_consulta = "Consulta" in grupos
+    rol_display = "Usuario"
+
+    for rol in ("Administrador", "Supervisor", "Cajero", "Lecturista", "Consulta"):
+        if rol in grupos:
+            rol_display = rol
+            break
+
+    if request.user.is_superuser:
+        rol_display = "Administrador"
+
     puede_entrar_admin_django = (
         request.user.is_active
         and request.user.is_staff
@@ -39,6 +49,7 @@ def roles_usuario(request):
         "es_lecturista": es_lecturista,
         "es_supervisor": es_supervisor,
         "es_consulta": es_consulta,
+        "usuario_rol_display": rol_display,
         "modulo_panel": modulo_panel,
         "modulo_abonados": modulo_abonados,
         "modulo_medidores": modulo_medidores,

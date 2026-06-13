@@ -29,7 +29,7 @@
     <div class="min-h-screen flex flex-col md:flex-row">
         <aside id="menuMobile"
             class="hidden fixed top-0 left-0 z-50 h-screen w-72 overflow-y-auto bg-slate-900 text-white md:static md:block md:h-auto md:w-64 md:shrink-0">
-            <div class="p-5 border-b border-slate-700">
+            <div class="border-b border-slate-700 p-5">
                 <div class="flex items-center gap-3">
                     {% if configuracion_institucional.logo %}
                         <div class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden">
@@ -48,6 +48,20 @@
                         <h1 class="text-base font-bold leading-snug">
                             {{ institucion_nombre_display|default:"Sistema de Agua" }}
                         </h1>
+                    </div>
+                </div>
+                <div class="mt-2.5 flex items-center gap-3 border-t border-slate-800/60 pt-2.5">
+                    <div class="flex h-11 w-11 shrink-0 items-center justify-center">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-slate-100">
+                            {{ request.user.get_username|first|upper }}
+                        </div>
+                    </div>
+                    <div class="min-w-0 leading-tight">
+                        <p class="truncate text-sm font-medium text-white">{{ request.user }}</p>
+                        <p class="mt-0.5 flex items-center gap-1.5 text-xs text-slate-300">
+                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                            {{ usuario_rol_display|default:"Usuario" }}
+                        </p>
                     </div>
                 </div>
             </div>
@@ -73,19 +87,18 @@
         </aside>
 
         <div class="flex-1 min-w-0">
-            <header class="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-                <div>
+            <header class="bg-white shadow-sm px-6 py-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div class="min-w-0">
                     <h2 class="text-lg font-semibold">{% block encabezado %}Panel principal{% endblock %}</h2>
                     <p class="text-sm text-gray-500">Sistema de facturación de agua potable</p>
                 </div>
 
-                <div class="text-sm text-gray-600 flex items-center gap-3">
-                    <span>{{ request.user }}</span>
-
+                <div class="flex items-center justify-end text-sm text-gray-600">
                     <form method="post" action="{{ request.tenant_path_prefix }}/logout/">
                         {% csrf_token %}
-                        <button class="text-red-600 hover:underline">
-                            Salir
+                        <button class="inline-flex items-center gap-1.5 whitespace-nowrap px-1 py-2 text-red-600 hover:text-red-700">
+                            <i class="pi pi-sign-out"></i>
+                            <span>Salir</span>
                         </button>
                     </form>
                 </div>
