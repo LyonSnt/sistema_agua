@@ -97,6 +97,10 @@ Patron recomendado para tablas nuevas:
   `/app/media`.
 - Los logos institucionales se guardan como archivos en `/app/media/logos/`.
   La base de datos guarda solo la ruta, por ejemplo `logos/a.png`.
+- Cuando se crea el volumen `media_data` por primera vez en una VPS, puede
+  quedar con propietario `root`. Como Django corre dentro del contenedor con el
+  usuario `appuser`, se debe preparar la carpeta antes de subir logos desde el
+  admin.
 - Backups locales mediante scripts:
   - `scripts/backup_db.sh`
   - `scripts/backup_all.sh`
@@ -204,6 +208,26 @@ Comando de produccion:
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
 
+Preparar permisos de archivos subidos en una VPS nueva o despues de crear el
+volumen `media_data` por primera vez:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -u root web sh -c "mkdir -p /app/media/logos && chown -R appuser:appuser /app/media && chmod -R u+rwX /app/media"
+```
+
+Validar que Django puede escribir logos:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml exec web sh -c "test -w /app/media/logos && echo OK"
+```
+
+Si al subir un logo desde Django Admin aparece `Server Error (500)`, revisar
+primero permisos de `/app/media` y luego los logs del contenedor:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs --tail=80 web
+```
+
 En VPS, el servicio Django/Gunicorn no se publica directamente a internet.
 `docker-compose.prod.yml` mantiene la app escuchando solo en el host local del
 servidor:
@@ -261,6 +285,14 @@ Cuando exista dominio, se debe reemplazar la IP en `server_name`,
 - Los logos institucionales se sirven por `/media/logos/...`. En produccion se
   recomienda que Nginx sirva esa ruta directamente cuando se estabilice el
   dominio/certificado.
+- Verificacion rapida del logo publicado:
+
+```bash
+curl -I http://IP_O_DOMINIO/media/logos/nombre-del-logo.png
+```
+
+Debe responder `200 OK`. Si responde `404`, la base puede tener guardada la
+ruta del logo pero el archivo fisico no existe en `/app/media/logos/`.
 
 ## Pruebas
 

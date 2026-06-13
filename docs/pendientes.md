@@ -34,6 +34,7 @@
 - [ ] Definir politica de rotacion y retencion de backups.
 - [x] Persistir `/app/media` en Docker para conservar logos institucionales.
 - [x] Incluir archivos subidos en `scripts/backup_all.sh`.
+- [x] Preparar permisos de `/app/media` en VPS para permitir subida de logos desde Django Admin.
 - [x] Centralizar menu lateral en `nucleo/menu.py` para no modificar `base.html` al agregar opciones.
 - [x] Estabilizar layout para que tablas anchas no achiquen el menu lateral.
 - [ ] Revisar permisos del menu y permisos por URL cada vez que se agregue una vista nueva.
