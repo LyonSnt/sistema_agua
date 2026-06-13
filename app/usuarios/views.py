@@ -1,42 +1,12 @@
 from django.contrib.auth.views import LoginView, LogoutView
 from auditoria.utils import registrar_auditoria
-from configuracion_institucional.utils import obtener_configuracion
+from configuracion_institucional.utils import obtener_contexto_institucion
 from django.contrib import messages
 from django.shortcuts import render
 
 
 def contexto_login_institucion(request):
-    configuracion = obtener_configuracion()
-    tenant = getattr(request, "tenant", None)
-
-    nombre_corto = "Sistema de Agua"
-    nombre_completo = "Junta administradora de agua potable"
-
-    if configuracion and configuracion.nombre:
-        nombre_completo = configuracion.nombre
-
-    if configuracion and configuracion.nombre_corto:
-        nombre_corto = configuracion.nombre_corto
-    elif tenant:
-        nombre_corto = tenant.nombre
-    elif configuracion and configuracion.nombre:
-        nombre_corto = configuracion.nombre
-
-    nombre_display = nombre_completo
-
-    if (
-        nombre_corto
-        and nombre_corto != nombre_completo
-        and not nombre_completo.lower().endswith(nombre_corto.lower())
-    ):
-        nombre_display = f"{nombre_completo} {nombre_corto}"
-
-    return {
-        "configuracion_institucional": configuracion,
-        "institucion_nombre": nombre_corto,
-        "institucion_nombre_completo": nombre_completo,
-        "institucion_nombre_display": nombre_display,
-    }
+    return obtener_contexto_institucion(request)
 
 
 class LoginAuditoriaView(LoginView):

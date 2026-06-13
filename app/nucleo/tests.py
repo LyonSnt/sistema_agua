@@ -15,6 +15,7 @@ from pagos.models import Pago
 from usuarios.models import Usuario
 
 from .context_processors import menu_sidebar
+from .menu import MENU_SIDEBAR
 
 
 class MenuSidebarTests(TestCase):
@@ -72,6 +73,16 @@ class MenuSidebarTests(TestCase):
         panel = next(item for item in items if item["texto"] == "Panel principal")
         self.assertEqual(panel["url"], "/panel/")
         self.assertTrue(panel["activo"])
+
+    def test_todos_los_items_del_menu_tienen_icono(self):
+        items_sin_icono = [
+            item["texto"]
+            for seccion in MENU_SIDEBAR
+            for item in seccion["items"]
+            if not item.get("icono")
+        ]
+
+        self.assertEqual(items_sin_icono, [])
 
 
 class VerificarConsistenciaCommandTests(TestCase):

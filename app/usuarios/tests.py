@@ -6,6 +6,7 @@ from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
 from abonados.models import Abonado, Ruta, Sector
+from configuracion_institucional.context_processors import institucion
 from configuracion_institucional.models import ConfiguracionInstitucional
 from facturacion.models import Factura
 from lecturas.models import Lectura, PeriodoFacturacion
@@ -324,4 +325,22 @@ class LoginInstitucionTests(TestCase):
         self.assertEqual(
             contexto["institucion_nombre"],
             "Junta Administradora de Agua Potable General",
+        )
+
+    def test_context_processor_global_expone_nombre_display(self):
+        ConfiguracionInstitucional.objects.create(
+            nombre="Junta Administradora de Agua Potable",
+            nombre_corto="Carabuela",
+        )
+        request = self.factory.get("/carabuela/panel/")
+        request.tenant = Tenant(
+            slug="carabuela",
+            nombre="Carabuela",
+        )
+
+        contexto = institucion(request)
+
+        self.assertEqual(
+            contexto["institucion_nombre_display"],
+            "Junta Administradora de Agua Potable Carabuela",
         )

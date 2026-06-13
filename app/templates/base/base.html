@@ -27,8 +27,25 @@
         <aside id="menuMobile"
             class="hidden fixed top-0 left-0 z-50 h-screen w-72 overflow-y-auto bg-slate-900 text-white md:static md:block md:h-auto md:w-64 md:shrink-0">
             <div class="p-5 border-b border-slate-700">
-                <h1 class="text-base font-bold">Sistema de Agua</h1>
-                <p class="text-sm text-slate-300">Facturación</p>
+                <div class="flex items-center gap-3">
+                    <div class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded bg-white/10">
+                        {% if configuracion_institucional.logo %}
+                            <img
+                                src="{{ configuracion_institucional.logo.url }}"
+                                alt="{{ institucion_nombre|default:'Institución' }}"
+                                class="h-full w-full object-contain"
+                            >
+                        {% else %}
+                            <i class="pi pi-building text-xl text-slate-200"></i>
+                        {% endif %}
+                    </div>
+                    <div class="min-w-0">
+                        <h1 class="text-base font-bold leading-snug">
+                            {{ institucion_nombre_display|default:"Sistema de Agua" }}
+                        </h1>
+                        <p class="text-sm text-slate-300">Sistema de facturación</p>
+                    </div>
+                </div>
             </div>
 
             {% obtener_menu_sidebar as menu_render %}
@@ -39,9 +56,11 @@
 
                         {% for item in seccion.items %}
                             <a href="{{ item.url }}"
-                            class="block px-4 py-2 {% if item.activo %}bg-teal-700{% else %}hover:bg-teal-800{% endif %}">
-                             <i class="{{ item.icono }} w-5 mr-2"></i>
-                                {{ item.texto }}
+                            class="flex items-center gap-3 px-4 py-2 {% if item.activo %}bg-teal-700{% else %}hover:bg-teal-800{% endif %}">
+                                {% if item.icono %}
+                                    <i class="{{ item.icono }} w-5 shrink-0 text-center"></i>
+                                {% endif %}
+                                <span>{{ item.texto }}</span>
                             </a>
                         {% endfor %}
                     </div>

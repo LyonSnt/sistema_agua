@@ -15,7 +15,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+from django.urls import path, include, re_path
+from django.views.static import serve
 from usuarios.views import LoginAuditoriaView, LogoutAuditoriaView
 from django.shortcuts import redirect
 
@@ -48,4 +51,12 @@ urlpatterns = [
     path("servicios/", include("servicios.urls")),
     path("medidores/", include("medidores.urls")),
     path("auditoria/", include("auditoria.urls")),
+    re_path(
+        r"^media/logos/(?P<path>.*)$",
+        serve,
+        {"document_root": settings.MEDIA_ROOT / "logos"},
+    ),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
