@@ -5,15 +5,15 @@
 
 {% block contenido %}
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-    <div class="bg-white rounded-xl shadow p-5">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <div class="bg-white shadow p-5 border-l-4 border-red-600">
         <p class="text-sm text-gray-500">Abonados con deuda</p>
         <h3 class="text-2xl font-bold mt-2 text-red-700">
             {{ total_abonados_mora }}
         </h3>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-red-600">
         <p class="text-sm text-gray-500">Total cartera vencida</p>
         <h3 class="text-2xl font-bold mt-2 text-red-700">
             ${{ total_deuda_general|floatformat:2 }}
@@ -21,21 +21,21 @@
     </div>
 </div>
 
-<div class="bg-white rounded-xl shadow p-5">
-    <h3 class="text-lg font-semibold mb-5">
-        Detalle por abonado
-    </h3>
+<div class="bg-white shadow p-5">
 
-    {% if puede_exportar_reportes %}
-    <div class="mb-5">
-        <a href="{% tenant_url 'reportes:cartera_vencida_excel' %}"
-        class="px-4 py-2 bg-green-700 text-white rounded-lg">
-            Exportar Excel
-        </a>
+    <div class=" text-sm flex justify-between items-center mb-6">
+        <h3 class="text-lg font-semibold">Detalle por abonado</h3>
+        {% if puede_exportar_reportes %}
+        <div class="mb-5">
+            <a href="{% tenant_url 'reportes:cartera_vencida_excel' %}"
+            class="px-4 py-2 bg-green-700 text-white">
+                Exportar Excel
+            </a>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
-
-    <div class="overflow-x-auto">
+    
+    <div class="tabla-scroll overflow-x-auto">
         <table class="w-full text-sm">
             <thead class="bg-slate-100 text-slate-700">
                 <tr>
@@ -70,7 +70,7 @@
 
                     <td class="p-3">
                         {% for factura in item.facturas %}
-                            <span class="inline-block bg-red-100 text-red-700 px-2 py-1 rounded text-xs mb-1">
+                            <span class="inline-block bg-red-100 text-red-700 px-2 py-1 text-xs mb-1">
                                 {{ factura.periodo.nombre }}: ${{ factura.saldo_pendiente|floatformat:2 }}
                             </span>
                         {% endfor %}
@@ -78,11 +78,11 @@
 
                     <td class="p-3 text-center">
                         {% if item.abonado.estado_servicio == "SUSPENDIDO" %}
-                            <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
+                            <span class="px-2 py-1 text-xs bg-red-100 text-red-700">
                                 Suspendido
                             </span>
                         {% else %}
-                            <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                            <span class="px-2 py-1 text-xs bg-green-100 text-green-700">
                                 Activo
                             </span>
                         {% endif %}
@@ -92,7 +92,7 @@
 
                             {% if item.facturas and puede_cobrar %}
                                 <a href="{% tenant_url 'pagos:cobrar' item.facturas.0.id %}"
-                                class="px-3 py-1 text-sm bg-green-700 text-white rounded hover:bg-green-600">
+                                class="px-3 py-1 text-sm bg-green-700 text-white hover:bg-green-600">
                                     Cobrar
                                 </a>
                             {% endif %}
@@ -100,7 +100,7 @@
                             {% if puede_suspender %}
                                 {% if item.abonado.estado_servicio != "SUSPENDIDO" %}
                                     <a href="{% tenant_url 'servicios:suspender' %}?abonado={{ item.abonado.id }}"
-                                    class="inline-flex items-center justify-center w-24 px-3 py-1 text-sm bg-red-700 text-white rounded hover:bg-red-600">
+                                    class="inline-flex items-center justify-center w-24 px-3 py-1 text-sm bg-red-700 text-white hover:bg-red-600">
                                         Suspender
                                     </a>
                                 {% else %}

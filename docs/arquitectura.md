@@ -34,8 +34,59 @@ Sistema web de facturacion de agua potable construido con Django. La aplicacion 
 7. Los roles se asignan mediante grupos de Django: Administrador, Supervisor, Cajero, Lecturista y Consulta.
 8. Las vistas usan `rol_requerido` para restringir acceso directo por URL.
 9. El menu y las acciones visibles se controlan con `usuarios.context_processors.roles_usuario`.
+   El menu lateral se construye desde `nucleo/menu.py` mediante
+   `nucleo.context_processors.menu_sidebar`, por lo que `base.html` solo
+   renderiza secciones e items ya filtrados.
 10. Las operaciones criticas registran auditoria cuando corresponde.
 11. Las respuestas son plantillas HTML, archivos PDF o exportaciones Excel, segun el caso.
+
+## Navegacion y menu lateral
+
+El menu lateral principal se define en `nucleo/menu.py` como configuracion
+Python. Cada item declara:
+
+- `texto`: etiqueta visible.
+- `url_name`: nombre de ruta Django, por ejemplo `abonados:lista`.
+- `permiso`: bandera calculada por `usuarios.context_processors.roles_usuario`.
+- `permiso_extra`: bandera adicional opcional para casos combinados.
+- `rutas_activas`: rutas internas usadas para resaltar el item activo.
+- `rutas_excluidas`: rutas que no deben activar ese item.
+
+`nucleo.context_processors.menu_sidebar` toma esa configuracion, cruza permisos
+con los modulos habilitados del tenant activo, genera URLs con
+`request.tenant_path_prefix` cuando corresponde y elimina secciones vacias.
+
+`base.html` usa el tag `obtener_menu_sidebar` y ya no contiene el menu escrito
+a mano. Para agregar una opcion nueva al menu se debe agregar el item en
+`nucleo/menu.py` y asegurar que exista el permiso/contexto correspondiente.
+
+En listados con muchas acciones, el patron recomendado es dejar visibles las
+acciones principales y mover acciones secundarias o delicadas al menu `...`
+controlado por `.menu-acciones`. Las acciones que modifican datos deben seguir
+usando `POST` y CSRF.
+
+## Layout y tablas
+
+El layout base usa un menu lateral fijo en escritorio y un area principal
+flexible. Para evitar que las tablas anchas achiquen el menu lateral,
+`base.html` mantiene el `aside` con `md:shrink-0` y el contenedor principal con
+`min-w-0`.
+
+Las tablas operativas deben vivir dentro de un contenedor con
+`tabla-scroll overflow-x-auto`. La clase `tabla-scroll`, definida en
+`app/static/css/app.css`, permite que una tabla conserve su ancho natural cuando
+crecen las columnas y que el desplazamiento horizontal ocurra dentro del area de
+contenido, sin deformar el menu ni el resto del layout.
+
+Patron recomendado para tablas nuevas:
+
+```html
+<div class="tabla-scroll overflow-x-auto">
+    <table class="w-full text-sm">
+        ...
+    </table>
+</div>
+```
 
 ## Datos y persistencia
 
@@ -59,7 +110,6 @@ Convencion propuesta:
   - `sistema_agua_carabuela`
   - `sistema_agua_esperanza`
   - `sistema_agua_pesillo`
-  - `sistema_agua_rumipamba`
 - Deteccion inicial por ruta:
   - `/carabuela/`
   - `/esperanza/`
@@ -91,11 +141,15 @@ Implementado actualmente:
   - `sistema_agua_sessionid`
   - `sistema_agua_csrftoken`
 - Ocultamiento de la app `tenants` dentro del admin de cada junta, para que un tenant no vea ni edite el registro global de otros tenants.
+- Menu lateral centralizado en `nucleo/menu.py`, tenant-aware y filtrado por
+  permisos/modulos.
 
-Tenants validados actualmente:
+Tenant de prueba/validacion actual:
 
 - `carabuela`
-- `rumipamba`
+
+Cuando el sistema quede estable se agregaran nuevos tenants operativos usando
+la misma estructura por base de datos.
 
 El administrador inicial de cada tenant se crea como superusuario dentro de su propia base operativa para permitir la configuracion inicial desde Django Admin.
 

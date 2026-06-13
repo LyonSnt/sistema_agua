@@ -5,28 +5,28 @@
 
 {% block contenido %}
 
-<div class="bg-white rounded-xl shadow p-5">
+<div class=" text-sm bg-white shadow p-5">
     
-    <div class="flex justify-between items-center mb-5">
+    <div class="flex justify-between items-center mb-6">
         <h3 class="text-lg font-semibold">Listado de facturas anuladas</h3>
     </div>
 
-        <form method="get" class="mb-5 flex gap-2">
+    <form method="get" class="flex gap-2 mb-6">
             <input
                 type="text"
                 name="q"
                 value="{{ busqueda }}"
                 placeholder="Factura, abonado o cédula..."
-                class="w-full md:w-1/2 px-4 py-2 border rounded-lg"
+                class="w-full md:w-1/2 px-4 py-2 border"
             >
 
 
-        <button class="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-700">
+        <button class="px-4 py-2 bg-slate-900 text-white hover:bg-slate-700">
             Buscar
         </button>
     </form>
 
-    <div class="overflow-x-auto">
+    <div class="tabla-scroll overflow-x-auto">
         <table class="w-full text-sm">
             <thead class="bg-slate-100 text-slate-700">
                 <tr>
@@ -54,7 +54,7 @@
                     <td class="p-3 text-center">
                         {% if puede_ver_facturas %}
                         <a href="{% tenant_url 'facturacion:detalle' factura.id %}"
-                        class="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-600">
+                        class="px-3 py-1 bg-slate-700 text-white hover:bg-slate-600">
                             Ver
                         </a>
                         {% endif %}

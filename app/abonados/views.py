@@ -1,6 +1,8 @@
 from django.core.paginator import Paginator
 from django.http import HttpResponse
 from django.contrib import messages
+from django.db.models import Q
+from django.views.decorators.http import require_POST
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from weasyprint import HTML
@@ -20,29 +22,38 @@ from .models import Abonado
 @rol_requerido("Administrador", "Supervisor", "Cajero", "Lecturista", "Consulta")
 def lista_abonados(request):
     busqueda = request.GET.get("q", "")
+    estado = request.GET.get("estado", "activos")
 
-    abonados = Abonado.objects.select_related("sector", "ruta").filter(activo=True)
+    if estado not in {"activos", "inactivos", "todos"}:
+        estado = "activos"
+
+    abonados = Abonado.objects.select_related("sector", "ruta")
+
+    if estado == "activos":
+        abonados = abonados.filter(activo=True)
+    elif estado == "inactivos":
+        abonados = abonados.filter(activo=False)
 
     if busqueda:
         abonados = abonados.filter(
-            nombres__icontains=busqueda
-        ) | abonados.filter(
-            apellidos__icontains=busqueda
-        ) | abonados.filter(
-            cedula_ruc__icontains=busqueda
-        ) | abonados.filter(
-            codigo__icontains=busqueda
+            Q(nombres__icontains=busqueda)
+            | Q(apellidos__icontains=busqueda)
+            | Q(cedula_ruc__icontains=busqueda)
+            | Q(codigo__icontains=busqueda)
         )
 
     paginator = Paginator(abonados, 10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
+    query_params = request.GET.copy()
+    query_params.pop("page", None)
 
     contexto = {
         "abonados": page_obj,
         "page_obj": page_obj,
         "busqueda": busqueda,
-        "querystring": f"q={busqueda}",
+        "estado": estado,
+        "querystring": query_params.urlencode(),
     }
 
     return render(request, "abonados/lista_abonados.html", contexto)
@@ -110,6 +121,53 @@ def editar_abonado(request, abonado_id):
         "titulo": "Editar abonado",
         "boton": "Guardar cambios",
     })
+
+
+@require_POST
+@rol_requerido("Administrador", "Supervisor")
+def cambiar_estado_abonado(request, abonado_id):
+    abonado = get_object_or_404(Abonado, id=abonado_id)
+    accion = request.POST.get("accion")
+
+    if accion == "desactivar":
+        if not abonado.activo:
+            messages.info(request, "El abonado ya se encontraba inactivo.")
+        else:
+            abonado.activo = False
+            abonado.actualizado_por = request.user
+            abonado.save(update_fields=["activo", "actualizado_por", "actualizado_en"])
+
+            registrar_auditoria(
+                request,
+                accion="DESACTIVAR",
+                modulo="Abonados",
+                descripcion=f"Desactivó el abonado {abonado}",
+                objeto=abonado,
+            )
+
+            messages.success(request, "Abonado desactivado correctamente.")
+
+    elif accion == "reactivar":
+        if abonado.activo:
+            messages.info(request, "El abonado ya se encontraba activo.")
+        else:
+            abonado.activo = True
+            abonado.actualizado_por = request.user
+            abonado.save(update_fields=["activo", "actualizado_por", "actualizado_en"])
+
+            registrar_auditoria(
+                request,
+                accion="REACTIVAR",
+                modulo="Abonados",
+                descripcion=f"Reactivó el abonado {abonado}",
+                objeto=abonado,
+            )
+
+            messages.success(request, "Abonado reactivado correctamente.")
+    else:
+        messages.error(request, "Acción de abonado no válida.")
+
+    return redirect("abonados:lista")
 
 
 def obtener_contexto_ficha_abonado(abonado_id):
@@ -249,8 +307,6 @@ def detalle_abonado_pdf(request, abonado_id):
     )
 
     return response
-
-
 
 
 

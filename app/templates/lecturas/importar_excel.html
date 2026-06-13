@@ -8,43 +8,43 @@
 {% if messages %}
 <div class="mb-5">
     {% for message in messages %}
-        <div class="bg-green-100 text-green-800 px-4 py-3 rounded-lg">
+        <div class="bg-green-100 text-green-800 px-4 py-3">
             {{ message }}
         </div>
     {% endfor %}
 </div>
 {% endif %}
 
-<div class="bg-white rounded-xl shadow p-6 max-w-2xl mb-6">
+<div class="text-sm bg-white shadow p-6 max-w-2xl mb-6">
     <h3 class="text-lg font-semibold mb-4">Descargar plantilla</h3>
 
     <form method="get" action="{% tenant_url 'lecturas:plantilla_excel' %}">
         <label class="block text-sm mb-1">Período</label>
-        <select name="periodo" class="w-full px-4 py-2 border rounded-lg mb-4" required>
+        <select name="periodo" class="w-full px-4 py-2 border mb-4" required>
             <option value="">Seleccione...</option>
             {% for periodo in periodos %}
                 <option value="{{ periodo.id }}">{{ periodo.nombre }}</option>
             {% endfor %}
         </select>
 
-        <button class="px-5 py-2 bg-green-700 text-white rounded-lg hover:bg-green-600">
+        <button class="px-5 py-2 bg-green-700 text-white hover:bg-green-600">
             Descargar Excel
         </button>
     </form>
 </div>
 
 {% if not modo_preview %}
-<div class="bg-white rounded-xl shadow p-6 max-w-2xl">
+<div class="text-sm bg-white shadow p-6 max-w-2xl">
     <h3 class="text-lg font-semibold mb-4">Importar lecturas desde Excel</h3>
 
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
 
         <input type="file" name="archivo" accept=".xlsx" required
-               class="w-full px-4 py-2 border rounded-lg mb-4">
+               class="w-full px-4 py-2 border mb-4">
 
        
-        <button class="px-5 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-700">
+        <button class="px-5 py-2 bg-slate-900 text-white hover:bg-slate-700">
             Revisar archivo
         </button>
     </form>
@@ -52,7 +52,7 @@
 {% endif %}
 
 {% if modo_preview %}
-<div class="bg-white rounded-xl shadow p-6 max-w-5xl mt-6">
+<div class="text-sm bg-white shadow p-6 max-w-5xl mt-6">
 
     <h3 class="text-lg font-semibold mb-4">
         Vista previa de importación
@@ -70,7 +70,7 @@
             Errores encontrados
         </h4>
 
-        <div class="overflow-x-auto">
+        <div class="tabla-scroll overflow-x-auto">
             <table class="w-full text-sm border border-gray-200">
                 <thead class="bg-red-50">
                     <tr>
@@ -115,7 +115,7 @@
             Lecturas válidas
         </h4>
 
-        <div class="overflow-x-auto">
+        <div class="tabla-scroll overflow-x-auto">
             <table class="w-full text-sm border border-gray-200">
                 <thead class="bg-green-50">
                     <tr>
@@ -167,12 +167,12 @@
             Si la información es correcta, presione confirmar importación para guardar las lecturas.
         </p>
 
-        <button class="px-5 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-700">
+        <button class="px-5 py-2 bg-slate-900 text-white hover:bg-slate-700">
             Confirmar importación
         </button>
 
         <a href="{% tenant_url 'lecturas:importar_excel' %}"
-           class="inline-block ml-2 px-5 py-2 bg-gray-200 rounded-lg">
+           class="inline-block ml-2 px-5 py-2 bg-gray-200">
             Cancelar
         </a>
 

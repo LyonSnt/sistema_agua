@@ -5,7 +5,7 @@
 
 {% block contenido %}
 
-<div class="bg-white rounded-xl shadow p-6 max-w-2xl">
+<div class="text-sm bg-white shadow p-6 max-w-2xl">
 
     <h3 class="text-lg font-semibold mb-5">
         Confirmar anulación de multa
@@ -32,20 +32,20 @@
                 name="motivo"
                 rows="4"
                 required
-                class="w-full px-4 py-2 border rounded-lg"
+                class="w-full px-4 py-2 border"
             ></textarea>
         </div>
 
         <div class="flex gap-3">
             <button
                 type="submit"
-                class="px-5 py-2 bg-red-700 text-white rounded-lg"
+                class="px-5 py-2 bg-red-700 text-white"
                 onclick="return confirm('¿Está seguro de anular esta multa?');">
                 Anular multa
             </button>
 
             <a href="{% tenant_url 'multas:lista' %}"
-               class="px-5 py-2 bg-gray-200 rounded-lg">
+               class="px-5 py-2 bg-gray-200">
                 Cancelar
             </a>
         </div>

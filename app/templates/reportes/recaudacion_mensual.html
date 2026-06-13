@@ -5,69 +5,69 @@
 
 {% block contenido %}
 
-<div class="bg-white rounded-xl shadow p-5 mb-6">
+<div class=" text-sm bg-white shadow p-5 mb-6">
     <form method="get" class="flex flex-col md:flex-row gap-3 items-end">
         <div>
             <label class="block text-sm font-medium mb-1">Año</label>
             <input type="number" name="anio" value="{{ anio }}"
-                   class="px-4 py-2 border rounded-lg">
+                   class="px-4 py-2 border">
         </div>
 
         <div>
             <label class="block text-sm font-medium mb-1">Mes</label>
             <input type="number" name="mes" min="1" max="12" value="{{ mes }}"
-                   class="px-4 py-2 border rounded-lg">
+                   class="px-4 py-2 border">
         </div>
 
-        <button class="px-4 py-2 bg-slate-800 text-white rounded-lg">
+        <button class="px-4 py-2 bg-slate-800 text-white">
             Consultar
         </button>
         {% if puede_exportar_reportes %}
             <a href="{% tenant_url 'reportes:recaudacion_mensual_excel' %}?anio={{ anio }}&mes={{ mes }}"
-            class="px-4 py-2 bg-green-700 text-white rounded-lg">
+            class="px-4 py-2 bg-green-700 text-white">
                 Exportar Excel
             </a>
 
             <a href="{% tenant_url 'reportes:recaudacion_mensual_pdf' %}?anio={{ anio }}&mes={{ mes }}"
             target="_blank"
-            class="px-4 py-2 bg-blue-700 text-white rounded-lg">
+            class="px-4 py-2 bg-blue-700 text-white">
                 Ver PDF
             </a>
         {% endif %}
     </form>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-6">
-    <div class="bg-white rounded-xl shadow p-5">
+<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white shadow p-5 border-l-4 border-gray-600">
         <p class="text-sm text-gray-500">Pagos</p>
         <h3 class="text-2xl font-bold mt-2">{{ total_pagos }}</h3>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-gray-600">
         <p class="text-sm text-gray-500">Total recaudado</p>
         <h3 class="text-2xl font-bold mt-2">${{ total_recaudado|floatformat:2 }}</h3>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-gray-600">
         <p class="text-sm text-gray-500">Agua</p>
         <h3 class="text-2xl font-bold mt-2">${{ total_agua|floatformat:2 }}</h3>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-gray-600">
         <p class="text-sm text-gray-500">Alcantarillado</p>
         <h3 class="text-2xl font-bold mt-2">${{ total_alcantarillado|floatformat:2 }}</h3>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-gray-600">
         <p class="text-sm text-gray-500">Multas</p>
         <h3 class="text-2xl font-bold mt-2">${{ total_multas|floatformat:2 }}</h3>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-gray-600">
         <p class="text-sm text-gray-500">Otros</p>
         <h3 class="text-2xl font-bold mt-2">${{ total_otros|floatformat:2 }}</h3>
     </div>
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-red-600">
         <div class="text-sm text-slate-500">
             Valor anulado
         </div>
@@ -77,7 +77,7 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-red-600">
         <div class="text-sm text-slate-500">
             Pagos anulados
         </div>
@@ -89,10 +89,10 @@
     
 </div>
 
-<div class="bg-white rounded-xl shadow p-5 mb-6">
+<div class="bg-white shadow p-5 mb-6">
     <h3 class="text-lg font-semibold mb-5">Resumen por día</h3>
 
-    <div class="overflow-x-auto">
+    <div class="tabla-scroll overflow-x-auto">
         <table class="w-full text-sm">
             <thead class="bg-slate-100 text-slate-700">
                 <tr>
@@ -121,10 +121,10 @@
     </div>
 </div>
 
-<div class="bg-white rounded-xl shadow p-5">
+<div class="bg-white shadow p-5">
     <h3 class="text-lg font-semibold mb-5">Detalle de pagos del mes</h3>
 
-    <div class="overflow-x-auto">
+    <div class="tabla-scroll overflow-x-auto">
         <table class="w-full text-sm">
             <thead class="bg-slate-100 text-slate-700">
                 <tr>
@@ -159,65 +159,67 @@
     </div>
 </div>
 
-<div class="bg-white rounded-xl shadow p-5 mt-6">
+<div class="bg-white shadow p-5 mt-6">
 
     <h2 class="text-xl font-semibold mb-4">
         Pagos anulados del mes
     </h2>
 
-    <table class="w-full text-sm">
-        <thead class="bg-slate-100">
-            <tr>
-                <th class="p-3 text-left">Factura</th>
-                <th class="p-3 text-left">Abonado</th>
-                <th class="p-3 text-left">Usuario</th>
-                <th class="p-3 text-left">Fecha anulación</th>
-                <th class="p-3 text-right">Valor</th>
-                <th class="p-3 text-left">Motivo</th>
-            </tr>
-        </thead>
+    <div class="tabla-scroll overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-100">
+                <tr>
+                    <th class="p-3 text-left">Factura</th>
+                    <th class="p-3 text-left">Abonado</th>
+                    <th class="p-3 text-left">Usuario</th>
+                    <th class="p-3 text-left">Fecha anulación</th>
+                    <th class="p-3 text-right">Valor</th>
+                    <th class="p-3 text-left">Motivo</th>
+                </tr>
+            </thead>
 
-        <tbody>
+            <tbody>
 
-        {% for pago in pagos_anulados %}
-            <tr class="border-b">
-                <td class="p-3">
-                    {{ pago.factura.numero }}
-                </td>
+            {% for pago in pagos_anulados %}
+                <tr class="border-b">
+                    <td class="p-3">
+                        {{ pago.factura.numero }}
+                    </td>
 
-                <td class="p-3">
-                    {{ pago.factura.abonado }}
-                </td>
+                    <td class="p-3">
+                        {{ pago.factura.abonado }}
+                    </td>
 
-                <td class="p-3">
-                    {{ pago.actualizado_por|default:"-" }}
-                </td>
+                    <td class="p-3">
+                        {{ pago.actualizado_por|default:"-" }}
+                    </td>
 
-                <td class="p-3">
-                    {{ pago.fecha_anulacion|date:"d/m/Y H:i" }}
-                </td>
+                    <td class="p-3">
+                        {{ pago.fecha_anulacion|date:"d/m/Y H:i" }}
+                    </td>
 
-                <td class="p-3 text-right font-semibold text-red-600">
-                    ${{ pago.valor_pagado }}
-                </td>
+                    <td class="p-3 text-right font-semibold text-red-600">
+                        ${{ pago.valor_pagado }}
+                    </td>
 
-                <td class="p-3">
-                    {{ pago.motivo_anulacion }}
-                </td>
-            </tr>
+                    <td class="p-3">
+                        {{ pago.motivo_anulacion }}
+                    </td>
+                </tr>
 
-        {% empty %}
+            {% empty %}
 
-            <tr>
-                <td colspan="6" class="p-3 text-center text-slate-500">
-                    No existen pagos anulados en este período.
-                </td>
-            </tr>
+                <tr>
+                    <td colspan="6" class="p-3 text-center text-slate-500">
+                        No existen pagos anulados en este período.
+                    </td>
+                </tr>
 
-        {% endfor %}
+            {% endfor %}
 
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
 
 </div>
 

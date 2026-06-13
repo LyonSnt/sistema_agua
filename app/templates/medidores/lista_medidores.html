@@ -5,38 +5,38 @@
 
 {% block contenido %}
 
-<div class="bg-white rounded-xl shadow p-5">
+<div class="text-sm bg-white shadow p-5">
 
-    <div class="flex justify-between items-center gap-3 mb-5">
+    <div class="flex justify-between items-center gap-3 mb-6">
         <h3 class="text-lg font-semibold">Listado de medidores</h3>
 
         {% if puede_gestionar_medidores %}
             <a href="{% tenant_url 'medidores:crear' %}"
-            class="shrink-0 inline-flex items-center justify-center px-3 py-2 text-sm bg-slate-900 text-white rounded-lg hover:bg-slate-800 whitespace-nowrap">
+            class="shrink-0 inline-flex items-center justify-center px-3 py-2 text-sm bg-slate-900 text-white hover:bg-slate-800 whitespace-nowrap">
                 Nuevo medidor
             </a>
         {% endif %}
     </div>
 
-    <form method="get" class="mb-5 flex gap-2">
+    <form method="get" class="flex gap-2 mb-6">
 
         <input
             type="text"
             name="q"
             value="{{ busqueda }}"
             placeholder="Buscar por número, abonado o cédula..."
-            class="w-full md:w-1/2 px-4 py-2 border rounded-lg"
+            class="w-full md:w-1/2 px-4 py-2 border"
         >
 
         <button
             type="submit"
-            class="shrink-0 px-4 py-2 text-sm bg-slate-800 text-white rounded-lg hover:bg-slate-700 whitespace-nowrap">
+            class="shrink-0 px-4 py-2 text-sm bg-slate-800 text-white hover:bg-slate-700 whitespace-nowrap">
             Buscar
         </button>
 
     </form>
 
-    <div class="overflow-x-auto">
+    <div class="tabla-scroll overflow-x-auto">
 
         <table class="w-full text-sm">
 
@@ -96,60 +96,69 @@
 
                         {% if medidor.estado == "ACTIVO" %}
 
-                            <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">
+                            <span class="px-2 py-1 bg-green-100 text-green-700 text-xs">
                                 Activo
                             </span>
 
                         {% elif medidor.estado == "SUSPENDIDO" %}
 
-                            <span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs">
+                            <span class="px-2 py-1 bg-red-100 text-red-700 text-xs">
                                 Suspendido
                             </span>
 
                         {% elif medidor.estado == "DANADO" %}
 
-                            <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs">
+                            <span class="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs">
                                 Dañado
                             </span>
 
                         {% else %}
 
-                            <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                            <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs">
                                 Retirado
                             </span>
 
                         {% endif %}
 
                     </td>
+                    
                     <td class="p-3 text-center">
                         <div class="flex items-center justify-center gap-1">
 
                             <a href="{% tenant_url 'medidores:detalle' medidor.id %}"
-                            class="px-3 py-1 text-sm bg-slate-700 text-white rounded hover:bg-slate-600">
+                            class="btn-sm btn-ver">
                                 Ver
                             </a>
 
                             {% if puede_gestionar_medidores %}
-                            <a href="{% tenant_url 'medidores:editar' medidor.id %}"
-                            class="px-3 py-1 text-sm bg-yellow-600 text-white rounded hover:bg-yellow-500">
-                                Editar
-                            </a>
-
-                            {% if medidor.estado != "RETIRADO" %}
-                                <a href="{% tenant_url 'medidores:cambiar' medidor.id %}"
-                                class="inline-flex items-center justify-center w-24 px-3 py-1 text-sm bg-blue-700 text-white rounded hover:bg-blue-600">
-                                    Cambiar
+                                <a href="{% tenant_url 'medidores:editar' medidor.id %}"
+                                class="btn-sm btn-editar">
+                                    Editar
                                 </a>
-                            {% else %}
-                                <span class="inline-flex items-center justify-center w-24 px-3 py-1 text-sm text-gray-400">
-                                    -
-                                </span>
-                            {% endif %}
+
+                                <details class="menu-acciones relative inline-block">
+                                    <summary class="list-none cursor-pointer px-3 py-1 text-sm bg-gray-200 text-black hover:bg-gray-300">
+                                        ⋮
+                                    </summary>
+
+                                    <div class="absolute right-0 z-30 mt-2 w-44 border border-slate-200 bg-white shadow-lg">
+                                        {% if medidor.estado != "RETIRADO" %}
+                                            <a href="{% tenant_url 'medidores:cambiar' medidor.id %}"
+                                            class="block px-4 py-2 text-left text-sm text-blue-700 hover:bg-blue-50">
+                                                Cambiar medidor
+                                            </a>
+                                        {% else %}
+                                            <span class="block px-4 py-2 text-left text-sm text-gray-400">
+                                                Medidor retirado
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </details>
+
                             {% endif %}
 
                         </div>
                     </td>
-
                 </tr>
 
                 {% empty %}

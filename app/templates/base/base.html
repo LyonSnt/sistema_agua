@@ -1,4 +1,4 @@
-{% load static %}
+{% load static menu_tags %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="{% static 'css/app.css' %}">
     <link rel="icon" href="{% static 'img/favicon.png' %}">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/primeicons/primeicons.css">
 </head>
 
 <body class="bg-gray-100 text-gray-800">
@@ -24,202 +25,31 @@
 
     <div class="min-h-screen flex flex-col md:flex-row">
         <aside id="menuMobile"
-            class="hidden fixed top-0 left-0 z-50 h-screen w-72 overflow-y-auto bg-slate-900 text-white md:static md:block md:h-auto md:w-64">
+            class="hidden fixed top-0 left-0 z-50 h-screen w-72 overflow-y-auto bg-slate-900 text-white md:static md:block md:h-auto md:w-64 md:shrink-0">
             <div class="p-5 border-b border-slate-700">
                 <h1 class="text-base font-bold">Sistema de Agua</h1>
                 <p class="text-sm text-slate-300">Facturación</p>
             </div>
 
-            {% with ruta=request.path %}
+            {% obtener_menu_sidebar as menu_render %}
+            <nav class="p-4 space-y-5 text-sm">
+                {% for seccion in menu_render %}
+                    <div class="space-y-1">
+                        <p class="px-4 mb-2 text-xs uppercase text-slate-400">{{ seccion.titulo }}</p>
 
-            <nav class="p-4 space-y-3 text-sm">
-                <!-- INICIO -->
-                {% if puede_ver_panel %}
-                <div>
-                    <p class="px-4 mb-1 text-xs uppercase text-slate-400">Inicio</p>
-
-                    <a href="{{ request.tenant_path_prefix }}/panel/"
-                    class="block px-4 py-2 rounded {% if '/panel/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
-                        Panel principal
-                    </a>
-                </div>
-                {% endif %}
-
-                <!-- GESTIÓN COMERCIAL -->
-               {% if puede_ver_abonados or puede_ver_medidores %}
-                    <div>
-                        <p class="px-4 mb-1 text-xs uppercase text-slate-400">
-                            Gestión comercial
-                        </p>
-                        {% if puede_ver_abonados %}
-                        <a href="{{ request.tenant_path_prefix }}/abonados/"
-                        class="block px-4 py-2 rounded {% if '/abonados/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
-                            Abonados
-                        </a>
-                        {% endif %}
-
-                        {% if puede_ver_medidores %}
-                        <a href="{{ request.tenant_path_prefix }}/medidores/"
-                        class="block px-4 py-2 rounded {% if '/medidores/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
-                            Medidores
-                        </a>
-                         {% endif %}
+                        {% for item in seccion.items %}
+                            <a href="{{ item.url }}"
+                            class="block px-4 py-2 {% if item.activo %}bg-teal-700{% else %}hover:bg-teal-800{% endif %}">
+                             <i class="{{ item.icono }} w-5 mr-2"></i>
+                                {{ item.texto }}
+                            </a>
+                        {% endfor %}
                     </div>
-                {% endif %}
-
-                <!-- LECTURAS Y FACTURACIÓN -->
-                {% if puede_generar_lecturas or puede_importar_lecturas or puede_registrar_lecturas or puede_generar_facturacion or puede_ver_facturas %}
-                <div>
-                    <p class="px-4 mb-1 text-xs uppercase text-slate-400">
-                        Lecturas y facturación
-                    </p>
-
-                    {% if puede_generar_lecturas %}
-                    <a href="{{ request.tenant_path_prefix }}/lecturas/generar/"
-                    class="block px-4 py-2 rounded {% if '/lecturas/generar/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
-                        Generar lecturas
-                    </a>
-                    {% endif %}
-
-                    {% if puede_importar_lecturas %}
-                    <a href="{{ request.tenant_path_prefix }}/lecturas/importar-excel/"
-                    class="block px-4 py-2 rounded {% if '/lecturas/importar-excel/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
-                        Importar lecturas
-                    </a>
-                    {% endif %}
-
-                    {% if puede_registrar_lecturas %}
-                    <a href="{{ request.tenant_path_prefix }}/lecturas/registro-masivo/"
-                    class="block px-4 py-2 rounded {% if '/lecturas/registro-masivo/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
-                        Registro de lecturas
-                    </a>
-                    {% endif %}
-
-                    {% if puede_generar_facturacion %}
-                    <a href="{{ request.tenant_path_prefix }}/facturacion/generar/"
-                    class="block px-4 py-2 rounded {% if '/facturacion/generar/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
-                        Generar facturación
-                    </a>
-                    {% endif %}
-
-                    {% if puede_ver_facturas %}
-                    <a href="{{ request.tenant_path_prefix }}/facturacion/pendientes/"
-                    class="block px-4 py-2 rounded {% if '/facturacion/pendientes/' in ruta or '/pagos/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
-                        Facturas pendientes
-                    </a>
-                    {% endif %}
-
-                    {% if puede_ver_facturas and puede_ver_reportes %}
-                    <a href="{{ request.tenant_path_prefix }}/reportes/facturas-pagadas/"
-                    class="block px-4 py-2 rounded {% if '/reportes/facturas-pagadas/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
-                        Facturas pagadas
-                    </a>
-
-                    <a href="{{ request.tenant_path_prefix }}/reportes/facturas-anuladas/"
-                    class="block px-4 py-2 rounded {% if '/reportes/facturas-anuladas/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
-                        Facturas anuladas
-                    </a>
-                    {% endif %}
-                </div>
-                {% endif %}
-                <!-- RECAUDACIÓN -->
-                <!-- RECAUDACIÓN -->
-                {% if puede_ver_reportes %}
-                <div>
-                    <p class="px-4 mb-1 text-xs uppercase text-slate-400">
-                        Recaudación
-                    </p>
-
-                    <a href="{{ request.tenant_path_prefix }}/reportes/cierre-diario/"
-                    class="block px-4 py-2 rounded {% if '/reportes/cierre-diario/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
-                        Cierre diario
-                    </a>
-
-                    <a href="{{ request.tenant_path_prefix }}/reportes/recaudacion-diaria/"
-                    class="block px-4 py-2 rounded {% if '/reportes/recaudacion-diaria/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
-                        Recaudación diaria
-                    </a>
-
-                    <a href="{{ request.tenant_path_prefix }}/reportes/recaudacion-mensual/"
-                    class="block px-4 py-2 rounded {% if '/reportes/recaudacion-mensual/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
-                        Recaudación mensual
-                    </a>
-                </div>
-                {% endif %}
-
-                <!-- CARTERA Y CONTROL -->
-                <!-- CARTERA Y CONTROL -->
-                {% if puede_ver_cartera or puede_ver_suspensiones or puede_ver_multas or puede_ver_reporte_multas %}
-                <div>
-                    <p class="px-4 mb-1 text-xs uppercase text-slate-400">
-                        Cartera y control
-                    </p>
-
-                    {% if puede_ver_cartera %}
-                    <a href="{{ request.tenant_path_prefix }}/reportes/cartera/"
-                    class="block px-4 py-2 rounded {% if '/reportes/cartera/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
-                        Cartera pendiente
-                    </a>
-
-                    <a href="{{ request.tenant_path_prefix }}/reportes/cartera-vencida/"
-                    class="block px-4 py-2 rounded {% if '/reportes/cartera-vencida/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
-                        Cartera vencida
-                    </a>
-                    {% endif %}
-
-                    {% if puede_ver_suspensiones %}
-                    <a href="{{ request.tenant_path_prefix }}/servicios/"
-                    class="block px-4 py-2 rounded {% if '/servicios/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
-                        Suspensiones
-                    </a>
-                    {% endif %}
-
-                    {% if puede_ver_multas %}
-                    <a href="{{ request.tenant_path_prefix }}/multas/"
-                    class="block px-4 py-2 rounded {% if '/multas/' in ruta and '/multas/reporte/' not in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
-                        Multas
-                    </a>
-                    {% endif %}
-
-                    {% if puede_ver_reporte_multas %}
-                    <a href="{{ request.tenant_path_prefix }}/multas/reporte/"
-                    class="block px-4 py-2 rounded {% if '/multas/reporte/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
-                        Reporte de multas
-                    </a>
-                    {% endif %}
-                </div>
-                {% endif %}
-
-                <!-- SISTEMA -->
-                <!-- SISTEMA -->
-                {% if puede_administrar_sistema %}
-                <div>
-                    <p class="px-4 mb-1 text-xs uppercase text-slate-400">
-                        Sistema
-                    </p>
-
-                    {% if puede_entrar_admin_django %}
-                        <a href="{{ request.tenant_path_prefix }}/admin/"
-                        class="block px-4 py-2 rounded {% if '/admin/' in ruta and '/admin/medidores/' not in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
-                            Administración
-                        </a>
-                    {% endif %}
-
-                    {% if puede_ver_auditoria %}
-                    <a href="{{ request.tenant_path_prefix }}/auditoria/"
-                    class="block px-4 py-2 rounded {% if '/auditoria/' in ruta %}bg-slate-800{% else %}hover:bg-slate-800{% endif %}">
-                        Auditoría
-                    </a>
-                    {% endif %}
-                </div>
-                {% endif %}
-
+                {% endfor %}
             </nav>
-
-            {% endwith %}
         </aside>
 
-        <div class="flex-1">
+        <div class="flex-1 min-w-0">
             <header class="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
                 <div>
                     <h2 class="text-lg font-semibold">{% block encabezado %}Panel principal{% endblock %}</h2>
@@ -256,7 +86,6 @@
                     max-w-md
                     px-5
                     py-4
-                    rounded-2xl
                     backdrop-blur-md
                     shadow-2xl
                     border
@@ -300,5 +129,8 @@
     <script src="{% static 'js/menu.js' %}"></script>
     <script src="{% static 'js/toast.js' %}"></script>
     <script src="{% static 'js/app.js' %}"></script>
+    <script src="{% static 'js/menu_acciones.js' %}"></script>
+
+
 </body>
 </html>

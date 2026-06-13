@@ -23,7 +23,11 @@ Las rutas sin prefijo tenant siguen funcionando sobre `default` para mantener co
 
 La navegacion tenant-prefijada tambien queda cubierta para redirects y plantillas. Los redirects relativos generados durante una request tenant se devuelven con el prefijo correspondiente, y las plantillas usan el tag `tenant_url` para generar enlaces internos conservando el prefijo.
 
-Tambien se valido el flujo contra bases fisicas reales. Actualmente existen tenants operativos de prueba/validacion para `carabuela` y `rumipamba`, con bases separadas y datos aislados. La base `default` se conserva como base legacy/de pruebas y no se migrara por ahora.
+Tambien se valido el flujo contra bases fisicas reales. Actualmente `carabuela`
+queda como tenant principal de prueba/validacion mientras se estabiliza el
+sistema. Luego se iran agregando nuevos tenants operativos segun necesidad. La
+base `default` se conserva como base legacy/de pruebas y no se migrara por
+ahora.
 
 Para evitar choque de sesiones con otros proyectos locales sobre `localhost`, la configuracion usa nombres propios de cookies:
 
@@ -37,7 +41,7 @@ La base master debe guardar solo informacion global necesaria para resolver tena
 Modelo inicial:
 
 - `slug`: identificador usado en URL.
-- `nombre`: nombre corto visible de la junta, por ejemplo `Rumipamba`.
+- `nombre`: nombre corto visible de la junta, por ejemplo `Carabuela`.
 - `db_name`: nombre de la base de datos del tenant.
 - `activo`: permite habilitar o bloquear una junta.
 - `modulos_habilitados`: lista de modulos/pestanas activas para esa junta.
@@ -49,7 +53,6 @@ Ejemplo:
 | `carabuela` | Carabuela | `sistema_agua_carabuela` |
 | `esperanza` | Esperanza | `sistema_agua_esperanza` |
 | `pesillo` | Pesillo | `sistema_agua_pesillo` |
-| `rumipamba` | Rumipamba | `sistema_agua_rumipamba` |
 
 ## Bases tenant
 
@@ -98,6 +101,11 @@ Contrato preparado en `.env.example`:
 
 Las plantillas usan el tag builtin `tenant_url`, registrado en `settings.py`, como reemplazo de `{% url %}`. El tag genera la URL normal cuando no hay tenant y antepone `request.tenant_path_prefix` cuando la navegacion viene desde una ruta tenant.
 
+El menu lateral se construye desde `nucleo/menu.py` mediante
+`nucleo.context_processors.menu_sidebar`. El builder genera URLs con el prefijo
+tenant activo, calcula el item activo usando la ruta sin prefijo y filtra items
+segun los permisos ya cruzados con modulos habilitados.
+
 ## Modulos por tenant
 
 La base `master` define que modulos tiene habilitados cada junta mediante
@@ -122,6 +130,8 @@ Reglas:
 
 - Si no se define una lista, el tenant queda con todos los modulos habilitados.
 - El menu y el panel ocultan accesos a modulos deshabilitados.
+- El menu se define una sola vez en `nucleo/menu.py`; para ocultar una opcion
+  por tenant se usa el permiso asociado, calculado desde los modulos activos.
 - El middleware bloquea el acceso directo por URL a modulos deshabilitados con HTTP 403.
 - Los permisos por rol siguen aplicando dentro de cada modulo habilitado.
 - Las rutas sin tenant siguen funcionando con todos los modulos para mantener el modo legacy/de pruebas.
@@ -134,17 +144,16 @@ El sistema conserva dos modos de entrada:
 | --- | --- | --- |
 | `/login/` | `default` / `sistema_agua` | Pruebas, datos legacy o validaciones generales. |
 | `/admin/` | `default` y `master` para `tenants` | Administracion legacy/global. Usar con cuidado. |
-| `/carabuela/login/` | `sistema_agua_carabuela` | Operacion real de Carabuela. |
-| `/carabuela/admin/` | `sistema_agua_carabuela` | Configuracion propia de Carabuela. |
-| `/rumipamba/login/` | `sistema_agua_rumipamba` | Operacion real de Rumipamba. |
-| `/rumipamba/admin/` | `sistema_agua_rumipamba` | Configuracion propia de Rumipamba. |
+| `/carabuela/login/` | `sistema_agua_carabuela` | Tenant de prueba/validacion. |
+| `/carabuela/admin/` | `sistema_agua_carabuela` | Configuracion del tenant de prueba. |
 
 Reglas practicas:
 
-- Para trabajo real de una junta, usar siempre URLs con prefijo tenant.
+- Para pruebas tenant, usar `carabuela` con URLs prefijadas.
+- Para trabajo real de una junta futura, usar siempre URLs con su prefijo tenant.
 - `/login/` sin prefijo trabaja sobre `default`; no representa a una junta real.
-- Los datos creados en `default` no aparecen en Carabuela ni Rumipamba.
-- Los datos creados en Rumipamba no aparecen en Carabuela ni en `default`.
+- Los datos creados en `default` no aparecen en Carabuela ni en otros tenants.
+- Los datos creados en Carabuela no aparecen en `default` ni en tenants futuros.
 - La app `tenants` no se muestra dentro del admin tenant; una junta no debe ver ni editar el registro global de otras juntas.
 - Desde el admin global `/admin/`, la ficha de cada tenant permite resetear la
   clave de un usuario administrador dentro de la base de esa junta. Esta accion
@@ -154,11 +163,11 @@ Reglas practicas:
   base tenant. `ConfiguracionInstitucional.nombre_corto` permite mostrar el
   nombre propio de la junta sin repetirlo en la linea institucional.
 - Convencion recomendada para cada tenant:
-  - `Tenant.nombre`: nombre corto de respaldo, por ejemplo `Rumipamba`.
+  - `Tenant.nombre`: nombre corto de respaldo, por ejemplo `Carabuela`.
   - `ConfiguracionInstitucional.nombre`: nombre institucional base, por ejemplo
     `Junta Administradora de Agua Potable`.
   - `ConfiguracionInstitucional.nombre_corto`: nombre propio de la junta, por
-    ejemplo `Rumipamba`.
+    ejemplo `Carabuela`.
   - Login izquierdo: `Sistema de Facturacion` + `nombre nombre_corto`.
   - Login derecho: `nombre` + `nombre_corto` en lineas separadas.
 
@@ -212,8 +221,8 @@ python manage.py provisionar_tenant san-pablo "Junta San Pablo" \
 Crear una junta con solo algunos modulos:
 
 ```bash
-python manage.py provisionar_tenant rumipamba "Rumipamba" \
-  --admin-user admin_rumipamba \
+python manage.py provisionar_tenant carabuela "Carabuela" \
+  --admin-user admin_carabuela \
   --admin-password "ClaveSegura123" \
   --modules panel,abonados,medidores,lecturas,facturacion,pagos,reportes,admin
 ```
@@ -234,10 +243,10 @@ el contenedor web.
 Ejemplo con Docker:
 
 ```bash
-docker exec -it sistema_agua_web python manage.py provisionar_tenant rumipamba "Rumipamba" \
-  --admin-user admin_rumipamba \
+docker exec -it sistema_agua_web python manage.py provisionar_tenant carabuela "Carabuela" \
+  --admin-user admin_carabuela \
   --admin-password "ClaveSegura123" \
-  --admin-email admin@rumipamba.local
+  --admin-email admin@carabuela.local
 ```
 
 `crear_base_tenant` se conecta a la base administrativa definida por `TENANT_ADMIN_DB_NAME`, por defecto `postgres`. El usuario PostgreSQL configurado en `DB_USER` debe tener permisos para crear bases.
@@ -272,7 +281,7 @@ Flujo actual:
 
 ## Fases pendientes
 
-1. Completar configuracion operativa de Rumipamba desde `/rumipamba/admin/`.
-2. Probar ciclo operativo minimo de Rumipamba con abonado, medidor, lectura, factura y pago.
-3. Definir politica de retencion/rotacion para backups multi-tenant.
-4. Probar restauracion de backups en bases temporales.
+1. Usar `carabuela` como tenant de prueba hasta estabilizar el sistema.
+2. Definir modulos activos de Carabuela en el admin global de tenants.
+3. Reconstruir o redeplegar la imagen Docker con los cambios confirmados.
+4. Definir politica de retencion/rotacion para backups multi-tenant.

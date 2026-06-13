@@ -5,7 +5,7 @@
 
 {% block contenido %}
 
-<div class="bg-white rounded-xl shadow p-6 max-w-4xl">
+<div class="text-sm bg-white shadow p-6 max-w-4xl">
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-sm">
         <div>
@@ -49,12 +49,12 @@
 
         <div class="flex gap-3 mt-6">
             <button type="submit"
-                    class="px-5 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600">
+                    class="px-5 py-2 bg-blue-700 text-white hover:bg-blue-600">
                 Registrar cambio
             </button>
 
             <a href="{% tenant_url 'medidores:detalle' medidor.id %}"
-               class="px-5 py-2 bg-gray-200 rounded-lg">
+               class="px-5 py-2 bg-gray-200">
                 Cancelar
             </a>
         </div>

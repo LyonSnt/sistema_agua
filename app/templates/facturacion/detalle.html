@@ -6,45 +6,45 @@
 {% block contenido %}
 
 
-<div class="mb-4 no-print flex flex-wrap gap-2">
+<div class="text-sm mb-4 no-print flex flex-wrap gap-2">
 
     <button onclick="window.print()"
-            class="px-4 py-2 text-sm bg-slate-900 text-white rounded-lg hover:bg-slate-700">
+            class="px-4 py-2 text-sm bg-slate-900 text-white hover:bg-slate-700">
         Imprimir
     </button>
 
     {% if factura.estado != "ANULADA" and puede_anular_factura %}
         <a href="{% tenant_url 'facturacion:anular' factura.id %}"
-        class="px-4 py-2 text-sm bg-red-700 text-white rounded-lg hover:bg-red-600">
+        class="px-4 py-2 text-sm bg-red-700 text-white hover:bg-red-600">
             Anular factura
         </a>
     {% endif %}
 
-    <a href="{% tenant_url 'facturacion:pendientes' %}"
-       class="px-4 py-2 text-sm bg-gray-700 text-white rounded-lg hover:bg-gray-600">
-        Volver
-    </a>
-
     <a href="{% tenant_url 'facturacion:pdf' factura.id %}"
        target="_blank"
-       class="px-4 py-2 text-sm bg-blue-700 text-white rounded-lg hover:bg-blue-600">
+       class="px-4 py-2 text-sm bg-blue-700 text-white hover:bg-blue-600">
         Ver PDF
     </a>
 
     {% if factura.estado == "PENDIENTE" and puede_agregar_rubro_factura %}
     <a href="{% tenant_url 'facturacion:agregar_rubro' factura.id %}"
-       class="px-4 py-2 text-sm bg-amber-600 text-white rounded-lg hover:bg-amber-500">
+       class="px-4 py-2 text-sm bg-amber-600 text-white hover:bg-amber-500">
         Agregar rubro
     </a>
     {% endif %}
+
+    <a href="{% tenant_url 'facturacion:pendientes' %}"
+       class="px-4 py-2 bg-gray-200">
+        Volver
+    </a>
 
 </div>
 
 
 
-<div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+<div class="text-sm grid grid-cols-1 xl:grid-cols-3 gap-6">
     <div class="xl:col-span-2">
-       <div class="bg-white rounded-xl shadow p-8 max-w-4xl">
+       <div class="bg-white shadow p-8 max-w-4xl">
 
             <div class="flex justify-between border-b pb-4 mb-6">
                 <div>
@@ -81,7 +81,7 @@
                 </div>
             </div>
 
-            <div class="border rounded-lg p-4 mb-6 text-sm">
+            <div class="border p-4 mb-6 text-sm">
                 <h3 class="font-semibold mb-3">Lectura</h3>
 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -166,80 +166,82 @@
 
     <div>
         {% if factura.estado == "PAGADA" %}
-            <div class="bg-green-50 border border-green-200 rounded p-3 mb-4 text-green-700 text-sm">
+            <div class="bg-green-50 border border-green-200 p-3 mb-4 text-green-700 text-sm">
                 Factura cancelada en su totalidad.
             </div>
         {% elif factura.estado == "PARCIAL" %}
-            <div class="bg-yellow-50 border border-yellow-200 rounded p-3 mb-4 text-yellow-700 text-sm">
+            <div class="bg-yellow-50 border border-yellow-200 p-3 mb-4 text-yellow-700 text-sm">
                 Factura con pagos parciales. Saldo pendiente: ${{ factura.saldo_pendiente }}
             </div>
         {% endif %}
 
         {% if factura.pagos.all %}
-        <div class="mt-4 bg-white rounded-xl shadow p-8 max-w-4xl overflow-hidden">
+        <div class="mt-4 bg-white shadow p-8 max-w-4xl overflow-hidden">
             <div class="bg-slate-100 px-4 py-3 font-semibold">
                 Historial de pagos
             </div>
 
-            <table class="w-full text-sm">
-                <thead class="bg-slate-50">
-                    <tr>
-                        <th class="p-3 text-left">Fecha</th>
-                        <th class="p-3 text-left">Usuario</th>
-                        <th class="p-3 text-right">Valor</th>
-                        <th class="p-3 text-center">Estado</th>
-                        <th class="p-3 text-center">Comprobante</th>
-                    </tr>
-                </thead>
+            <div class="tabla-scroll overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="p-3 text-left">Fecha</th>
+                            <th class="p-3 text-left">Usuario</th>
+                            <th class="p-3 text-right">Valor</th>
+                            <th class="p-3 text-center">Estado</th>
+                            <th class="p-3 text-center">Comprobante</th>
+                        </tr>
+                    </thead>
 
-                <tbody>
-                    {% for pago in factura.pagos.all %}
-                    <tr class="border-t">
-                        <td class="p-3">
-                            {{ pago.fecha_pago|date:"d/m/Y H:i" }}
-                        </td>
+                    <tbody>
+                        {% for pago in factura.pagos.all %}
+                        <tr class="border-t">
+                            <td class="p-3">
+                                {{ pago.fecha_pago|date:"d/m/Y H:i" }}
+                            </td>
 
-                        <td class="p-3">
-                            {{ pago.creado_por|default:"-" }}
-                        </td>
+                            <td class="p-3">
+                                {{ pago.creado_por|default:"-" }}
+                            </td>
 
-                        <td class="p-3 text-right font-semibold">
-                            ${{ pago.valor_pagado|floatformat:2 }}
-                        </td>
+                            <td class="p-3 text-right font-semibold">
+                                ${{ pago.valor_pagado|floatformat:2 }}
+                            </td>
 
-                        <td class="p-3 text-center">
-                            {% if pago.anulado %}
-                                <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
-                                    Anulado
-                                </span>
-                            {% else %}
-                                <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
-                                    Válido
-                                </span>
-                            {% endif %}
-                        </td>
-                        <td class="p-3 text-center">
-                            {% if not pago.anulado %}
-                                <div class="flex gap-1 justify-center">
-                                    <a href="{% tenant_url 'pagos:comprobante_pdf' pago.id %}"
-                                    target="_blank"
-                                    class="px-2 py-1 bg-blue-700 text-white rounded text-xs">
-                                        Ver
-                                    </a>
+                            <td class="p-3 text-center">
+                                {% if pago.anulado %}
+                                    <span class="px-2 py-1 text-xs bg-red-100 text-red-700">
+                                        Anulado
+                                    </span>
+                                {% else %}
+                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-700">
+                                        Válido
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="p-3 text-center">
+                                {% if not pago.anulado %}
+                                    <div class="flex gap-1 justify-center">
+                                        <a href="{% tenant_url 'pagos:comprobante_pdf' pago.id %}"
+                                        target="_blank"
+                                        class="px-2 py-1 bg-blue-700 text-white text-xs">
+                                            Ver
+                                        </a>
 
-                                    <a href="{% tenant_url 'pagos:anular' pago.id %}"
-                                    class="px-2 py-1 bg-red-700 text-white rounded text-xs">
-                                        Anular
-                                    </a>
-                                </div>
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                                        <a href="{% tenant_url 'pagos:anular' pago.id %}"
+                                        class="px-2 py-1 bg-red-700 text-white text-xs">
+                                            Anular
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
         {% endif %}
 

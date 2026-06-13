@@ -5,11 +5,11 @@
 
 {% block contenido %}
 
-<div class="bg-white rounded-xl shadow p-6 max-w-3xl">
+<div class="text-sm bg-white shadow p-6 max-w-3xl">
 
     {% if messages %}
         {% for message in messages %}
-            <div class="px-4 py-3 rounded-lg mb-4 bg-red-100 text-red-700">
+            <div class="px-4 py-3 mb-4 bg-red-100 text-red-700">
                 {{ message }}
             </div>
         {% endfor %}
@@ -19,7 +19,7 @@
         {% csrf_token %}
 
         {% if form.errors %}
-            <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div class="mb-4 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 {% for field, errors in form.errors.items %}
                     {% for error in errors %}
                         <p>{{ error }}</p>
@@ -30,7 +30,7 @@
 
         <div class="mb-4">
             <label class="block text-sm font-medium mb-1">Abonado</label>
-            <select name="abonado" class="w-full px-4 py-2 border rounded-lg" required>
+            <select name="abonado" class="w-full px-4 py-2 border" required>
                 <option value="">Seleccione...</option>
                 {% for abonado in abonados %}
                     <option value="{{ abonado.id }}"
@@ -44,21 +44,21 @@
         <div class="mb-4">
             <label class="block text-sm font-medium mb-1">Fecha suspensión</label>
             <input type="date" name="fecha_suspension" value="{{ form.fecha_suspension.value|default:hoy }}"
-                   class="w-full px-4 py-2 border rounded-lg" required>
+                   class="w-full px-4 py-2 border" required>
         </div>
 
         <div class="mb-6">
             <label class="block text-sm font-medium mb-1">Motivo de suspensión</label>
             <textarea name="motivo_suspension" rows="4"
-                      class="w-full px-4 py-2 border rounded-lg" required>{{ form.motivo_suspension.value|default:'' }}</textarea>
+                      class="w-full px-4 py-2 border" required>{{ form.motivo_suspension.value|default:'' }}</textarea>
         </div>
 
         <div class="flex gap-3">
-            <button class="px-5 py-2 bg-red-700 text-white rounded-lg">
+            <button class="px-5 py-2 bg-red-700 text-white">
                 Suspender servicio
             </button>
 
-            <a href="{% tenant_url 'servicios:lista' %}" class="px-5 py-2 bg-gray-200 rounded-lg">
+            <a href="{% tenant_url 'servicios:lista' %}" class="px-5 py-2 bg-gray-200">
                 Cancelar
             </a>
         </div>

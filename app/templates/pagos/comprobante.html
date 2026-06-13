@@ -5,19 +5,19 @@
 
 {% block contenido %}
 
-<div class="mb-4 no-print">
+<div class="text-sm mb-4 no-print flex flex-wrap gap-2">
     <button onclick="window.print()"
-            class="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-700">
+            class="px-4 text-sm py-2 bg-slate-900 text-white hover:bg-slate-700">
         Imprimir
     </button>
 
     <a href="{% tenant_url 'reportes:facturas_pagadas' %}"
-       class="px-4 py-2 bg-gray-200 rounded-lg">
+       class="px-4 py-2 bg-gray-200">
         Volver
     </a>
 </div>
 
-<div class="bg-white rounded-xl shadow p-8 max-w-3xl">
+<div class="text-sm bg-white shadow p-8 max-w-3xl">
 
     <div class="flex justify-between border-b pb-4 mb-6">
         <div>

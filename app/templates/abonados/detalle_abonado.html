@@ -5,21 +5,21 @@
 
 {% block contenido %}
 
-<div class="flex flex-wrap gap-2 mb-4">
+<div class="text-sm flex flex-wrap gap-2 mb-4">
 
     <a href="{% tenant_url 'abonados:lista' %}"
-       class="px-4 py-2 bg-gray-200 rounded-lg">
+       class="px-5 py-2 bg-gray-200">
         Volver
     </a>
     <a href="{% tenant_url 'abonados:detalle_pdf' abonado.id %}"
     target="_blank"
-    class="px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600">
+    class="px-4 py-2 bg-blue-700 text-white hover:bg-blue-600">
         Ver PDF
     </a>
 
     {% if puede_gestionar_abonados %}
         <a href="{% tenant_url 'abonados:editar' abonado.id %}"
-        class="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-600">
+        class="px-4 py-2 bg-slate-700 text-white hover:bg-slate-600">
             Editar
         </a>
     {% endif %}
@@ -27,7 +27,7 @@
     {% if factura_pendiente %}
         {% if puede_cobrar %}
             <a href="{% tenant_url 'pagos:cobrar' factura_pendiente.id %}"
-            class="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-600">
+            class="px-4 py-2 bg-green-700 text-white hover:bg-green-600">
                 Cobrar
             </a>
         {% endif %}
@@ -36,7 +36,7 @@
     {% if abonado.estado_servicio == "ACTIVO" and saldo_pendiente > 0 %}
         {% if puede_suspender %}
             <a href="{% tenant_url 'servicios:suspender' %}?abonado={{ abonado.id }}"
-            class="px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-600">
+            class="px-4 py-2 bg-red-700 text-white hover:bg-red-600">
                 Suspender
             </a>
         {% endif %}
@@ -44,7 +44,7 @@
     {% elif abonado.estado_servicio == "SUSPENDIDO" %}
         {% if puede_reconectar %}
             <a href="{% tenant_url 'servicios:reconectar_por_abonado' abonado.id %}"
-            class="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-600">
+            class="px-4 py-2 bg-green-700 text-white hover:bg-green-600">
                 Reconectar
             </a>
         {% endif %}
@@ -52,13 +52,13 @@
 
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="text-sm grid grid-cols-1 lg:grid-cols-3 gap-6">
 
 
     <!-- COLUMNA IZQUIERDA - DATOS GENERALES -->
     <div class="lg:col-span-1 space-y-6">
 
-        <div class="bg-white rounded-xl shadow p-5">
+        <div class="bg-white shadow p-5">
             <h3 class="text-lg font-semibold mb-4">Datos generales</h3>
 
             <div class="space-y-3 text-sm">
@@ -106,7 +106,7 @@
     </div>
 
    <!-- COLUMNA DERECHA - INFORMACION DEL MEDIDOR -->
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5">
 
         <h2 class="text-lg font-semibold mb-4">
             Información del medidor
@@ -185,10 +185,10 @@
     </div>
     
 
-    <div class="lg:col-span-2 space-y-6">
+    <div class="text-sm lg:col-span-2 space-y-6">
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-white rounded-xl shadow p-5">
+            <div class="bg-white shadow p-5">
                 <p class="text-sm text-gray-500">Estado servicio</p>
                 {% if abonado.estado_servicio == "SUSPENDIDO" %}
                     <p class="text-2xl font-bold text-red-700">Suspendido</p>
@@ -197,7 +197,7 @@
                 {% endif %}
             </div>
 
-            <div class="bg-white rounded-xl shadow p-5">
+            <div class="bg-white shadow p-5">
                 <p class="text-sm text-gray-500">Estado cuenta</p>
                 {% if abonado.estado_cuenta == "AL_DIA" %}
                     <p class="text-2xl font-bold text-green-600">
@@ -210,12 +210,12 @@
                 {% endif %}
             </div>
 
-            <div class="bg-white rounded-xl shadow p-5">
+            <div class="bg-white shadow p-5">
                 <p class="text-sm text-gray-500">Facturas</p>
                 <p class="text-2xl font-bold">{{ facturas.count }}</p>
             </div>
 
-            <div class="bg-white rounded-xl shadow p-5">
+            <div class="bg-white shadow p-5">
                 <p class="text-sm text-gray-500">Saldo pendiente</p>
                 <p class="text-2xl font-bold text-red-700">
                     ${{ saldo_pendiente|floatformat:2 }}
@@ -223,10 +223,10 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow p-5">
+        <div class="bg-white shadow p-5">
             <h3 class="text-lg font-semibold mb-4">Medidores del abonado</h3>
 
-            <div class="overflow-x-auto">
+            <div class="tabla-scroll overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead class="bg-slate-100">
                         <tr>
@@ -247,13 +247,13 @@
                             <td class="p-3">{{ item.modelo|default:"-" }}</td>
                             <td class="p-3 text-right">{{ item.lectura_inicial }}</td>
                             <td class="p-3 text-center">
-                                <span class="px-2 py-1 text-xs bg-gray-100 rounded">
+                                <span class="px-2 py-1 text-xs bg-gray-100">
                                     {{ item.get_estado_display }}
                                 </span>
                             </td>
                             <td class="p-3 text-center">
                                 <a href="{% tenant_url 'medidores:detalle' item.id %}"
-                                   class="px-3 py-1 bg-slate-700 text-white rounded">
+                                   class="px-3 py-1 bg-slate-700 text-white">
                                     Ver
                                 </a>
                             </td>
@@ -270,7 +270,7 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow p-5">
+        <div class="bg-white shadow p-5">
 
             <h3 class="text-lg font-semibold mb-4">
                 Resumen financiero
@@ -317,10 +317,10 @@
 
         </div>
 
-        <div class="bg-white rounded-xl shadow p-5 mt-6">
+        <div class="bg-white shadow p-5 mt-6">
             <h3 class="text-lg font-semibold mb-4">Historial de cambios de medidor</h3>
 
-            <div class="overflow-x-auto">
+            <div class="tabla-scroll overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead class="bg-slate-100">
                         <tr>
@@ -355,7 +355,7 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow p-5 mt-6">
+        <div class="bg-white shadow p-5 mt-6">
             <h3 class="text-lg font-semibold mb-4">Multas del abonado</h3>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-sm">
@@ -370,7 +370,7 @@
                 </div>
             </div>
 
-            <div class="overflow-x-auto">
+            <div class="tabla-scroll overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead class="bg-slate-100">
                         <tr>
@@ -390,7 +390,7 @@
                             <td class="p-3">{{ multa.motivo }}</td>
                             <td class="p-3 text-right">${{ multa.valor|floatformat:2 }}</td>
                             <td class="p-3 text-center">
-                                <span class="px-2 py-1 text-xs bg-gray-100 rounded">
+                                <span class="px-2 py-1 text-xs bg-gray-100">
                                     {{ multa.get_estado_display }}
                                 </span>
                             </td>
@@ -407,10 +407,10 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow p-5">
+        <div class="bg-white shadow p-5">
             <h3 class="text-lg font-semibold mb-4">Facturas del abonado</h3>
 
-            <div class="overflow-x-auto">
+            <div class="tabla-scroll overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead class="bg-slate-100">
                         <tr>
@@ -433,13 +433,13 @@
                             <td class="p-3 text-right">${{ factura.total_pagado|floatformat:2 }}</td>
                             <td class="p-3 text-right font-semibold">${{ factura.saldo_pendiente|floatformat:2 }}</td>
                             <td class="p-3 text-center">
-                                <span class="px-2 py-1 text-xs rounded bg-gray-100">
+                                <span class="px-2 py-1 text-xs bg-gray-100">
                                     {{ factura.estado }}
                                 </span>
                             </td>
                             <td class="p-3 text-center">
                                 <a href="{% tenant_url 'facturacion:detalle' factura.id %}"
-                                   class="px-3 py-1 bg-slate-700 text-white rounded">
+                                   class="px-3 py-1 bg-slate-700 text-white">
                                     Ver
                                 </a>
                             </td>
@@ -457,11 +457,11 @@
             </div>
             
         </div>
-        <div class="bg-white rounded-xl shadow p-5 mt-6">
+        <div class="bg-white shadow p-5 mt-6">
             <h2 class="text-lg font-semibold mb-4">
                 Historial de pagos
             </h2>
-            <div class="overflow-x-auto">
+            <div class="tabla-scroll overflow-x-auto">
                 <table class="w-full text-sm">
 
                     <thead>
@@ -493,11 +493,11 @@
                             <td class="p-3">
 
                                 {% if pago.anulado %}
-                                    <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
+                                    <span class="px-2 py-1 text-xs bg-red-100 text-red-700">
                                         Anulado
                                     </span>
                                 {% else %}
-                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-700">
                                         Válido
                                     </span>
                                 {% endif %}
@@ -519,13 +519,13 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow p-5 mt-6">
+        <div class="bg-white shadow p-5 mt-6">
 
             <h3 class="text-lg font-semibold mb-4">
                 Historial de suspensiones
             </h3>
 
-            <div class="overflow-x-auto">
+            <div class="tabla-scroll overflow-x-auto">
 
                 <table class="w-full text-sm">
 
@@ -551,17 +551,17 @@
                             <td class="p-3">
 
                                 {% if item.estado == "SUSPENDIDO" %}
-                                    <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
+                                    <span class="px-2 py-1 text-xs bg-red-100 text-red-700">
                                         Suspendido
                                     </span>
 
                                 {% elif item.estado == "RECONECTADO" %}
-                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                                    <span class="px-2 py-1 text-xs bg-green-100 text-green-700">
                                         Reconectado
                                     </span>
 
                                 {% else %}
-                                    <span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
+                                    <span class="px-2 py-1 text-xs bg-gray-100 text-gray-700">
                                         Anulado
                                     </span>
                                 {% endif %}
@@ -597,13 +597,13 @@
         </div>
 
         {% if puede_ver_auditoria %}
-        <div class="bg-white rounded-xl shadow p-5 mt-6">
+        <div class="bg-white shadow p-5 mt-6">
 
             <h3 class="text-lg font-semibold mb-4">
                 Actividad relacionada
             </h3>
 
-            <div class="overflow-x-auto">
+            <div class="tabla-scroll overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="bg-slate-100">

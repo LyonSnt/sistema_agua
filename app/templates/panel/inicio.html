@@ -9,30 +9,30 @@
 <p class="text-sm text-gray-500 mb-6">Recaudación diaria separada por rubros.</p>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-blue-600">
         <p class="text-sm text-gray-500">Recaudado hoy</p>
         <h3 class="text-2xl font-bold mt-2 text-blue-700">${{ recaudado_hoy|floatformat:2 }}</h3>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-gray-500">
         <p class="text-sm text-gray-500">Agua hoy</p>
         <h3 class="text-2xl font-bold mt-2">${{ agua_hoy|floatformat:2 }}</h3>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-gray-500">
         <p class="text-sm text-gray-500">Alcantarillado hoy</p>
         <h3 class="text-2xl font-bold mt-2">${{ alcantarillado_hoy|floatformat:2 }}</h3>
     </div>
 
     {% if modulo_multas %}
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-gray-500">
         <p class="text-sm text-gray-500">Multas hoy</p>
         <h3 class="text-2xl font-bold mt-2">${{ multas_hoy|floatformat:2 }}</h3>
     </div>
     {% endif %}
 
     {% if modulo_pagos %}
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-gray-500">
         <p class="text-sm text-gray-500">Pagos hoy</p>
         <h3 class="text-2xl font-bold mt-2">{{ pagos_hoy }}</h3>
     </div>
@@ -43,7 +43,7 @@
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
     {% if modulo_servicios %}
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-red-600">
         <p class="text-sm text-gray-500">Abonados suspendidos</p>
         <h3 class="text-2xl font-bold mt-2 text-red-700">{{ abonados_suspendidos }}</h3>
         <a href="{% tenant_url 'servicios:lista' %}"
@@ -54,7 +54,7 @@
     {% endif %}
 
     {% if modulo_servicios %}
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-blue-600">
         <p class="text-sm text-gray-500">Pendientes de reconexión</p>
         <h3 class="text-2xl font-bold mt-2 text-blue-700">{{ pendientes_reconexion_total }}</h3>
         <p class="text-xs text-gray-500 mt-3">
@@ -64,7 +64,7 @@
     {% endif %}
 
     {% if modulo_multas %}
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-yellow-600">
         <p class="text-sm text-gray-500">Multas pendientes</p>
         <h3 class="text-2xl font-bold mt-2 text-yellow-700">{{ multas_pendientes_total }}</h3>
         <a href="{% tenant_url 'multas:reporte' %}?estado=PENDIENTE"
@@ -75,7 +75,7 @@
     {% endif %}
 
     {% if modulo_lecturas %}
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-yellow-600">
         <p class="text-sm text-gray-500">Lecturas pendientes</p>
         <h3 class="text-2xl font-bold mt-2 text-yellow-700">{{ lecturas_pendientes }}</h3>
         <a href="{% tenant_url 'lecturas:registro_masivo' %}"
@@ -90,49 +90,49 @@
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
     {% if modulo_abonados %}
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-gray-600">
         <p class="text-sm text-gray-500">Abonados activos</p>
         <h3 class="text-2xl font-bold mt-2">{{ total_abonados }}</h3>
     </div>
     {% endif %}
 
     {% if modulo_medidores %}
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-gray-600">
         <p class="text-sm text-gray-500">Medidores activos</p>
         <h3 class="text-2xl font-bold mt-2">{{ total_medidores }}</h3>
     </div>
     {% endif %}
 
     {% if modulo_facturacion %}
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-red-600">
         <p class="text-sm text-gray-500">Facturas pendientes</p>
         <h3 class="text-2xl font-bold mt-2 text-red-700">{{ facturas_pendientes }}</h3>
     </div>
     {% endif %}
 
     {% if modulo_reportes %}
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-red-600">
         <p class="text-sm text-gray-500">Cartera pendiente</p>
         <h3 class="text-2xl font-bold mt-2 text-red-700">${{ cartera_pendiente|floatformat:2 }}</h3>
     </div>
     {% endif %}
 
     {% if modulo_reportes %}
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-green-600">
         <p class="text-sm text-gray-500">Recaudado este mes</p>
         <h3 class="text-2xl font-bold mt-2 text-green-700">${{ recaudado_mes|floatformat:2 }}</h3>
     </div>
     {% endif %}
 
     {% if modulo_lecturas %}
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-yellow-600">
         <p class="text-sm text-gray-500">Lecturas pendientes</p>
         <h3 class="text-2xl font-bold mt-2 text-yellow-700">{{ lecturas_pendientes }}</h3>
     </div>
     {% endif %}
 
     {% if modulo_abonados %}
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-red-600">
         <p class="text-sm text-gray-500">Abonados morosos</p>
         <h3 class="text-2xl font-bold mt-2 text-red-700">{{ abonados_morosos }}</h3>
     </div>
@@ -142,7 +142,7 @@
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
     {% if modulo_pagos %}
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5">
         <h3 class="text-lg font-semibold mb-4">Últimos pagos</h3>
 
         <div class="space-y-3">
@@ -166,7 +166,7 @@
     {% endif %}
 
     {% if modulo_auditoria %}
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5">
         <h3 class="text-lg font-semibold mb-4">Últimas actividades</h3>
 
         <div class="space-y-3">
@@ -188,10 +188,10 @@
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     {% if modulo_servicios %}
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5">
         <h3 class="text-lg font-semibold mb-4">Pendientes de reconexión</h3>
 
-        <div class="overflow-x-auto">
+        <div class="tabla-scroll overflow-x-auto">
             <table class="w-full text-sm">
                 <thead class="bg-slate-100">
                     <tr>
@@ -210,7 +210,7 @@
                         <td class="p-3">{{ abonado.sector }}</td>
                         <td class="p-3 text-center">
                             <a href="{% tenant_url 'servicios:reconectar_por_abonado' abonado.id %}"
-                               class="px-3 py-1 bg-green-700 text-white rounded hover:bg-green-600">
+                               class="px-3 py-1 bg-green-700 text-white hover:bg-green-600">
                                 Reconectar
                             </a>
                         </td>
@@ -229,7 +229,7 @@
     {% endif %}
 
     {% if modulo_multas %}
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5">
         <h3 class="text-lg font-semibold mb-4">Multas pendientes</h3>
 
         <div class="space-y-3">
@@ -249,7 +249,7 @@
     {% endif %}
 
     {% if modulo_pagos or modulo_facturacion %}
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5">
         <h3 class="text-lg font-semibold mb-4">Anulaciones recientes</h3>
 
         <div class="space-y-3">
@@ -281,7 +281,7 @@
     {% endif %}
 
     {% if modulo_medidores %}
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5">
         <h3 class="text-lg font-semibold mb-4">Cambios de medidor recientes</h3>
 
         <div class="space-y-3">

@@ -5,34 +5,35 @@
 
 {% block contenido %}
 
-<div class="bg-white rounded-xl shadow p-5 mb-6">
-    <form method="get" class="flex flex-col md:flex-row gap-3 items-end">
+<div class="bg-white shadow p-5 mb-6 border-l-4 border-gray-600">
+    <p class="text-sm text-gray-500">Total cartera pendiente</p>
+    <h3 class="text-2xl font-bold mt-2">${{ total_cartera|floatformat:2 }}</h3>
+</div>
+
+<div class="bg-white shadow p-5 text-sm">
+
+    <div class="flex justify-between items-center mb-6">
+        <h3 class="text-lg font-semibold">Facturas pendientes o parciales</h3>
+    </div>
+    
+    <form method="get" class="flex flex-col md:flex-row gap-3 items-end mb-6">
         <div class="w-full md:w-1/2">
-            <label class="block text-sm font-medium mb-1">Buscar</label>
+           
             <input
                 type="text"
                 name="q"
                 value="{{ busqueda }}"
                 placeholder="Factura, abonado o cédula..."
-                class="w-full px-4 py-2 border rounded-lg"
+                class="w-full px-4 py-2 border"
             >
         </div>
 
-        <button class="px-4 py-2 bg-slate-800 text-white rounded-lg">
+        <button class="px-4 py-2 bg-slate-800 text-white">
             Buscar
         </button>
     </form>
-</div>
 
-<div class="bg-white rounded-xl shadow p-5 mb-6">
-    <p class="text-sm text-gray-500">Total cartera pendiente</p>
-    <h3 class="text-2xl font-bold mt-2">${{ total_cartera|floatformat:2 }}</h3>
-</div>
-
-<div class="bg-white rounded-xl shadow p-5">
-    <h3 class="text-lg font-semibold mb-5">Facturas pendientes o parciales</h3>
-
-    <div class="overflow-x-auto">
+    <div class="tabla-scroll overflow-x-auto">
         <table class="w-full text-sm">
             <thead class="bg-slate-100 text-slate-700">
                 <tr>
@@ -59,19 +60,19 @@
                     <td class="p-3 text-right font-semibold">${{ factura.saldo_pendiente }}</td>
                     <td class="p-3 text-center">
                         {% if factura.estado == "PARCIAL" %}
-                            <span class="px-2 py-1 text-xs bg-yellow-100 rounded">Parcial</span>
+                            <span class="px-2 py-1 text-xs bg-yellow-100">Parcial</span>
                         {% else %}
-                            <span class="px-2 py-1 text-xs bg-red-100 rounded">Pendiente</span>
+                            <span class="px-2 py-1 text-xs bg-red-100">Pendiente</span>
                         {% endif %}
                     </td>
 
                     <td class="p-3 text-center">
                         {% if factura.abonado.estado_servicio == "SUSPENDIDO" %}
-                            <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
+                            <span class="px-2 py-1 text-xs bg-red-100 text-red-700">
                                 Suspendido
                             </span>
                         {% else %}
-                            <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                            <span class="px-2 py-1 text-xs bg-green-100 text-green-700">
                                 Activo
                             </span>
                         {% endif %}
@@ -81,14 +82,14 @@
 
                             {% if puede_ver_facturas %}
                             <a href="{% tenant_url 'facturacion:detalle' factura.id %}"
-                            class="px-3 py-1 text-sm bg-slate-700 text-white rounded hover:bg-slate-600">
+                            class="px-3 py-1 text-sm bg-slate-700 text-white hover:bg-slate-600">
                                 Ver
                             </a>
                             {% endif %}
 
                             {% if puede_cobrar %}
                             <a href="{% tenant_url 'pagos:cobrar' factura.id %}"
-                            class="px-3 py-1 text-sm bg-green-700 text-white rounded hover:bg-green-600">
+                            class="px-3 py-1 text-sm bg-green-700 text-white hover:bg-green-600">
                                 Cobrar
                             </a>
                             {% endif %}
@@ -100,7 +101,7 @@
                                     </span>
                                 {% else %}
                                     <a href="{% tenant_url 'servicios:suspender' %}?abonado={{ factura.abonado.id }}"
-                                    class="inline-flex items-center justify-center w-24 px-3 py-1 text-sm bg-red-700 text-white rounded hover:bg-red-600">
+                                    class="inline-flex items-center justify-center w-24 px-3 py-1 text-sm bg-red-700 text-white hover:bg-red-600">
                                         Suspender
                                     </a>
                                 {% endif %}

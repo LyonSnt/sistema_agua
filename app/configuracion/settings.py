@@ -147,6 +147,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'usuarios.context_processors.roles_usuario',
+                'nucleo.context_processors.menu_sidebar',
             ],
             'builtins': [
                 'tenants.templatetags.tenant_urls',

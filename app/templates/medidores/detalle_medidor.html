@@ -5,29 +5,29 @@
 
 {% block contenido %}
 
-<div class="flex gap-2 mb-4">
+<div class="text-sm flex gap-2 mb-4">
     <a href="{% tenant_url 'medidores:lista' %}"
-       class="px-4 py-2 bg-gray-200 rounded-lg">
+       class="px-4 py-2 bg-gray-200">
         Volver
     </a>
 
     <a href="{% tenant_url 'abonados:detalle' medidor.abonado.id %}"
-       class="px-4 py-2 bg-slate-700 text-white rounded-lg">
+       class="px-4 py-2 bg-slate-700 text-white">
         Ver abonado
     </a>
     <a href="{% tenant_url 'medidores:detalle_pdf' medidor.id %}"
     target="_blank"
-    class="px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600">
+    class="px-4 py-2 bg-blue-700 text-white hover:bg-blue-600">
         Ver PDF
     </a>
     {% if puede_gestionar_medidores %}
     <a href="{% tenant_url 'medidores:editar' medidor.id %}"
-    class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-500">
+    class="px-4 py-2 bg-yellow-600 text-white hover:bg-yellow-500">
         Editar
     </a>
     {% if medidor.estado != "RETIRADO" %}
     <a href="{% tenant_url 'medidores:cambiar' medidor.id %}"
-    class="px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600">
+    class="px-4 py-2 bg-blue-700 text-white hover:bg-blue-600">
         Cambiar medidor
     </a>
     {% endif %}
@@ -35,9 +35,9 @@
 </div>
 
 
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+<div class="text-sm grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
 
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5">
         <p class="text-sm text-gray-500">Estado medidor</p>
 
         {% if medidor.estado == "ACTIVO" %}
@@ -51,17 +51,17 @@
         {% endif %}
     </div>
 
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5">
         <p class="text-sm text-gray-500">Lecturas registradas</p>
         <p class="text-2xl font-bold">{{ total_lecturas }}</p>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5">
         <p class="text-sm text-gray-500">Consumo acumulado</p>
         <p class="text-2xl font-bold">{{ consumo_acumulado }}</p>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5">
         <p class="text-sm text-gray-500">Facturas pendientes</p>
         <p class="text-2xl font-bold text-red-700">
             {{ facturas_pendientes }}
@@ -70,9 +70,9 @@
 
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="text-sm grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5">
         <h3 class="text-lg font-semibold mb-4">Datos del medidor</h3>
 
         <div class="space-y-3 text-sm">
@@ -108,7 +108,7 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5">
         <h3 class="text-lg font-semibold mb-4">Abonado asociado</h3>
 
         <div class="space-y-3 text-sm">
@@ -134,7 +134,7 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5">
         <h3 class="text-lg font-semibold mb-4">Última lectura</h3>
 
         {% if ultima_lectura %}
@@ -168,11 +168,11 @@
 
 </div>
 
-<div class="bg-white rounded-xl shadow p-5 mt-6">
+<div class="text-sm bg-white shadow p-5 mt-6">
 
     <h3 class="text-lg font-semibold mb-4">Historial de cambios de medidor</h3>
 
-    <div class="overflow-x-auto">
+    <div class="tabla-scroll overflow-x-auto">
         <table class="w-full text-sm">
             <thead class="bg-slate-100">
                 <tr>
@@ -210,11 +210,11 @@
 
 </div>
 
-<div class="bg-white rounded-xl shadow p-5 mt-6">
+<div class="text-sm bg-white shadow p-5 mt-6">
 
     <h3 class="text-lg font-semibold mb-4">Historial de lecturas</h3>
 
-    <div class="overflow-x-auto">
+    <div class="tabla-scroll overflow-x-auto">
         <table class="w-full text-sm">
             <thead class="bg-slate-100">
                 <tr>
@@ -237,11 +237,11 @@
                     <td class="p-3">{{ lectura.observacion|default:"-" }}</td>
                     <td class="p-3 text-center">
                         {% if lectura.lectura_registrada %}
-                            <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                            <span class="px-2 py-1 text-xs bg-green-100 text-green-700">
                                 Sí
                             </span>
                         {% else %}
-                            <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded">
+                            <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-700">
                                 No
                             </span>
                         {% endif %}
@@ -260,13 +260,13 @@
 
 </div>
 
-<div class="bg-white rounded-xl shadow p-5 mt-6">
+<div class="text-sm bg-white shadow p-5 mt-6">
 
     <h3 class="text-lg font-semibold mb-4">
         Facturas generadas por este medidor
     </h3>
 
-    <div class="overflow-x-auto">
+    <div class="tabla-scroll overflow-x-auto">
         <table class="w-full text-sm">
             <thead class="bg-slate-100">
                 <tr>
@@ -289,13 +289,13 @@
                     <td class="p-3 text-right">${{ factura.total_pagado|floatformat:2 }}</td>
                     <td class="p-3 text-right font-semibold">${{ factura.saldo_pendiente|floatformat:2 }}</td>
                     <td class="p-3 text-center">
-                        <span class="px-2 py-1 text-xs bg-gray-100 rounded">
+                        <span class="px-2 py-1 text-xs bg-gray-100">
                             {{ factura.estado }}
                         </span>
                     </td>
                     <td class="p-3 text-center">
                         <a href="{% tenant_url 'facturacion:detalle' factura.id %}"
-                           class="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-600">
+                           class="px-3 py-1 bg-slate-700 text-white hover:bg-slate-600">
                             Ver
                         </a>
                     </td>

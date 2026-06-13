@@ -4,13 +4,74 @@ from io import StringIO
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
-from django.test import TestCase
+from django.contrib.auth.models import AnonymousUser, Group
+from django.test import RequestFactory, TestCase
 
 from abonados.models import Abonado, Ruta, Sector
 from facturacion.models import Factura
 from lecturas.models import Lectura, PeriodoFacturacion
 from medidores.models import Medidor
 from pagos.models import Pago
+from usuarios.models import Usuario
+
+from .context_processors import menu_sidebar
+
+
+class MenuSidebarTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.grupo_admin = Group.objects.create(name="Administrador")
+        self.usuario = Usuario.objects.create_user(
+            username="admin-menu",
+            password="clave-segura",
+            is_staff=True,
+        )
+        self.usuario.groups.add(self.grupo_admin)
+
+    def test_menu_vacio_para_usuario_anonimo(self):
+        request = self.factory.get("/login/")
+        request.user = AnonymousUser()
+
+        contexto = menu_sidebar(request)
+
+        self.assertEqual(contexto["menu_sidebar"], [])
+
+    def test_menu_prefija_urls_de_tenant_y_marca_activo(self):
+        request = self.factory.get("/rumipamba/abonados/")
+        request.user = self.usuario
+        request.tenant_path_prefix = "/rumipamba"
+        request.tenant = type("Tenant", (), {
+            "modulos_habilitados": ["panel", "abonados", "admin"],
+        })()
+
+        contexto = menu_sidebar(request)
+        items = [
+            item
+            for seccion in contexto["menu_sidebar"]
+            for item in seccion["items"]
+        ]
+
+        abonados = next(item for item in items if item["texto"] == "Abonados")
+        self.assertEqual(abonados["url"], "/rumipamba/abonados/")
+        self.assertTrue(abonados["activo"])
+        self.assertFalse(any(item["texto"] == "Medidores" for item in items))
+
+    def test_menu_legacy_no_prefija_urls_sin_tenant(self):
+        request = self.factory.get("/panel/")
+        request.user = self.usuario
+        request.tenant_path_prefix = ""
+        request.tenant = None
+
+        contexto = menu_sidebar(request)
+        items = [
+            item
+            for seccion in contexto["menu_sidebar"]
+            for item in seccion["items"]
+        ]
+
+        panel = next(item for item in items if item["texto"] == "Panel principal")
+        self.assertEqual(panel["url"], "/panel/")
+        self.assertTrue(panel["activo"])
 
 
 class VerificarConsistenciaCommandTests(TestCase):

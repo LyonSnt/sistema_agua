@@ -5,44 +5,24 @@
 
 {% block contenido %}
 
-<div class="bg-white rounded-xl shadow p-5 mb-6">
-    <div class="flex justify-between items-center mb-5">
-        <h3 class="text-lg font-semibold">Historial de suspensiones</h3>
-{% comment %} 
-        <a href="{% tenant_url 'servicios:suspender' %}"
-           class="px-4 py-2 bg-red-700 text-white rounded-lg">
-            Suspender servicio
-        </a> {% endcomment %}
-    </div>
-
-    <form method="get" class="flex gap-2">
-        <input type="text" name="q" value="{{ busqueda }}"
-               placeholder="Buscar abonado o cédula..."
-               class="w-full md:w-1/2 px-4 py-2 border rounded-lg">
-
-        <button class="px-4 py-2 bg-slate-800 text-white rounded-lg">
-            Buscar
-        </button>
-    </form>
-</div>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
 
-    <div class="bg-white rounded-xl shadow p-5 border-l-4 border-red-600">
+    <div class="bg-white shadow p-5 border-l-4 border-red-600">
         <p class="text-sm text-gray-500">Servicios suspendidos</p>
         <h3 class="text-2xl font-bold text-red-700 mt-2">
             {{ total_suspendidos }}
         </h3>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-5 border-l-4 border-green-600">
+    <div class="bg-white shadow p-5 border-l-4 border-green-600">
         <p class="text-sm text-gray-500">Servicios reconectados</p>
         <h3 class="text-2xl font-bold text-green-700 mt-2">
             {{ total_reconectados }}
         </h3>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-5 border-l-4 border-gray-500">
+    <div class="bg-white shadow p-5 border-l-4 border-gray-500">
         <p class="text-sm text-gray-500">Suspensiones anuladas</p>
         <h3 class="text-2xl font-bold text-gray-700 mt-2">
             {{ total_anulados }}
@@ -51,8 +31,23 @@
 
 </div>
 
-<div class="bg-white rounded-xl shadow p-5">
-    <div class="overflow-x-auto">
+
+<div class="bg-white shadow p-5 text-sm">
+
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-semibold">Historial de suspensiones</h3>
+        </div>
+
+        <form method="get" class="flex gap-2 mb-6">
+            <input type="text" name="q" value="{{ busqueda }}"
+                placeholder="Buscar abonado o cédula..."
+                class="w-full md:w-1/2 px-4 py-2 border">
+
+            <button class="px-4 py-2 bg-slate-800 text-white">
+                Buscar
+            </button>
+        </form>
+    <div class="tabla-scroll overflow-x-auto">
         <table class="w-full text-sm">
             <thead class="bg-slate-100">
                 <tr>
@@ -74,11 +69,11 @@
                     <td class="p-3">{{ item.motivo_suspension }}</td>
                     <td class="p-3 text-center">
                         {% if item.estado == "SUSPENDIDO" %}
-                            <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">Suspendido</span>
+                            <span class="px-2 py-1 text-xs bg-red-100 text-red-700">Suspendido</span>
                         {% elif item.estado == "RECONECTADO" %}
-                            <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">Reconectado</span>
+                            <span class="px-2 py-1 text-xs bg-green-100 text-green-700">Reconectado</span>
                         {% else %}
-                            <span class="px-2 py-1 text-xs bg-gray-100 rounded">Anulado</span>
+                            <span class="px-2 py-1 text-xs bg-gray-100">Anulado</span>
                         {% endif %}
                     </td>
                     <td class="p-3 text-center">{{ item.creado_por }}</td>
@@ -86,16 +81,18 @@
                     <td class="p-3">{{ item.fecha_reconexion|default:"-" }}</td>
                    
                     <td class="p-3 text-center">
-                        {% if item.estado == "SUSPENDIDO" %}
-                            {% if puede_reconectar %}
-                                <a href="{% tenant_url 'servicios:reconectar' item.id %}"
-                                class="px-3 py-1 bg-green-700 text-white rounded">
-                                    Reconectar
-                                </a>
+                        <div class="flex items-center justify-center gap-1">
+                            {% if item.estado == "SUSPENDIDO" %}
+                                {% if puede_reconectar %}
+                                    <a href="{% tenant_url 'servicios:reconectar' item.id %}"
+                                    class="px-3 py-1 text-sm bg-green-700 text-white hover:bg-green-600">
+                                        Reconectar
+                                    </a>
+                                {% endif %}
+                            {% else %}
+                                -
                             {% endif %}
-                        {% else %}
-                            -
-                        {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% empty %}

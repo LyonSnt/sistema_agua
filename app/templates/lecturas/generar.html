@@ -8,14 +8,14 @@
 {% if messages %}
 <div class="mb-5">
     {% for message in messages %}
-        <div class="bg-green-100 text-green-800 px-4 py-3 rounded-lg">
+        <div class="bg-green-100 text-green-800 px-4 py-3">
             {{ message }}
         </div>
     {% endfor %}
 </div>
 {% endif %}
 
-<div class="bg-white rounded-xl shadow p-6 max-w-2xl">
+<div class="text-sm bg-white shadow p-6 max-w-2xl">
 
     <h3 class="text-lg font-semibold mb-4">Generar lecturas por período</h3>
 
@@ -29,7 +29,7 @@
 
         <div class="mb-5">
             <label class="block text-sm font-medium mb-1">Período</label>
-            <select name="periodo" class="w-full px-4 py-2 border rounded-lg" required>
+            <select name="periodo" class="w-full px-4 py-2 border" required>
                 <option value="">Seleccione un período</option>
                 {% for periodo in periodos %}
                     <option value="{{ periodo.id }}">{{ periodo.nombre }} - {{ periodo.estado }}</option>
@@ -38,7 +38,7 @@
         </div>
 
         <button type="submit"
-                class="px-5 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-700"
+                class="px-5 py-2 bg-slate-900 text-white hover:bg-slate-700"
                 onclick="return confirm('¿Está seguro de generar las lecturas del período seleccionado?');">
             Generar lecturas
         </button>

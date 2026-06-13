@@ -233,3 +233,100 @@ class DetalleAbonadoTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, 'name="estado_servicio"')
         self.assertNotContains(response, 'name="activo"')
+
+    def test_listado_filtra_abonados_por_estado(self):
+        Abonado.objects.create(
+            codigo="AB003",
+            cedula_ruc="0303030303",
+            nombres="Carla",
+            apellidos="Cancelada",
+            direccion="Calle 3",
+            sector=self.sector,
+            ruta=self.ruta,
+            activo=False,
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse("abonados:lista"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "AB001")
+        self.assertNotContains(response, "AB003")
+
+        response = self.client.get(
+            reverse("abonados:lista"),
+            {"estado": "inactivos"},
+        )
+
+        self.assertContains(response, "AB003")
+        self.assertNotContains(response, "AB001")
+
+        response = self.client.get(
+            reverse("abonados:lista"),
+            {"estado": "todos"},
+        )
+
+        self.assertContains(response, "AB001")
+        self.assertContains(response, "AB003")
+
+    def test_admin_puede_desactivar_abonado(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse("abonados:cambiar_estado", args=[self.abonado.id]),
+            {"accion": "desactivar"},
+        )
+
+        self.abonado.refresh_from_db()
+        self.assertRedirects(response, reverse("abonados:lista"))
+        self.assertFalse(self.abonado.activo)
+        self.assertEqual(self.abonado.actualizado_por, self.admin)
+        self.assertTrue(
+            Auditoria.objects.filter(
+                accion="DESACTIVAR",
+                modulo="Abonados",
+                objeto_id=str(self.abonado.id),
+            ).exists()
+        )
+
+    def test_supervisor_puede_reactivar_abonado(self):
+        self.abonado.activo = False
+        self.abonado.save(update_fields=["activo"])
+        self.client.force_login(self.supervisor)
+
+        response = self.client.post(
+            reverse("abonados:cambiar_estado", args=[self.abonado.id]),
+            {"accion": "reactivar"},
+        )
+
+        self.abonado.refresh_from_db()
+        self.assertRedirects(response, reverse("abonados:lista"))
+        self.assertTrue(self.abonado.activo)
+        self.assertEqual(self.abonado.actualizado_por, self.supervisor)
+        self.assertTrue(
+            Auditoria.objects.filter(
+                accion="REACTIVAR",
+                modulo="Abonados",
+                objeto_id=str(self.abonado.id),
+            ).exists()
+        )
+
+    def test_consulta_no_puede_cambiar_estado_abonado(self):
+        self.client.force_login(self.consulta)
+
+        response = self.client.post(
+            reverse("abonados:cambiar_estado", args=[self.abonado.id]),
+            {"accion": "desactivar"},
+        )
+
+        self.abonado.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], reverse("panel:inicio"))
+        self.assertTrue(self.abonado.activo)
+        self.assertFalse(
+            Auditoria.objects.filter(
+                accion="DESACTIVAR",
+                modulo="Abonados",
+                objeto_id=str(self.abonado.id),
+            ).exists()
+        )

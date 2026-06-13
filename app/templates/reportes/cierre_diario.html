@@ -5,64 +5,64 @@
 
 {% block contenido %}
 
-<div class="bg-white rounded-xl shadow p-5 mb-6">
+<div class="text-sm bg-white shadow p-5 mb-6">
     <form method="get" class="flex flex-col md:flex-row gap-3 items-end">
         <div>
             <label class="block text-sm font-medium mb-1">Fecha</label>
             <input type="date" name="fecha" value="{{ fecha|date:'Y-m-d' }}"
-                   class="px-4 py-2 border rounded-lg">
+                   class="px-4 py-2 border">
         </div>
 
-        <button class="px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700">
+        <button class="px-4 py-2 bg-slate-800 text-white hover:bg-slate-700">
             Consultar
         </button>
         {% if puede_exportar_reportes %}
             <a href="{% tenant_url 'reportes:cierre_diario_pdf' %}?fecha={{ fecha|date:'Y-m-d' }}"
             target="_blank"
-            class="px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600">
+            class="px-4 py-2 bg-blue-700 text-white hover:bg-blue-600">
                 Ver PDF
             </a>
         {% endif %}
     </form>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
+<div class="text-sm grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
 
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-gray-600">
         <p class="text-sm text-gray-500">Pagos registrados</p>
         <h3 class="text-2xl font-bold mt-2">{{ total_pagos }}</h3>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-gray-600">
         <p class="text-sm text-gray-500">Total recaudado</p>
         <h3 class="text-2xl font-bold mt-2">${{ total_recaudado|floatformat:2 }}</h3>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-gray-600">
         <p class="text-sm text-gray-500">Agua</p>
         <h3 class="text-2xl font-bold mt-2">${{ total_agua|floatformat:2 }}</h3>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-gray-600">
         <p class="text-sm text-gray-500">Alcantarillado</p>
         <h3 class="text-2xl font-bold mt-2">${{ total_alcantarillado|floatformat:2 }}</h3>
     </div>
 
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-gray-600">
         <p class="text-sm text-gray-500">Multas</p>
         <h3 class="text-2xl font-bold mt-2">${{ total_multas|floatformat:2 }}</h3>
     </div>
-    <div class="bg-white rounded-xl shadow p-5">
+    <div class="bg-white shadow p-5 border-l-4 border-gray-600">
         <p class="text-sm text-gray-500">Otros</p>
         <h3 class="text-2xl font-bold mt-2">${{ total_otros|floatformat:2 }}</h3>
     </div>
 
 </div>
 
-<div class="bg-white rounded-xl shadow p-5">
+<div class="text-sm bg-white shadow p-5">
     <h3 class="text-lg font-semibold mb-5">Detalle de pagos</h3>
 
-    <div class="overflow-x-auto">
+    <div class="tabla-scroll overflow-x-auto">
         <table class="w-full text-sm">
             <thead class="bg-slate-100 text-slate-700">
                 <tr>
@@ -98,10 +98,10 @@
     </div>
 </div>
 
-<div class="bg-white rounded-xl shadow p-5 mt-6">
+<div class="text-sm bg-white shadow p-5 mt-6">
     <h3 class="text-lg font-semibold mb-5">Pagos anulados del día</h3>
 
-    <div class="overflow-x-auto">
+    <div class="tabla-scroll overflow-x-auto">
         <table class="w-full text-sm">
             <thead class="bg-slate-100 text-slate-700">
                 <tr>

@@ -5,34 +5,43 @@
 
 {% block contenido %}
 
-<div class="bg-white rounded-xl shadow p-5">
+<div class="text-sm bg-white shadow p-5">
 
-    <div class="flex justify-between items-center gap-3 mb-5">
+    <div class="flex justify-between items-center gap-3 mb-6">
         <h3 class="text-lg font-semibold">Listado de abonados</h3>
 
         {% if puede_gestionar_abonados %}
         <a href="{% tenant_url 'abonados:crear' %}"
-        class="shrink-0 inline-flex items-center justify-center px-3 py-2 text-sm bg-slate-900 text-white rounded-lg hover:bg-slate-700 whitespace-nowrap">
+        class="shrink-0 inline-flex items-center justify-center px-3 py-2 text-sm bg-slate-900 text-white hover:bg-slate-700 whitespace-nowrap">
             Nuevo abonado
         </a>
         {% endif %}
     </div>
 
-    <form method="get" class="mb-5 flex gap-2">
+    <form method="get" class="flex flex-wrap gap-2 mb-6">
         <input
             type="text"
             name="q"
             value="{{ busqueda }}"
             placeholder="Buscar por nombre, cédula o código..."
-            class="w-full md:w-1/2 px-4 py-2 border rounded-lg"
+            class="w-full md:w-1/2 px-4 py-2 border"
         >
 
-        <button class="shrink-0 px-4 py-2 text-sm bg-slate-800 text-white rounded-lg whitespace-nowrap">
+        <select
+            name="estado"
+            class="w-full sm:w-auto px-4 py-2 border bg-white"
+        >
+            <option value="activos" {% if estado == "activos" %}selected{% endif %}>Activos</option>
+            <option value="inactivos" {% if estado == "inactivos" %}selected{% endif %}>Inactivos</option>
+            <option value="todos" {% if estado == "todos" %}selected{% endif %}>Todos</option>
+        </select>
+
+        <button class="shrink-0 px-4 py-2 text-sm bg-slate-800 text-white whitespace-nowrap">
             Buscar
         </button>
     </form>
 
-    <div class="overflow-x-auto">
+    <div class="tabla-scroll overflow-x-auto">
         <table class="w-full text-sm">
             <thead class="bg-slate-100 text-slate-700">
                 <tr>
@@ -60,38 +69,38 @@
                     <td class="p-3">{{ abonado.ruta }}</td>
                     <td class="p-3">
                         {% if abonado.activo %}
-                            <span class="px-2 py-1 text-xs bg-green-100 rounded">Activo</span>
+                            <span class="px-2 py-1 text-xs bg-green-100">Activo</span>
                         {% else %}
-                            <span class="px-2 py-1 text-xs bg-red-100 rounded">Inactivo</span>
+                            <span class="px-2 py-1 text-xs bg-red-100">Inactivo</span>
                         {% endif %}
                     </td>
 
                     <td class="p-3 text-center">
                         {% if abonado.estado_servicio == "SUSPENDIDO" and abonado.estado_cuenta == "AL_DIA" %}
-                            <span class="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded">
+                            <span class="px-2 py-1 text-xs bg-blue-100 text-blue-700">
                                 Pendiente reconexión
                             </span>
                         {% elif abonado.estado_servicio == "SUSPENDIDO" %}
-                            <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
+                            <span class="px-2 py-1 text-xs bg-red-100 text-red-700">
                                 Suspendido
                             </span>
                         {% else %}
-                            <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                            <span class="px-2 py-1 text-xs bg-green-100 text-green-700">
                                 Activo
                             </span>
                         {% endif %}
                     </td>
                     <td class="p-3">
                         {% if abonado.estado_cuenta == "AL_DIA" %}
-                            <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">
+                            <span class="px-2 py-1 text-xs bg-green-100 text-green-700">
                                 Al día
                             </span>
                         {% elif abonado.estado_cuenta == "CON_DEUDA" %}
-                            <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded">
+                            <span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-700">
                                 Con deuda
                             </span>
                         {% else %}
-                            <span class="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
+                            <span class="px-2 py-1 text-xs bg-red-100 text-red-700">
                                 Moroso
                             </span>
                         {% endif %}
@@ -99,7 +108,7 @@
                     <td class="p-3 text-center">
                         {% if abonado.estado_servicio == "SUSPENDIDO" and abonado.estado_cuenta == "AL_DIA" %}
                             <a href="{% tenant_url 'servicios:reconectar_por_abonado' abonado.id %}"
-                            class="inline-flex items-center justify-center w-24 px-3 py-1 text-sm bg-green-700 text-white rounded hover:bg-green-600">
+                            class="inline-flex items-center justify-center w-24 px-3 py-1 text-sm bg-green-700 text-white hover:bg-green-600">
                                 Reconectar
                             </a>
                         {% else %}
@@ -110,17 +119,50 @@
                     </td>
                     <td class="p-3 text-center">
                         <div class="flex items-center justify-center gap-1">
-                            {% if puede_ver_abonados %}
+                            {% if puede_ver_abonados and abonado.activo %}
                                 <a href="{% tenant_url 'abonados:detalle' abonado.id %}"
-                                class="px-3 py-1 text-sm bg-slate-700 text-white rounded hover:bg-slate-600">
+                                class="btn-sm btn-ver">
                                     Ver
                                 </a>
                             {% endif %}
-                            {% if puede_gestionar_abonados %}
+
+                            {% if puede_gestionar_abonados and abonado.activo %}
                                 <a href="{% tenant_url 'abonados:editar' abonado.id %}"
-                                class="px-3 py-1 text-sm bg-blue-700 text-white rounded hover:bg-blue-600">
+                                class="btn-sm btn-editar">
                                     Editar
                                 </a>
+                            {% endif %}
+
+                            {% if puede_gestionar_abonados %}
+                                <details class="menu-acciones relative inline-block">
+                                    <summary class="list-none cursor-pointer px-3 py-1 text-sm font-semibold bg-gray-200 text-slate-700 hover:bg-gray-300">
+                                        ⋮
+                                    </summary>
+
+                                    <div class="absolute right-0 z-30 mt-2 w-36 border border-slate-200 bg-white shadow-lg">
+                                        <form method="post" action="{% tenant_url 'abonados:cambiar_estado' abonado.id %}">
+                                            {% csrf_token %}
+
+                                            {% if abonado.activo %}
+                                                <input type="hidden" name="accion" value="desactivar">
+                                                <button
+                                                    type="submit"
+                                                    class="block w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50"
+                                                    onclick="return confirm('¿Desactivar este abonado?');">
+                                                    Desactivar
+                                                </button>
+                                            {% else %}
+                                                <input type="hidden" name="accion" value="reactivar">
+                                                <button
+                                                    type="submit"
+                                                    class="block w-full px-4 py-2 text-left text-sm text-green-700 hover:bg-green-50"
+                                                    onclick="return confirm('¿Reactivar este abonado?');">
+                                                    Reactivar
+                                                </button>
+                                            {% endif %}
+                                        </form>
+                                    </div>
+                                </details>
                             {% endif %}
                         </div>
                     </td>

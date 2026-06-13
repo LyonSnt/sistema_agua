@@ -5,35 +5,39 @@
 
 {% block contenido %}
 
-<div class="bg-white rounded-xl shadow p-5 mb-6">
-    <div class="flex justify-between items-center mb-5">
-        <h3 class="text-lg font-semibold">Listado de multas</h3>
 
-        {% if puede_gestionar_multas %}
-        <a href="{% tenant_url 'multas:crear' %}"
-           class="px-4 py-2 bg-slate-900 text-white rounded-lg">
-            Nueva multa
-        </a>
-        {% endif %}
+
+<div class="text-sm bg-white shadow p-5">
+
+    <div class="mb-6 text-sm">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-semibold">Listado de multas</h3>
+
+            {% if puede_gestionar_multas %}
+            <a href="{% tenant_url 'multas:crear' %}"
+            class="px-4 py-2 bg-slate-900 text-white">
+                Nueva multa
+            </a>
+            {% endif %}
+        </div>
+
+        <form method="get" class="flex gap-2">
+            <input
+                type="text"
+                name="q"
+                value="{{ busqueda }}"
+                placeholder="Buscar por abonado, cédula o motivo..."
+                class="w-full md:w-1/2 px-4 py-2 border"
+            >
+
+            <button class="px-4 py-2 bg-slate-800 text-white">
+                Buscar
+            </button>
+        </form>
     </div>
 
-    <form method="get" class="flex gap-2">
-        <input
-            type="text"
-            name="q"
-            value="{{ busqueda }}"
-            placeholder="Buscar por abonado, cédula o motivo..."
-            class="w-full md:w-1/2 px-4 py-2 border rounded-lg"
-        >
 
-        <button class="px-4 py-2 bg-slate-800 text-white rounded-lg">
-            Buscar
-        </button>
-    </form>
-</div>
-
-<div class="bg-white rounded-xl shadow p-5">
-    <div class="overflow-x-auto">
+    <div class="tabla-scroll overflow-x-auto">
         <table class="w-full text-sm">
             <thead class="bg-slate-100 text-slate-700">
                 <tr>
@@ -55,11 +59,11 @@
                     <td class="p-3 text-right font-semibold">${{ multa.valor|floatformat:2 }}</td>
                     <td class="p-3 text-center">
                         {% if multa.estado == "PAGADA" %}
-                            <span class="px-2 py-1 text-xs bg-green-100 rounded">Pagada</span>
+                            <span class="px-2 py-1 text-xs bg-green-100">Pagada</span>
                         {% elif multa.estado == "ANULADA" %}
-                            <span class="px-2 py-1 text-xs bg-gray-100 rounded">Anulada</span>
+                            <span class="px-2 py-1 text-xs bg-gray-100">Anulada</span>
                         {% else %}
-                            <span class="px-2 py-1 text-xs bg-red-100 rounded">Pendiente</span>
+                            <span class="px-2 py-1 text-xs bg-red-100">Pendiente</span>
                         {% endif %}
                     </td>
                     <td class="p-3 text-center">
@@ -69,14 +73,14 @@
 
                                 {% if puede_cobrar_multa %}
                                 <a href="{% tenant_url 'multas:cobrar' multa.id %}"
-                                class="px-3 py-1 text-sm bg-green-700 text-white rounded hover:bg-green-600">
+                                class="px-3 py-1 text-sm bg-green-700 text-white hover:bg-green-600">
                                     Cobrar
                                 </a>
                                 {% endif %}
 
                                 {% if puede_anular_multa %}
                                 <a href="{% tenant_url 'multas:anular' multa.id %}"
-                                class="px-3 py-1 text-sm bg-red-700 text-white rounded hover:bg-red-600">
+                                class="px-3 py-1 text-sm bg-red-700 text-white hover:bg-red-600">
                                     Anular
                                 </a>
                                 {% endif %}
@@ -86,14 +90,14 @@
                                 {% if puede_ver_reporte_multas %}
                                 <a href="{% tenant_url 'multas:comprobante_pdf' multa.id %}"
                                 target="_blank"
-                                class="px-3 py-1 text-sm bg-blue-700 text-white rounded hover:bg-blue-600">
+                                class="px-3 py-1 text-sm bg-blue-700 text-white hover:bg-blue-600">
                                     Comprobante
                                 </a>
                                 {% endif %}
 
                                 {% if puede_anular_multa %}
                                 <a href="{% tenant_url 'multas:anular' multa.id %}"
-                                class="px-3 py-1 text-sm bg-red-700 text-white rounded hover:bg-red-600">
+                                class="px-3 py-1 text-sm bg-red-700 text-white hover:bg-red-600">
                                     Anular
                                 </a>
                                 {% endif %}

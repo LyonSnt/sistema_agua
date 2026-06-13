@@ -5,11 +5,57 @@
 
 {% block contenido %}
 
-<div class="bg-white rounded-xl shadow p-5 mb-6">
-    <form method="get" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+
+<div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+    <div class="bg-white shadow p-5 border-l-4 border-gray-600">
+        <p class="text-sm text-gray-500">Total multas</p>
+        <h3 class="text-3xl font-bold mt-2">{{ total_multas }}</h3>
+    </div>
+
+    <div class="bg-white shadow p-5 border-l-4 border-red-600">
+        <p class="text-sm text-gray-500">Pendientes</p>
+        <h3 class="text-3xl font-bold mt-2 text-red-700">{{ pendientes }}</h3>
+    </div>
+
+    <div class="bg-white shadow p-5 border-l-4 border-green-600">
+        <p class="text-sm text-gray-500">Pagadas</p>
+        <h3 class="text-3xl font-bold mt-2 text-green-700">{{ pagadas }}</h3>
+    </div>
+
+    <div class="bg-white shadow p-5 border-l-4 border-gray-600">
+        <p class="text-sm text-gray-500">Anuladas</p>
+        <h3 class="text-3xl font-bold mt-2 text-gray-700">{{ anuladas }}</h3>
+    </div>
+
+    <div class="bg-white shadow p-5 border-l-4 border-blue-600">
+        <p class="text-sm text-gray-500">Total recaudado</p>
+        <h3 class="text-3xl font-bold mt-2 text-blue-700">
+            ${{ total_recaudado|floatformat:2 }}
+        </h3>
+    </div>
+</div>
+
+
+
+
+
+<div class="bg-white shadow p-5">
+
+        <div class="text-sm flex justify-between items-center mb-6">
+            <h3 class="text-lg font-semibold">Detalle de multas</h3>
+            {% if puede_exportar_multas %}
+                <a href="{% tenant_url 'multas:reporte_excel' %}?estado={{ estado }}&tipo={{ tipo }}&fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}"
+                class="px-4 py-2 bg-green-700 text-white">
+                    Exportar Excel
+                </a>
+            {% endif %}
+        </div>
+    
+
+    <form method="get" class="text-sm grid grid-cols-1 md:grid-cols-5 gap-4 items-end mb-6">
         <div>
             <label class="block text-sm font-medium mb-1">Estado</label>
-            <select name="estado" class="w-full px-4 py-2 border rounded-lg">
+            <select name="estado" class="w-full px-4 py-2 border">
                 <option value="">Todos</option>
                 {% for valor, texto in estados %}
                     <option value="{{ valor }}" {% if estado == valor %}selected{% endif %}>
@@ -21,7 +67,7 @@
 
         <div>
             <label class="block text-sm font-medium mb-1">Tipo</label>
-            <select name="tipo" class="w-full px-4 py-2 border rounded-lg">
+            <select name="tipo" class="w-full px-4 py-2 border">
                 <option value="">Todos</option>
                 {% for valor, texto in tipos %}
                     <option value="{{ valor }}" {% if tipo == valor %}selected{% endif %}>
@@ -34,60 +80,22 @@
         <div>
             <label class="block text-sm font-medium mb-1">Desde</label>
             <input type="date" name="fecha_inicio" value="{{ fecha_inicio }}"
-                   class="w-full px-4 py-2 border rounded-lg">
+                   class="w-full px-4 py-2 border">
         </div>
 
         <div>
             <label class="block text-sm font-medium mb-1">Hasta</label>
             <input type="date" name="fecha_fin" value="{{ fecha_fin }}"
-                   class="w-full px-4 py-2 border rounded-lg">
+                   class="w-full px-4 py-2 border">
         </div>
 
-        <button class="px-4 py-2 bg-slate-800 text-white rounded-lg">
+        <button class="px-4 py-2 bg-slate-800 text-white">
             Consultar
         </button>
-        {% if puede_exportar_multas %}
-            <a href="{% tenant_url 'multas:reporte_excel' %}?estado={{ estado }}&tipo={{ tipo }}&fecha_inicio={{ fecha_inicio }}&fecha_fin={{ fecha_fin }}"
-            class="px-4 py-2 bg-green-700 text-white rounded-lg">
-                Exportar Excel
-            </a>
-        {% endif %}
     </form>
-</div>
 
-<div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
-    <div class="bg-white rounded-xl shadow p-5">
-        <p class="text-sm text-gray-500">Total multas</p>
-        <h3 class="text-3xl font-bold mt-2">{{ total_multas }}</h3>
-    </div>
 
-    <div class="bg-white rounded-xl shadow p-5">
-        <p class="text-sm text-gray-500">Pendientes</p>
-        <h3 class="text-3xl font-bold mt-2 text-red-700">{{ pendientes }}</h3>
-    </div>
-
-    <div class="bg-white rounded-xl shadow p-5">
-        <p class="text-sm text-gray-500">Pagadas</p>
-        <h3 class="text-3xl font-bold mt-2 text-green-700">{{ pagadas }}</h3>
-    </div>
-
-    <div class="bg-white rounded-xl shadow p-5">
-        <p class="text-sm text-gray-500">Anuladas</p>
-        <h3 class="text-3xl font-bold mt-2 text-gray-700">{{ anuladas }}</h3>
-    </div>
-
-    <div class="bg-white rounded-xl shadow p-5">
-        <p class="text-sm text-gray-500">Total recaudado</p>
-        <h3 class="text-3xl font-bold mt-2 text-blue-700">
-            ${{ total_recaudado|floatformat:2 }}
-        </h3>
-    </div>
-</div>
-
-<div class="bg-white rounded-xl shadow p-5">
-    <h3 class="text-lg font-semibold mb-5">Detalle de multas</h3>
-
-    <div class="overflow-x-auto">
+    <div class="tabla-scroll overflow-x-auto">
         <table class="w-full text-sm">
             <thead class="bg-slate-100 text-slate-700">
                 <tr>
@@ -112,11 +120,11 @@
                     </td>
                     <td class="p-3 text-center">
                         {% if multa.estado == "PAGADA" %}
-                            <span class="px-2 py-1 text-xs bg-green-100 rounded">Pagada</span>
+                            <span class="px-2 py-1 text-xs bg-green-100">Pagada</span>
                         {% elif multa.estado == "ANULADA" %}
-                            <span class="px-2 py-1 text-xs bg-gray-100 rounded">Anulada</span>
+                            <span class="px-2 py-1 text-xs bg-gray-100">Anulada</span>
                         {% else %}
-                            <span class="px-2 py-1 text-xs bg-red-100 rounded">Pendiente</span>
+                            <span class="px-2 py-1 text-xs bg-red-100">Pendiente</span>
                         {% endif %}
                     </td>
                 </tr>

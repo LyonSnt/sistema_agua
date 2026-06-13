@@ -2,15 +2,15 @@
 
 ## Alta prioridad
 
-- [ ] Configurar Rumipamba desde `/rumipamba/admin/`:
+- [ ] Configurar Carabuela desde `/carabuela/admin/` como tenant de prueba:
   - configuracion institucional
   - sectores
   - rutas
   - tarifa vigente
   - rubros necesarios
   - periodo inicial
-- [ ] Definir modulos activos reales de Rumipamba en el admin global de tenants.
-- [x] Probar ciclo operativo minimo en Rumipamba con 1 abonado y 1 medidor:
+- [ ] Definir modulos activos reales de Carabuela en el admin global de tenants.
+- [x] Probar ciclo operativo minimo tenant con 1 abonado y 1 medidor:
   - crear abonado
   - crear medidor
   - registrar lectura
@@ -18,7 +18,7 @@
   - cobrar pago
   - revisar comprobante y reportes
 - [ ] Reconstruir o redeplegar la imagen Docker para incorporar los cambios confirmados al contenedor definitivo.
-- [ ] Implementar desactivar/reactivar abonado sin borrado fisico.
+- [x] Implementar desactivar/reactivar abonado sin borrado fisico.
 - [ ] Activar flags de produccion cuando exista HTTPS real:
   - `SECURE_SSL_REDIRECT=True`
   - `SESSION_COOKIE_SECURE=True`
@@ -32,11 +32,13 @@
   - activar flags HTTPS de produccion despues de validar el certificado.
 - [x] Probar restauracion de backups en una base temporal, no sobre la base viva.
 - [ ] Definir politica de rotacion y retencion de backups.
+- [x] Centralizar menu lateral en `nucleo/menu.py` para no modificar `base.html` al agregar opciones.
+- [x] Estabilizar layout para que tablas anchas no achiquen el menu lateral.
 - [ ] Revisar permisos del menu y permisos por URL cada vez que se agregue una vista nueva.
 
 ## Media prioridad
 
-- [ ] Agregar filtro de activos/inactivos en listado de abonados.
+- [x] Agregar filtro de activos/inactivos en listado de abonados.
 - [ ] Agregar filtros de abonados por sector, ruta, estado de servicio y estado de cuenta.
 - [ ] Optimizar `estado_cuenta` en listados para evitar consultas repetidas por fila.
 - [ ] Filtrar rutas dinamicamente por sector en el formulario de abonado.
@@ -58,6 +60,7 @@
 
 - [ ] Considerar exportacion Excel de ficha del abonado.
 - [ ] Continuar alineando botones de otros modulos con el patron de cartera pendiente.
+- [ ] Extraer un include/componente para menus de acciones `...` si se repite en mas listados.
 - [ ] Corregir detalles menores de texto y ortografia en interfaz cuando se detecten.
 - [ ] Mantener documentadas las sesiones de trabajo en `docs/sesiones/`.
 - [ ] Definir si la documentacion se mantendra en ASCII o si se normalizara con tildes.
@@ -105,10 +108,11 @@
 - [x] Decision de mantener `default` como base legacy/de pruebas sin migrar datos por ahora.
 - [x] Cookies propias `sistema_agua_sessionid` y `sistema_agua_csrftoken` para evitar choques con otros proyectos en `localhost`.
 - [x] Comando unico `provisionar_tenant` para crear una junta con base, migraciones, roles y admin inicial.
-- [x] Tenant Rumipamba creado y validado con base `sistema_agua_rumipamba`.
-- [x] Aislamiento de datos validado entre Rumipamba, Carabuela y `default`.
+- [x] Tenant de prueba Carabuela creado y validado con base `sistema_agua_carabuela`.
+- [x] Aislamiento de datos validado entre Carabuela, otro tenant de validacion y `default`.
 - [x] Admin inicial del tenant creado con permisos completos dentro de su junta.
 - [x] App `tenants` oculta y bloqueada dentro del admin de cada junta.
+- [x] Clase `tabla-scroll` aplicada a tablas operativas para soportar mas columnas sin deformar el layout.
 - [x] Configuracion de Nginx en VPS para exponer la app por IP publica sin abrir Gunicorn directamente.
 - [x] Endurecimiento transaccional de cobros y anulaciones criticas:
   - cobro de facturas;
